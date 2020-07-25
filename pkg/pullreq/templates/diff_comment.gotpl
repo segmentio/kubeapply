@@ -1,0 +1,43 @@
+### 🔬 Kubeapply diff result {{ if .Env }}({{ .Env }}){{ end }}
+
+{{- $behindBy := .PullRequestClient.BehindBy }}
+{{- if gt $behindBy 0 }}
+⚠️ This change is behind `{{ .PullRequestClient.Base }}` by {{ $behindBy }} commits.
+{{- end }}
+
+{{- if .ClusterDiffs }}
+{{- range .ClusterDiffs }}
+
+#### Cluster: `{{ .ClusterConfig.DescriptiveName }}`<br/><br/>Subpath: {{ .ClusterConfig.PrettySubpath }}
+
+<details>
+<summary><b>Diffs ({{ .NumDiffs }})</b></summary>
+<p>
+
+{{ if .RawDiffs }}
+```diff
+{{ .RawDiffs }}
+```
+{{ else }}
+```
+No diffs found.
+```
+{{ end }}
+
+</p>
+</details>
+
+#### Next steps
+
+- 🤖 To apply these diffs in the cluster, post:
+    - `kubeapply apply {{ .ClusterConfig.DescriptiveName }}`
+- 🌎 To see the status of all current workloads in the cluster, post:
+    - `kubeapply status {{ .ClusterConfig.DescriptiveName }}`
+- 🔬 To re-generate these diffs, post:
+    - `kubeapply diff {{ .ClusterConfig.DescriptiveName }}`
+
+{{- end }}
+
+{{- else }}
+No cluster config changes were detected.
+{{- end }}

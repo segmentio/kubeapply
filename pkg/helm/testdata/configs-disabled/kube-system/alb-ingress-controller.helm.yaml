@@ -1,0 +1,3 @@
+# kubeapply__disabled: true
+
+image: "test-image3"

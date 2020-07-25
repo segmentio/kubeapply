@@ -1,0 +1,16 @@
+# releaseName: kubeapply-envoy
+
+# The comment above is a special directive that kubeapply uses for setting the release name
+# in the call to `helm template...`.
+
+# The parameters below are helm value overrides for the chart.
+#
+# Note that it's possible to make this file itself a template that's expanded before the call
+# to helm by changing the name to `envoy.helm.gotpl.yaml`.
+replicaCount: 1
+
+serviceMonitor:
+  enabled: false
+
+prometheusRule:
+  enabled: false

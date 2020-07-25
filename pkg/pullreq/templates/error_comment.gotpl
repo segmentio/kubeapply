@@ -1,0 +1,5 @@
+### 😢 Kubeapply error {{ if .Env }}({{ .Env }}){{ end }}
+
+```
+{{ .Error }}
+```

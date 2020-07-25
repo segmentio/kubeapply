@@ -1,0 +1,233 @@
+{
+    "kind": "List",
+    "apiVersion": "v1",
+    "metadata": {},
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "ServiceAccount",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"ServiceAccount\",\"metadata\":{\"annotations\":{},\"labels\":{\"key1\":\"value1\"},\"name\":\"nginx-deployment\",\"namespace\":\"default\"}}\n"
+                },
+                "creationTimestamp": "2020-06-17T04:04:06Z",
+                "labels": {
+                    "key1": "value1"
+                },
+                "managedFields": [
+                    {
+                        "apiVersion": "v1",
+                        "fieldsType": "FieldsV1",
+                        "fieldsV1": {
+                            "f:metadata": {
+                                "f:labels": {
+                                    "f:key1": {}
+                                }
+                            }
+                        },
+                        "manager": "kubectl",
+                        "operation": "Apply",
+                        "time": "2020-06-17T04:38:02Z"
+                    },
+                    {
+                        "apiVersion": "v1",
+                        "fieldsType": "FieldsV1",
+                        "fieldsV1": {
+                            "f:metadata": {
+                                "f:annotations": {
+                                    "f:kubectl.kubernetes.io/last-applied-configuration": {}
+                                },
+                                "f:labels": {
+                                    "f:key1": {}
+                                }
+                            },
+                            "f:secrets": {
+                                "k:{\"name\":\"nginx-deployment-token-q94s9\"}": {
+                                    ".": {},
+                                    "f:name": {}
+                                }
+                            }
+                        },
+                        "manager": "before-first-apply",
+                        "operation": "Update"
+                    }
+                ],
+                "name": "nginx-deployment",
+                "namespace": "default",
+                "resourceVersion": "4820",
+                "selfLink": "/api/v1/namespaces/default/serviceaccounts/nginx-deployment",
+                "uid": "a1300d24-dd3a-4f1a-9e84-8c5a087a0e9c"
+            },
+            "secrets": [
+                {
+                    "name": "nginx-deployment-token-q94s9"
+                }
+            ]
+        },
+        {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"nginx\"},\"name\":\"nginx-deployment\",\"namespace\":\"default\"},\"spec\":{\"replicas\":2,\"selector\":{\"matchLabels\":{\"app\":\"nginx\"}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"nginx\"}},\"spec\":{\"containers\":[{\"image\":\"nginx:1.14.2\",\"name\":\"nginx\",\"ports\":[{\"containerPort\":80}]}]}}}}\n"
+                },
+                "creationTimestamp": "2020-06-18T04:38:46Z",
+                "generation": 1,
+                "labels": {
+                    "app": "nginx"
+                },
+                "name": "nginx-deployment",
+                "namespace": "default",
+                "resourceVersion": "58950",
+                "selfLink": "/apis/apps/v1/namespaces/default/deployments/nginx-deployment",
+                "uid": "8641093e-50e2-4d49-92ba-d4151b83fbd1"
+            },
+            "spec": {
+                "progressDeadlineSeconds": 600,
+                "replicas": 2,
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "app": "nginx"
+                    }
+                },
+                "strategy": {
+                    "rollingUpdate": {
+                        "maxSurge": "25%",
+                        "maxUnavailable": "25%"
+                    },
+                    "type": "RollingUpdate"
+                },
+                "template": {
+                    "metadata": {
+                        "creationTimestamp": null,
+                        "labels": {
+                            "app": "nginx"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "nginx:1.14.2",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "nginx",
+                                "ports": [
+                                    {
+                                        "containerPort": 80,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "resources": {},
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File"
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {},
+                        "terminationGracePeriodSeconds": 30
+                    }
+                }
+            },
+            "status": {}
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"labels\":{\"kubernetes.io/cluster-service\":\"true\"},\"name\":\"nginx\",\"namespace\":\"default\"},\"spec\":{\"ports\":[{\"port\":80,\"protocol\":\"TCP\",\"targetPort\":80}],\"selector\":{\"app\":\"nginx\"}}}\n"
+                },
+                "creationTimestamp": "2020-06-17T04:04:06Z",
+                "labels": {
+                    "kubernetes.io/cluster-service": "true"
+                },
+                "managedFields": [
+                    {
+                        "apiVersion": "v1",
+                        "fieldsType": "FieldsV1",
+                        "fieldsV1": {
+                            "f:metadata": {
+                                "f:labels": {
+                                    "f:kubernetes.io/cluster-service": {}
+                                }
+                            },
+                            "f:spec": {
+                                "f:ports": {
+                                    "k:{\"port\":80,\"protocol\":\"TCP\"}": {
+                                        ".": {},
+                                        "f:port": {},
+                                        "f:protocol": {},
+                                        "f:targetPort": {}
+                                    }
+                                },
+                                "f:selector": {
+                                    "f:app": {}
+                                }
+                            }
+                        },
+                        "manager": "kubectl",
+                        "operation": "Apply",
+                        "time": "2020-06-17T04:38:02Z"
+                    },
+                    {
+                        "apiVersion": "v1",
+                        "fieldsType": "FieldsV1",
+                        "fieldsV1": {
+                            "f:metadata": {
+                                "f:annotations": {
+                                    "f:kubectl.kubernetes.io/last-applied-configuration": {}
+                                },
+                                "f:labels": {
+                                    "f:kubernetes.io/cluster-service": {}
+                                }
+                            },
+                            "f:spec": {
+                                "f:clusterIP": {},
+                                "f:ports": {
+                                    "k:{\"port\":80,\"protocol\":\"TCP\"}": {
+                                        ".": {},
+                                        "f:port": {},
+                                        "f:protocol": {},
+                                        "f:targetPort": {}
+                                    }
+                                },
+                                "f:selector": {
+                                    "f:app": {}
+                                },
+                                "f:sessionAffinity": {},
+                                "f:type": {}
+                            }
+                        },
+                        "manager": "before-first-apply",
+                        "operation": "Update"
+                    }
+                ],
+                "name": "nginx",
+                "namespace": "default",
+                "resourceVersion": "4818",
+                "selfLink": "/api/v1/namespaces/default/services/nginx",
+                "uid": "4a6f57bb-054c-4da5-82a5-d9a3be1bf567"
+            },
+            "spec": {
+                "clusterIP": "10.109.60.17",
+                "ports": [
+                    {
+                        "port": 80,
+                        "protocol": "TCP",
+                        "targetPort": 80
+                    }
+                ],
+                "selector": {
+                    "app": "nginx"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        }
+    ]
+}

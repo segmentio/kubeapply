@@ -1,0 +1,10 @@
+key1: {{.value1}}
+key2: {{.value2}}
+contents:
+{{ indent 4 (fileContents "configs/test.json") }}
+
+configMap:
+{{ configMapEntries "configs2" }}
+
+configMap2:
+{{ configMapEntry "configs/test.json" }}

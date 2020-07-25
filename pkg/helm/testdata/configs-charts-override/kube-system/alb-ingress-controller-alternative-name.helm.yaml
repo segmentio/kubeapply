@@ -1,0 +1,6 @@
+# kubeapply__charts: file://testdata/charts-override
+# kubeapply__chartName: alb-ingress-controller
+# kubeapply__releaseName: name-override
+# kubeapply__chartsSubdir: subdir
+
+image: "test-image2"

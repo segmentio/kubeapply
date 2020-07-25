@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  namespace: test-namespace
+  labels:
+    kubernetes.io/cluster-service: "true"
+spec:
+  selector:
+    app: nginx
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80

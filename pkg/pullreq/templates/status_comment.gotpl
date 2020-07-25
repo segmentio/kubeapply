@@ -1,0 +1,23 @@
+### 🌎 Kubeapply cluster status result {{ if .Env }}({{ .Env }}){{ end }}
+
+{{- if .ClusterStatuses }}
+{{- range .ClusterStatuses }}
+
+#### Cluster: `{{ .ClusterConfig.DescriptiveName }}`
+
+<details>
+<summary>Current workloads</summary>
+<p>
+
+```
+{{ .HealthSummary }}
+```
+
+</p>
+</details>
+
+{{- end }}
+
+{{- else }}
+No cluster statuses were found.
+{{- end }}

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: myapp
+  namespace: myapp
+spec:
+  serviceName: tester
+  replicas: {{ .Parameters.myApp.replicas }}
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: centrifuge-tester
+        image: {{ .Parameters.myApp.image }}
+        ports:
+        - containerPort: 3000
+          name: http
+        resources:
+{{ toYaml .Parameters.myApp.resources | indent 10 }}

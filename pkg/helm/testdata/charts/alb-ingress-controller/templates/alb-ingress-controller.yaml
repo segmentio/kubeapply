@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: alb-ingress-controller
+  name: alb-ingress-controller-{{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alb-ingress-controller
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: alb-ingress-controller
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "10254"
+        helm/test: normal
+    spec:
+      containers:
+        - args:
+            - --ingress-class=alb
+            - --cluster-name=my-cluster
+            - --aws-region=us-west-2
+            - --aws-max-retries=10
+            - --target-type=ip
+          {{- if .Values.vpcId }}
+            - --aws-vpc-id={{ .Values.vpcId }}
+          {{- end }}
+          env:
+          image: {{ .Values.image }}
+          imagePullPolicy: Always
+          name: alb-ingress-controller
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      serviceAccountName: alb-ingress
+      serviceAccount: alb-ingress
+    {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+    {{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}

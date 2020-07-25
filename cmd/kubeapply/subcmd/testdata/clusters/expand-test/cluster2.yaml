@@ -1,0 +1,10 @@
+cluster: "cluster2"
+region: "us-west-2"
+env: "stage"
+
+charts: "file://../../charts"
+expandedPath: "expanded_expected/stage/us-west-2"
+
+parameters:
+  myAppReplicas: 3
+  myAppImage: "1234566.dkr.ecr.us-west-2.amazonaws.com/my_image:abc123"

@@ -1,0 +1,5 @@
+cluster: "kind"
+region: "local"
+env: "local"
+
+parameters: {}

@@ -1,0 +1,11 @@
+cluster: "cluster2"
+region: "us-west-2"
+env: "production"
+
+charts: "s3://my-charts/master/charts.tar.gz"
+
+profilePath: "profile"
+expandedPath: "expanded/cluster2"
+
+parameters:
+  myImage: "1234566.dkr.ecr.us-west-2.amazonaws.com/my_image:abc123"

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nginx-deployment
+  namespace: test-namespace
+  labels:
+    key1: value1

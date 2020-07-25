@@ -1,0 +1,37 @@
+### 🤖 Kubeapply apply result {{ if .Env }}({{ .Env }}){{ end }}
+
+{{- $behindBy := .PullRequestClient.BehindBy }}
+{{- if gt $behindBy 0 }}
+⚠️ This change is behind `{{ .PullRequestClient.Base }}` by {{ $behindBy }} commits.
+{{- end }}
+
+{{- if .ClusterApplies }}
+{{- range .ClusterApplies }}
+
+#### Cluster: `{{ .ClusterConfig.DescriptiveName }}`<br/><br/>Subpath: {{ .ClusterConfig.PrettySubpath }}<br/><br/>Updated resources ({{ .NumUpdates }}):
+
+<p>
+
+{{ if (gt .NumUpdates 0) }}
+| Kind | Name | Namespace | Old Version | New Version |
+| ---- | ---- | --------- | ----------- | ----------- |
+{{- range .Results }}
+{{- if .IsCreated }}
+| {{ .Kind }} | {{ .Name }} | {{ .Namespace }} | {{ .OldVersion }} | **{{ .NewVersion }}** |
+{{- else if .IsUpdated }}
+| {{ .Kind }} | {{ .Name }} | {{ .Namespace }} | {{ .OldVersion }} | **{{ .NewVersion }}** |
+{{- end }}
+{{- end }}
+{{- else }}
+```
+No resources were updated.
+```
+{{- end }}
+
+</p>
+
+{{- end }}
+
+{{- else }}
+No cluster apply operations were done.
+{{- end }}

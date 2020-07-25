@@ -1,0 +1,14 @@
+cluster: "cluster1"
+region: "us-west-2"
+env: "stage"
+
+charts: "file://../../charts"
+
+parameters:
+  myApp:
+    replicas: 3
+    image: "1234566.dkr.ecr.us-west-2.amazonaws.com/my_image:abc123"
+    resources:
+      limits:
+        cpu: 0.75
+        memory: 3Gi

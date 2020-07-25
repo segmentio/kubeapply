@@ -1,0 +1,8 @@
+Dockerfile
+build
+deps
+*zip
+.buildkite
+.circleci
+.kube
+.git

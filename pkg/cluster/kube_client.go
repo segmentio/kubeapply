@@ -1,0 +1,318 @@
+package cluster
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"time"
+
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/briandowns/spinner"
+	"github.com/segmentio/kubeapply/pkg/cluster/apply"
+	"github.com/segmentio/kubeapply/pkg/cluster/kube"
+	"github.com/segmentio/kubeapply/pkg/config"
+	"github.com/segmentio/kubeapply/pkg/store"
+	log "github.com/sirupsen/logrus"
+)
+
+var _ ClusterClient = (*KubeClusterClient)(nil)
+
+// KubeClusterClient is an implementation of a ClusterClient that hits an actual Kubernetes API.
+// It's backed by a kube.OrderedClient which, in turn, wraps kubectl.
+type KubeClusterClient struct {
+	clusterConfig *config.ClusterConfig
+
+	headSHA               string
+	clusterKey            string
+	lockID                string
+	useLocks              bool
+	checkApplyConsistency bool
+	useColors             bool
+	spinnerObj            *spinner.Spinner
+	streamingOutput       bool
+
+	tempDir        string
+	kubeConfigPath string
+	kubeClient     *kube.OrderedClient
+	kubeLocker     store.Locker
+	kubeStore      store.Store
+}
+
+// kubeapplyDiffEvent is used for storing the last successful diff in the kubeStore.
+// This value is checked before applying to ensure that the SHAs match.
+type kubeapplyDiffEvent struct {
+	SHA string `json:"sha"`
+
+	UpdatedAt time.Time `json:"updatedAt"`
+	UpdatedBy string    `json:"updatedBy"`
+}
+
+func NewKubeClusterClient(
+	ctx context.Context,
+	config *ClusterClientConfig,
+) (ClusterClient, error) {
+	clusterKey := fmt.Sprintf(
+		"%s__%s__%s",
+		config.ClusterConfig.Cluster,
+		config.ClusterConfig.Region,
+		config.ClusterConfig.Env,
+	)
+
+	var err error
+	var tempDir string
+	var kubeConfigPath string
+
+	if config.ClusterConfig.KubeConfigPath != "" {
+		kubeConfigPath = config.ClusterConfig.KubeConfigPath
+	} else {
+		// Generate a kubeconfig via the EKS API.
+		tempDir, err = ioutil.TempDir("", "kubeconfigs")
+		if err != nil {
+			return nil, err
+		}
+
+		kubeConfigPath = filepath.Join(
+			tempDir,
+			fmt.Sprintf(
+				"kubeconfig_%s_%s.yaml",
+				config.ClusterConfig.Cluster,
+				config.ClusterConfig.Region,
+			),
+		)
+
+		sess := session.Must(session.NewSession())
+		err = kube.CreateKubeconfigViaAPI(
+			ctx,
+			sess,
+			config.ClusterConfig.Cluster,
+			config.ClusterConfig.Region,
+			kubeConfigPath,
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	kubeClient := kube.NewOrderedClient(
+		kubeConfigPath,
+		config.KeepConfigs,
+		nil,
+		config.Debug,
+	)
+
+	kubeStore, err := store.NewKubeStore(
+		kubeConfigPath,
+		"kubeapply-store",
+		"kube-system",
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	hostName, err := os.Hostname()
+	if err != nil {
+		log.Warnf("Error getting hostname, using generic string: %s", hostName)
+		hostName = "kubeapply"
+	}
+
+	// Ensure that lock ID is identifiable and unique
+	lockID := fmt.Sprintf("%s-%d", hostName, time.Now().UnixNano()/int64(1000))
+
+	kubeLocker, err := store.NewKubeLocker(
+		kubeConfigPath,
+		lockID,
+		"kube-system",
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &KubeClusterClient{
+		clusterConfig:         config.ClusterConfig,
+		headSHA:               config.HeadSHA,
+		useLocks:              config.UseLocks,
+		checkApplyConsistency: config.CheckApplyConsistency,
+		useColors:             config.UseColors,
+		spinnerObj:            config.SpinnerObj,
+		streamingOutput:       config.StreamingOutput,
+		clusterKey:            clusterKey,
+		lockID:                lockID,
+		tempDir:               tempDir,
+		kubeConfigPath:        kubeConfigPath,
+		kubeClient:            kubeClient,
+		kubeStore:             kubeStore,
+		kubeLocker:            kubeLocker,
+	}, nil
+}
+
+func (cc *KubeClusterClient) Apply(ctx context.Context, path string) ([]byte, error) {
+	return cc.execApply(ctx, path, "", false)
+}
+
+func (cc *KubeClusterClient) ApplyStructured(
+	ctx context.Context,
+	path string,
+) ([]apply.Result, error) {
+	oldContents, err := cc.execApply(ctx, path, "json", true)
+	if err != nil {
+		return nil,
+			fmt.Errorf(
+				"Error running apply dry-run: %+v; output: %s",
+				err,
+				string(oldContents),
+			)
+	}
+
+	oldObjs, err := apply.KubeJSONToObjects(oldContents)
+	if err != nil {
+		return nil, err
+	}
+
+	newContents, err := cc.execApply(ctx, path, "json", false)
+	if err != nil {
+		return nil,
+			fmt.Errorf(
+				"Error running apply: %+v; output: %s",
+				err,
+				string(newContents),
+			)
+	}
+	newObjs, err := apply.KubeJSONToObjects(newContents)
+	if err != nil {
+		return nil, err
+	}
+
+	return apply.ObjsToResults(oldObjs, newObjs)
+}
+
+func (cc *KubeClusterClient) Diff(ctx context.Context, path string) ([]byte, error) {
+	if cc.useLocks {
+		acquireCtx, cancel := context.WithTimeout(ctx, lockAcquistionTimeout)
+		defer cancel()
+
+		err := cc.kubeLocker.Acquire(acquireCtx, cc.clusterConfig.Cluster)
+		if err != nil {
+			return nil, fmt.Errorf("Error acquiring lock: %+v. Try again later.", err)
+		}
+		defer func() {
+			err := cc.kubeLocker.Release(cc.clusterConfig.Cluster)
+			if err != nil {
+				log.Warnf(
+					"Error releasing lock for %s: %+v",
+					cc.clusterConfig.Cluster,
+					err,
+				)
+			}
+		}()
+	} else {
+		log.Debug("Skipping over locking")
+	}
+
+	diffResult, err := cc.kubeClient.Diff(
+		ctx,
+		path,
+		cc.useColors,
+		cc.spinnerObj,
+	)
+	if err != nil || !cc.checkApplyConsistency {
+		return diffResult, err
+	}
+
+	diffEvent := kubeapplyDiffEvent{
+		SHA:       cc.headSHA,
+		UpdatedAt: time.Now(),
+		UpdatedBy: cc.lockID,
+	}
+	diffEventBytes, err := json.Marshal(diffEvent)
+	if err != nil {
+		return diffResult, err
+	}
+	diffEventStr := string(diffEventBytes)
+
+	log.Infof("Setting store key value: %s, %s", cc.clusterKey, diffEventStr)
+	return diffResult, cc.kubeStore.Set(cc.clusterKey, diffEventStr)
+}
+
+func (cc *KubeClusterClient) Summary(ctx context.Context) (string, error) {
+	return cc.kubeClient.Summary(ctx)
+}
+
+func (cc *KubeClusterClient) GetStoreValue(key string) (string, error) {
+	return cc.kubeStore.Get(key)
+}
+
+func (cc *KubeClusterClient) SetStoreValue(key string, value string) error {
+	return cc.kubeStore.Set(key, value)
+}
+
+func (cc *KubeClusterClient) Config() *config.ClusterConfig {
+	return cc.clusterConfig
+}
+
+func (cc *KubeClusterClient) Close() error {
+	if cc.tempDir != "" {
+		return os.RemoveAll(cc.tempDir)
+	}
+	return nil
+}
+
+func (cc *KubeClusterClient) execApply(
+	ctx context.Context,
+	path string,
+	format string,
+	dryRun bool,
+) ([]byte, error) {
+	if cc.useLocks {
+		acquireCtx, cancel := context.WithTimeout(ctx, lockAcquistionTimeout)
+		defer cancel()
+
+		err := cc.kubeLocker.Acquire(acquireCtx, cc.clusterConfig.Cluster)
+		if err != nil {
+			return nil, fmt.Errorf("Error acquiring lock: %+v. Try again later.", err)
+		}
+		defer func() {
+			err := cc.kubeLocker.Release(cc.clusterConfig.Cluster)
+			if err != nil {
+				log.Warnf(
+					"Error releasing lock for %s: %+v",
+					cc.clusterConfig.Cluster,
+					err,
+				)
+			}
+		}()
+	} else {
+		log.Debug("Skipping over locking")
+	}
+
+	if cc.checkApplyConsistency {
+		log.Infof("Fetching diff event for key %s", cc.clusterKey)
+		storeValue, err := cc.GetStoreValue(cc.clusterKey)
+		if err != nil {
+			return nil, err
+		}
+		diffEvent := kubeapplyDiffEvent{}
+		if err := json.Unmarshal([]byte(storeValue), &diffEvent); err != nil {
+			return nil, err
+		}
+
+		if diffEvent.SHA != cc.headSHA {
+			return nil, fmt.Errorf(
+				"Last diff was applied at a different SHA (%s).\nPlease run kubeapply diff again.",
+				diffEvent.SHA,
+			)
+		}
+	} else {
+		log.Debug("Skipping over apply consistency check")
+	}
+
+	return cc.kubeClient.Apply(
+		ctx,
+		path,
+		!cc.streamingOutput,
+		format,
+		dryRun,
+	)
+}

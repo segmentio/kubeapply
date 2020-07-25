@@ -1,0 +1,61 @@
+{
+    "apiVersion": "v1",
+    "kind": "ServiceAccount",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"ServiceAccount\",\"metadata\":{\"annotations\":{},\"labels\":{\"key1\":\"value1\"},\"name\":\"nginx-deployment\",\"namespace\":\"default\"}}\n"
+        },
+        "creationTimestamp": "2020-06-17T04:04:06Z",
+        "labels": {
+            "key1": "value1"
+        },
+        "managedFields": [
+            {
+                "apiVersion": "v1",
+                "fieldsType": "FieldsV1",
+                "fieldsV1": {
+                    "f:metadata": {
+                        "f:labels": {
+                            "f:key1": {}
+                        }
+                    }
+                },
+                "manager": "kubectl",
+                "operation": "Apply",
+                "time": "2020-06-17T04:38:02Z"
+            },
+            {
+                "apiVersion": "v1",
+                "fieldsType": "FieldsV1",
+                "fieldsV1": {
+                    "f:metadata": {
+                        "f:annotations": {
+                            "f:kubectl.kubernetes.io/last-applied-configuration": {}
+                        },
+                        "f:labels": {
+                            "f:key1": {}
+                        }
+                    },
+                    "f:secrets": {
+                        "k:{\"name\":\"nginx-deployment-token-q94s9\"}": {
+                            ".": {},
+                            "f:name": {}
+                        }
+                    }
+                },
+                "manager": "before-first-apply",
+                "operation": "Update"
+            }
+        ],
+        "name": "nginx-deployment",
+        "namespace": "default",
+        "resourceVersion": "4820",
+        "selfLink": "/api/v1/namespaces/default/serviceaccounts/nginx-deployment",
+        "uid": "a1300d24-dd3a-4f1a-9e84-8c5a087a0e9c"
+    },
+    "secrets": [
+        {
+            "name": "nginx-deployment-token-q94s9"
+        }
+    ]
+}

@@ -1,0 +1,27 @@
+# Basic information about the cluster. These are used for identification purposes and templating,
+# but have no affect on API calls.
+cluster: "kubeapply-test-cluster"
+region: "local2"
+env: "development"
+
+# Default location of helm charts. If you're not using charts, you can omit this.
+#
+# In addition to file:// schemes, kubeapply also supports git, git-https, http, https,
+# and s3 sources.
+charts: "file://charts"
+
+# Where expanded configs are placed. If omitted, a reasonable default is used.
+expandedPath: "expanded/local2"
+
+# Arbitrary parameters that can be used in templates, helm values, and skyconfig files.
+#
+# To let kubeapply know that a file is a template, include `.gotpl` in the extension. The
+# file will be templated and then that extension will be removed before downstream steps.
+parameters:
+  echoServer:
+    replicas: 2
+    imageTag: "1.0"
+
+  redis:
+    replicas: 3
+    imageTag: "5.0.9"
