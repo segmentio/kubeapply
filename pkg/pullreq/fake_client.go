@@ -17,22 +17,9 @@ type FakePullRequestClient struct {
 	RequestStatuses []PullRequestStatus
 	BehindByVal     int
 	ApprovedVal     bool
+	Draft           bool
+	Mergeable       bool
 	Merged          bool
-}
-
-func NewFakePullRequestClient(
-	clusterConfigs []*config.ClusterConfig,
-	statuses []PullRequestStatus,
-	behindBy int,
-	approved bool,
-) *FakePullRequestClient {
-	return &FakePullRequestClient{
-		ClusterConfigs:  clusterConfigs,
-		Comments:        []string{},
-		RequestStatuses: statuses,
-		BehindByVal:     behindBy,
-		ApprovedVal:     approved,
-	}
 }
 
 func (prc *FakePullRequestClient) Init(ctx context.Context) error {
@@ -127,6 +114,18 @@ func (prc *FakePullRequestClient) Merge(
 ) error {
 	prc.Merged = true
 	return nil
+}
+
+func (prc *FakePullRequestClient) IsDraft(ctx context.Context) bool {
+	return prc.Draft
+}
+
+func (prc *FakePullRequestClient) IsMerged(ctx context.Context) bool {
+	return prc.Merged
+}
+
+func (prc *FakePullRequestClient) IsMergeable(ctx context.Context) bool {
+	return prc.Mergeable
 }
 
 func (prc *FakePullRequestClient) Approved(ctx context.Context) bool {

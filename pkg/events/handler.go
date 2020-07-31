@@ -237,6 +237,11 @@ func (whh *WebhookHandler) handleCommandCommentEvent(
 	return OKResponse("OK")
 }
 
+type preMergeCondition struct {
+	description string
+	value       bool
+}
+
 func (whh *WebhookHandler) handleApplyResultCommentEvent(
 	ctx context.Context,
 	webhookContext *WebhookContext,
@@ -253,16 +258,37 @@ func (whh *WebhookHandler) handleApplyResultCommentEvent(
 		return ErrorResponse(err)
 	}
 
-	allGreen := statusAllGreen(ctx, webhookContext.pullRequestClient)
-	workflowCompleted := statusWorkflowCompleted(ctx, webhookContext.pullRequestClient)
-
-	if !allGreen {
-		log.Warnf("Not automerging because there is a status that is non-green")
-		return OKResponse("OK")
+	preMergeConditions := []preMergeCondition{
+		{
+			description: "all statuses green",
+			value:       statusAllGreen(ctx, webhookContext.pullRequestClient),
+		},
+		{
+			description: "workflows completed",
+			value:       statusWorkflowCompleted(ctx, webhookContext.pullRequestClient),
+		},
+		{
+			description: "pull request is not a draft",
+			value:       !webhookContext.pullRequestClient.IsDraft(ctx),
+		},
+		{
+			description: "pull request is not already merged",
+			value:       !webhookContext.pullRequestClient.IsMerged(ctx),
+		},
+		{
+			description: "pull request is mergeble",
+			value:       webhookContext.pullRequestClient.IsMergeable(ctx),
+		},
 	}
-	if !workflowCompleted {
-		log.Warnf("Not automerging because kubeapply workflows have not been completed")
-		return OKResponse("OK")
+
+	for _, condition := range preMergeConditions {
+		if !condition.value {
+			log.Warnf(
+				"Not automerging because required condition is not true: %s",
+				condition.description,
+			)
+			return OKResponse("OK")
+		}
 	}
 
 	err = webhookContext.pullRequestClient.PostComment(

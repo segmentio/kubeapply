@@ -138,12 +138,9 @@ func TestStatusOK(t *testing.T) {
 	ctx := context.Background()
 
 	for index, testCase := range testCases {
-		pullRequestClient := pullreq.NewFakePullRequestClient(
-			nil,
-			testCase.statuses,
-			0,
-			true,
-		)
+		pullRequestClient := &pullreq.FakePullRequestClient{
+			RequestStatuses: testCase.statuses,
+		}
 
 		okToApply := statusOKToApply(ctx, pullRequestClient)
 		workflowCompleted := statusWorkflowCompleted(ctx, pullRequestClient)

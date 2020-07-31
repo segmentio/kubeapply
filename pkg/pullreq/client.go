@@ -44,6 +44,15 @@ type PullRequestClient interface {
 	// Statuses gets all statuses for the pull request.
 	Statuses(ctx context.Context) ([]PullRequestStatus, error)
 
+	// IsDraft returns whether the pull request is a draft.
+	IsDraft(ctx context.Context) bool
+
+	// IsMerged returns whether the pull request is already merged.
+	IsMerged(ctx context.Context) bool
+
+	// IsMergeable returns whether the pull request is mergeble.
+	IsMergeable(ctx context.Context) bool
+
 	// Approved returns whether the client pull request is approved.
 	Approved(ctx context.Context) bool
 
