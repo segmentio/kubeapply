@@ -91,12 +91,12 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "open new pull request",
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					0,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				pullRequestEvent: &github.PullRequestEvent{
 					Action: aws.String("opened"),
 				},
@@ -134,12 +134,12 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "sync pull request",
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					0,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				pullRequestEvent: &github.PullRequestEvent{
 					Action: aws.String("synchronize"),
 				},
@@ -167,12 +167,12 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "open new pull request no clusters",
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					[]*config.ClusterConfig{},
-					[]pullreq.PullRequestStatus{},
-					0,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  []*config.ClusterConfig{},
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				pullRequestEvent: &github.PullRequestEvent{
 					Action: aws.String("opened"),
 				},
@@ -184,12 +184,12 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "kubeapply help",
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					0,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -211,12 +211,12 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "kubeapply status",
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					0,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -245,12 +245,12 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "kubeapply diff",
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					0,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -282,12 +282,12 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "kubeapply diff single cluster",
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					0,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -320,12 +320,12 @@ func TestHandleWebhook(t *testing.T) {
 			description: "kubeapply diff kubectl error",
 			kubectlErr:  true,
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					0,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -352,12 +352,13 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "kubeapply diff behind",
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					5,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					BehindByVal:     5,
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -390,12 +391,12 @@ func TestHandleWebhook(t *testing.T) {
 			description: "kubeapply diff unapproved",
 			strictCheck: true,
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					0,
-					false,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -427,12 +428,12 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "kubeapply diff no clusters",
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					[]*config.ClusterConfig{},
-					[]pullreq.PullRequestStatus{},
-					0,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  []*config.ClusterConfig{},
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -448,12 +449,12 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "kubeapply apply",
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					0,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -485,12 +486,12 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "kubeapply apply mark failure",
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					0,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -522,12 +523,12 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "kubeapply apply single cluster",
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					0,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -562,12 +563,12 @@ func TestHandleWebhook(t *testing.T) {
 			description: "kubeapply apply kubectl error",
 			kubectlErr:  true,
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					0,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -594,12 +595,13 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "kubeapply apply behind",
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					5,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					BehindByVal:     5,
+					ApprovedVal:     true,
+					Mergeable:       true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -627,12 +629,12 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "kubeapply apply not approved (not strict)",
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					0,
-					true,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     false,
+					Mergeable:       true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -665,12 +667,12 @@ func TestHandleWebhook(t *testing.T) {
 			description: "kubeapply apply not approved (strict)",
 			strictCheck: true,
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{},
-					0,
-					false,
-				),
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     false,
+					Mergeable:       true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -698,17 +700,17 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "kubeapply bad status (not strict)",
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs: testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{
 						{
 							Context: "check",
 							State:   "failure",
 						},
 					},
-					0,
-					true,
-				),
+					ApprovedVal: true,
+					Mergeable:   true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -745,17 +747,17 @@ func TestHandleWebhook(t *testing.T) {
 			description: "kubeapply bad status (strict)",
 			strictCheck: true,
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs: testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{
 						{
 							Context: "check",
 							State:   "failure",
 						},
 					},
-					0,
-					true,
-				),
+					ApprovedVal: true,
+					Mergeable:   true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -788,9 +790,9 @@ func TestHandleWebhook(t *testing.T) {
 			description: "kubeapply apply bad kubeapply status (strict)",
 			strictCheck: true,
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs: testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{
 						{
 							Context: "check",
 							State:   "success",
@@ -800,9 +802,9 @@ func TestHandleWebhook(t *testing.T) {
 							State:   "failure",
 						},
 					},
-					0,
-					true,
-				),
+					ApprovedVal: true,
+					Mergeable:   true,
+				},
 				commentType: commentTypeCommand,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -840,9 +842,9 @@ func TestHandleWebhook(t *testing.T) {
 			strictCheck: true,
 			automerge:   true,
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs: testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{
 						{
 							Context: "check",
 							State:   "success",
@@ -856,9 +858,9 @@ func TestHandleWebhook(t *testing.T) {
 							State:   "success",
 						},
 					},
-					0,
-					true,
-				),
+					ApprovedVal: true,
+					Mergeable:   true,
+				},
 				commentType: commentTypeApplyResult,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -889,13 +891,60 @@ func TestHandleWebhook(t *testing.T) {
 			expMerged: true,
 		},
 		{
+			description: "apply result with automerge not possible due to draft",
+			strictCheck: true,
+			automerge:   true,
+			input: &WebhookContext{
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs: testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{
+						{
+							Context: "check",
+							State:   "success",
+						},
+						{
+							Context: "kubeapply/diff (test-env)",
+							State:   "success",
+						},
+						{
+							Context: "kubeapply/apply (test-env)",
+							State:   "success",
+						},
+					},
+					ApprovedVal: true,
+					Draft:       true,
+					Mergeable:   true,
+				},
+				commentType: commentTypeApplyResult,
+				issueCommentEvent: &github.IssueCommentEvent{
+					Action: aws.String("created"),
+				},
+			},
+			expRespStatus: 200,
+			expComments:   []commentMatch{},
+			expRepoStatuses: []statusMatch{
+				{
+					context: "check",
+					state:   "success",
+				},
+				{
+					context: "kubeapply/diff (test-env)",
+					state:   "success",
+				},
+				{
+					context: "kubeapply/apply (test-env)",
+					state:   "success",
+				},
+			},
+		},
+		{
 			description: "apply result with automerge not possible due to bad status",
 			strictCheck: true,
 			automerge:   true,
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs: testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{
 						{
 							Context: "check",
 							State:   "failure",
@@ -909,9 +958,9 @@ func TestHandleWebhook(t *testing.T) {
 							State:   "success",
 						},
 					},
-					0,
-					true,
-				),
+					ApprovedVal: true,
+					Mergeable:   true,
+				},
 				commentType: commentTypeApplyResult,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),
@@ -939,9 +988,9 @@ func TestHandleWebhook(t *testing.T) {
 			strictCheck: true,
 			automerge:   true,
 			input: &WebhookContext{
-				pullRequestClient: pullreq.NewFakePullRequestClient(
-					testClusterConfigs,
-					[]pullreq.PullRequestStatus{
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs: testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{
 						{
 							Context: "check",
 							State:   "success",
@@ -959,9 +1008,9 @@ func TestHandleWebhook(t *testing.T) {
 							State:   "success",
 						},
 					},
-					0,
-					true,
-				),
+					ApprovedVal: true,
+					Mergeable:   true,
+				},
 				commentType: commentTypeApplyResult,
 				issueCommentEvent: &github.IssueCommentEvent{
 					Action: aws.String("created"),

@@ -24,7 +24,12 @@ func TestApplyComment(t *testing.T) {
 	clusterConfigs := testClusterConfigs(t, profileDir)
 	clusterConfigs[0].Subpath = "test/subpath"
 
-	pullRequestClient := NewFakePullRequestClient(clusterConfigs, nil, 0, true)
+	pullRequestClient := &FakePullRequestClient{
+		ClusterConfigs: clusterConfigs,
+		ApprovedVal:    true,
+		Mergeable:      true,
+		Merged:         false,
+	}
 
 	applies := []ClusterApply{
 		{
@@ -113,7 +118,12 @@ func TestDiffComment(t *testing.T) {
 	clusterConfigs := testClusterConfigs(t, profileDir)
 	clusterConfigs[0].Subpath = "test/subpath"
 
-	pullRequestClient := NewFakePullRequestClient(clusterConfigs, nil, 0, true)
+	pullRequestClient := &FakePullRequestClient{
+		ClusterConfigs: clusterConfigs,
+		ApprovedVal:    true,
+		Mergeable:      true,
+		Merged:         false,
+	}
 
 	diffs := []ClusterDiff{
 		{
@@ -169,7 +179,13 @@ func TestDiffCommentBehind(t *testing.T) {
 	clusterConfigs := testClusterConfigs(t, profileDir)
 	clusterConfigs[0].Subpath = "test/subpath"
 
-	pullRequestClient := NewFakePullRequestClient(clusterConfigs, nil, 3, true)
+	pullRequestClient := &FakePullRequestClient{
+		ClusterConfigs: clusterConfigs,
+		BehindByVal:    3,
+		ApprovedVal:    true,
+		Mergeable:      true,
+		Merged:         false,
+	}
 
 	diffs := []ClusterDiff{
 		{
@@ -256,7 +272,9 @@ func TestStatusComment(t *testing.T) {
 	clusterConfigs := testClusterConfigs(t, profileDir)
 	clusterConfigs[0].Subpath = "test/subpath"
 
-	pullRequestClient := NewFakePullRequestClient(clusterConfigs, nil, 0, true)
+	pullRequestClient := &FakePullRequestClient{
+		ClusterConfigs: clusterConfigs,
+	}
 
 	statuses := []ClusterStatus{
 		{

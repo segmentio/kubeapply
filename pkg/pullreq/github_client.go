@@ -335,6 +335,18 @@ func (prc *GHPullRequestClient) Statuses(
 	return statuses, nil
 }
 
+func (prc *GHPullRequestClient) IsDraft(ctx context.Context) bool {
+	return aws.BoolValue(prc.pullRequest.Draft)
+}
+
+func (prc *GHPullRequestClient) IsMerged(ctx context.Context) bool {
+	return aws.BoolValue(prc.pullRequest.Merged)
+}
+
+func (prc *GHPullRequestClient) IsMergeable(ctx context.Context) bool {
+	return aws.BoolValue(prc.pullRequest.Mergeable)
+}
+
 func (prc *GHPullRequestClient) Approved(ctx context.Context) bool {
 	for _, review := range prc.reviews {
 		if strings.ToLower(review.GetState()) == "approved" {
