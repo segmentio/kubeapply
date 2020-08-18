@@ -1,0 +1,16 @@
+kubeapply
+
+Copyright 2020 Segment.io, Inc.
+
+Released under the MIT License. See LICENSE for license terms and conditions.
+
+This project contains the following open source code:
+
+Kubernetes Copyright © The Kubernetes Authors
+License: Apache 2.0 (http://www.apache.org/licenses/LICENSE‐2.0.html)
+
+skycfg Copyright © The Skycfg Authors
+License: Apache 2.0 (http://www.apache.org/licenses/LICENSE‐2.0.html)
+
+tabulate Copyright © Sergey Astanin
+License: MIT
