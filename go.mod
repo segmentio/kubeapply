@@ -30,12 +30,13 @@ require (
 	github.com/stretchr/testify v1.5.1
 	github.com/stripe/skycfg v0.0.0-20200303020846-4f599970a3e6
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
-	github.com/zorkian/go-datadog-api v2.28.0+incompatible
+	github.com/zorkian/go-datadog-api v2.28.0+incompatible // indirect
 	go.starlark.net v0.0.0-20200330013621-be5394c419b6
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
 	google.golang.org/appengine v1.6.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v2 v2.2.5
 	gopkg.in/zorkian/go-datadog-api.v2 v2.28.0
