@@ -124,7 +124,7 @@ func NewWebhookContext(
 	}
 }
 
-// Closes closes the underlying clients associated with this WebhookContext.
+// Close closes the underlying clients associated with this WebhookContext.
 func (w *WebhookContext) Close() error {
 	return w.pullRequestClient.Close()
 }

@@ -19,6 +19,7 @@ var (
 	debug bool
 )
 
+// RootCmd is the main command for the cobra CLI.
 var RootCmd = &cobra.Command{
 	Use:               "kubeapply",
 	Short:             "kubeapply automates onebox workflows",
@@ -38,6 +39,7 @@ func init() {
 	)
 }
 
+// Execute runs kubeapply.
 func Execute(versionRef string) {
 	RootCmd.Version = fmt.Sprintf("v%s (ref:%s)", version.Version, versionRef)
 

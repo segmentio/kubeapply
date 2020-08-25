@@ -28,16 +28,19 @@ type InMemoryStore struct {
 	valuesMap map[string]string
 }
 
+// NewInMemoryStore returns a new InMemoryStore instance.
 func NewInMemoryStore() *InMemoryStore {
 	return &InMemoryStore{
 		valuesMap: map[string]string{},
 	}
 }
 
+// Get returns the value of the argument key.
 func (s *InMemoryStore) Get(key string) (string, error) {
 	return s.valuesMap[key], nil
 }
 
+// Set sets the argument key to the argument value.
 func (s *InMemoryStore) Set(key string, value string) error {
 	s.valuesMap[key] = value
 	return nil
@@ -50,6 +53,7 @@ type KubeStore struct {
 	configMapClient v1.ConfigMapInterface
 }
 
+// NewKubeStore returns a new KubeStore instance.
 func NewKubeStore(
 	kubeConfigPath string,
 	name string,
@@ -73,6 +77,7 @@ func NewKubeStore(
 	}, nil
 }
 
+// Get returns the value of the argument key.
 func (k *KubeStore) Get(key string) (string, error) {
 	configMap, err := k.configMapClient.Get(k.name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
@@ -93,6 +98,8 @@ func (k *KubeStore) Get(key string) (string, error) {
 	return configMap.Data[key], nil
 }
 
+// Set sets the argument key to the argument value. The key/value pair is stored
+// in a ConfigMap.
 func (k *KubeStore) Set(key string, value string) error {
 	configMap, err := k.configMapClient.Get(k.name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {

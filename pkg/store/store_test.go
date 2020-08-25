@@ -19,7 +19,7 @@ func TestKubeStore(t *testing.T) {
 	ctx := context.Background()
 
 	namespace := fmt.Sprintf("test-kube-store-%d", time.Now().UnixNano()/1000)
-	util.CreateNamespace(t, ctx, namespace, kubeConfigTestPath)
+	util.CreateNamespace(ctx, t, namespace, kubeConfigTestPath)
 
 	store, err := NewKubeStore(
 		kubeConfigTestPath,

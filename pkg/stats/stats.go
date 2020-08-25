@@ -13,6 +13,7 @@ import (
 	godatadog "gopkg.in/zorkian/go-datadog-api.v2"
 )
 
+// StatType is a string type that stores the type of stat being exported.
 type StatType string
 
 const (
@@ -29,6 +30,7 @@ type StatsClient interface {
 type NullStatsClient struct {
 }
 
+// Update updates the given stats.
 func (n *NullStatsClient) Update(
 	names []string,
 	values []float64,
@@ -43,12 +45,14 @@ type FakeStatsClient struct {
 	Stats map[string]float64
 }
 
+// NewFakeStatsClient returns a new FakeStatsClient instance.
 func NewFakeStatsClient() *FakeStatsClient {
 	return &FakeStatsClient{
 		Stats: map[string]float64{},
 	}
 }
 
+// Update updates the given stats.
 func (s *FakeStatsClient) Update(
 	names []string,
 	values []float64,
@@ -75,6 +79,7 @@ type DatadogStatsClient struct {
 	client      *godatadog.Client
 }
 
+// NewDatadogStatsClient creates a new DatadogStatsClient instance.
 func NewDatadogStatsClient(
 	prefix string,
 	baseTags []string,
@@ -89,6 +94,7 @@ func NewDatadogStatsClient(
 	}
 }
 
+// Update sends the argument stat values to Datadog.
 func (d *DatadogStatsClient) Update(
 	names []string,
 	values []float64,
@@ -137,12 +143,15 @@ type SegmentStatsClient struct {
 	engine *stats.Engine
 }
 
+// NewSegmentStatsClient returns a new SegmentStatsClient instance.
 func NewSegmentStatsClient(engine *stats.Engine) *SegmentStatsClient {
 	return &SegmentStatsClient{
 		engine: engine,
 	}
 }
 
+// Update updates the argument stat values by calling the appropriate methods
+// in the underlying stats engine.
 func (s *SegmentStatsClient) Update(
 	names []string,
 	values []float64,
@@ -182,6 +191,7 @@ func (s *SegmentStatsClient) Update(
 	return nil
 }
 
+// GetDatadogAPIKey gets the Datadog API key from an AWS SSM parameter.
 func GetDatadogAPIKey(sess *session.Session, apiKeySSMParam string) (string, error) {
 	ssmClient := ssm.New(sess)
 	result, err := ssmClient.GetParameter(

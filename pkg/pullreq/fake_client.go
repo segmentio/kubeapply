@@ -22,10 +22,13 @@ type FakePullRequestClient struct {
 	Merged          bool
 }
 
+// Init initializes this client.
 func (prc *FakePullRequestClient) Init(ctx context.Context) error {
 	return nil
 }
 
+// GetCoveredClusters returns the configs of the clusters that are affected by
+// this pull request.
 func (prc *FakePullRequestClient) GetCoveredClusters(
 	env string,
 	selectedClusterIDs []string,
@@ -61,11 +64,13 @@ func (prc *FakePullRequestClient) GetCoveredClusters(
 	return coveredClusters, nil
 }
 
+// PostComment posts a fake comment.
 func (prc *FakePullRequestClient) PostComment(ctx context.Context, body string) error {
 	prc.Comments = append(prc.Comments, fmt.Sprintf("Normal comment: %s", body))
 	return nil
 }
 
+// PostErrorComment posts a fake error comment.
 func (prc *FakePullRequestClient) PostErrorComment(
 	ctx context.Context,
 	env string,
@@ -75,6 +80,7 @@ func (prc *FakePullRequestClient) PostErrorComment(
 	return nil
 }
 
+// UpdateStatus updates a status in this pull request.
 func (prc *FakePullRequestClient) UpdateStatus(
 	ctx context.Context,
 	state string,
@@ -103,12 +109,14 @@ func (prc *FakePullRequestClient) UpdateStatus(
 	return nil
 }
 
+// Statuses returns all of the statuses associated with this pull request.
 func (prc *FakePullRequestClient) Statuses(
 	ctx context.Context,
 ) ([]PullRequestStatus, error) {
 	return prc.RequestStatuses, nil
 }
 
+// Merge does a fake merge of this pull request.
 func (prc *FakePullRequestClient) Merge(
 	ctx context.Context,
 ) error {
@@ -116,34 +124,44 @@ func (prc *FakePullRequestClient) Merge(
 	return nil
 }
 
+// IsDraft returns whether this pull request is a draft.
 func (prc *FakePullRequestClient) IsDraft(ctx context.Context) bool {
 	return prc.Draft
 }
 
+// IsMerged returns whether this pull request has been merged.
 func (prc *FakePullRequestClient) IsMerged(ctx context.Context) bool {
 	return prc.Merged
 }
 
+// IsMergeable returns whether this pull request is mergeable.
 func (prc *FakePullRequestClient) IsMergeable(ctx context.Context) bool {
 	return prc.Mergeable
 }
 
+// Approved returns whether this pull request is approved.
 func (prc *FakePullRequestClient) Approved(ctx context.Context) bool {
 	return prc.ApprovedVal
 }
 
+// Base returns the base branch for this pull request.
 func (prc *FakePullRequestClient) Base() string {
 	return "master"
 }
 
+// BehindBy returns the number of commits that this pull request is behind
+// the base by.
 func (prc *FakePullRequestClient) BehindBy() int {
 	return prc.BehindByVal
 }
 
+// HeadSHA returns the git SHA of the HEAD of the branch on which this
+// pull request is based.
 func (prc *FakePullRequestClient) HeadSHA() string {
 	return "test-sha"
 }
 
+// Close closes the client.
 func (prc *FakePullRequestClient) Close() error {
 	return nil
 }

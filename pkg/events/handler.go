@@ -86,9 +86,8 @@ func (whh *WebhookHandler) HandleWebhook(
 	} else if webhookContext.issueCommentEvent != nil {
 		if webhookContext.commentType == commentTypeCommand {
 			return whh.handleCommandCommentEvent(ctx, webhookContext)
-		} else {
-			return whh.handleApplyResultCommentEvent(ctx, webhookContext)
 		}
+		return whh.handleApplyResultCommentEvent(ctx, webhookContext)
 	} else {
 		return ErrorResponse(errors.New("Context missing from event"))
 	}

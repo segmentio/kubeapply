@@ -37,14 +37,17 @@ type Result struct {
 	index int
 }
 
+// IsCreated returns whether this result involved a resource creation.
 func (r Result) IsCreated() bool {
 	return r.OldVersion == ""
 }
 
+// IsUpdated returns whether this result involved updating an existing resource.
 func (r Result) IsUpdated() bool {
 	return r.OldVersion != "" && r.OldVersion != r.NewVersion
 }
 
+// CreatedTimestamp returns the creation time of the resource associated with this result.
 func (r Result) CreatedTimestamp() string {
 	if r.IsCreated() {
 		return ""
@@ -53,6 +56,7 @@ func (r Result) CreatedTimestamp() string {
 	return r.CreatedAt.UTC().Format(time.RFC3339)
 }
 
+// TypedObj is an interface used for extracting metadata from Kubernetes objects.
 type TypedObj interface {
 	metav1.Object
 	runtime.Object

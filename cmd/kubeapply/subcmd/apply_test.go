@@ -26,7 +26,7 @@ func TestApply(t *testing.T) {
 	ctx := context.Background()
 
 	namespace := fmt.Sprintf("test-apply-%d", time.Now().UnixNano()/1000)
-	util.CreateNamespace(t, ctx, namespace, kubeConfigTestPath)
+	util.CreateNamespace(ctx, t, namespace, kubeConfigTestPath)
 
 	tempDir, err := ioutil.TempDir("", "apply")
 	require.Nil(t, err)
@@ -50,10 +50,10 @@ func TestApply(t *testing.T) {
 	)
 	require.Nil(t, err)
 
-	deployments := util.GetResources(t, ctx, "deployments", namespace, kubeConfigTestPath)
+	deployments := util.GetResources(ctx, t, "deployments", namespace, kubeConfigTestPath)
 	assert.Equal(t, 1, len(deployments))
 
-	services := util.GetResources(t, ctx, "services", namespace, kubeConfigTestPath)
+	services := util.GetResources(ctx, t, "services", namespace, kubeConfigTestPath)
 	assert.Equal(t, 1, len(services))
 }
 

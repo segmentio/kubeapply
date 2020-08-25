@@ -50,6 +50,8 @@ type kubeapplyDiffEvent struct {
 	UpdatedBy string    `json:"updatedBy"`
 }
 
+// NewKubeClusterClient creates a new ClusterClient instance for a real
+// Kubernetes cluster.
 func NewKubeClusterClient(
 	ctx context.Context,
 	config *ClusterClientConfig,
@@ -148,10 +150,13 @@ func NewKubeClusterClient(
 	}, nil
 }
 
+// Apply does a kubectl apply for the resources at the argument path.
 func (cc *KubeClusterClient) Apply(ctx context.Context, path string) ([]byte, error) {
 	return cc.execApply(ctx, path, "", false)
 }
 
+// ApplyStructured does a structured kubectl apply for the resources at the
+// argument path.
 func (cc *KubeClusterClient) ApplyStructured(
 	ctx context.Context,
 	path string,
@@ -188,6 +193,8 @@ func (cc *KubeClusterClient) ApplyStructured(
 	return apply.ObjsToResults(oldObjs, newObjs)
 }
 
+// Diff runs a kubectl diff between the configs at the argument path and the associated
+// resources in the cluster.
 func (cc *KubeClusterClient) Diff(ctx context.Context, path string) ([]byte, error) {
 	if cc.useLocks {
 		acquireCtx, cancel := context.WithTimeout(ctx, lockAcquistionTimeout)
@@ -236,22 +243,27 @@ func (cc *KubeClusterClient) Diff(ctx context.Context, path string) ([]byte, err
 	return diffResult, cc.kubeStore.Set(cc.clusterKey, diffEventStr)
 }
 
+// Summary returns a summary of the current cluster state.
 func (cc *KubeClusterClient) Summary(ctx context.Context) (string, error) {
 	return cc.kubeClient.Summary(ctx)
 }
 
+// GetStoreValue gets the value of the argument key.
 func (cc *KubeClusterClient) GetStoreValue(key string) (string, error) {
 	return cc.kubeStore.Get(key)
 }
 
+// SetStoreValue sets the value of the argument key to the argument value.
 func (cc *KubeClusterClient) SetStoreValue(key string, value string) error {
 	return cc.kubeStore.Set(key, value)
 }
 
+// Config returns this client's cluster config.
 func (cc *KubeClusterClient) Config() *config.ClusterConfig {
 	return cc.clusterConfig
 }
 
+// Close closes the client and cleans up all of the associated resources.
 func (cc *KubeClusterClient) Close() error {
 	if cc.tempDir != "" {
 		return os.RemoveAll(cc.tempDir)

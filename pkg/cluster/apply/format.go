@@ -7,6 +7,8 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
+// ResultsTextTable returns a pretty table that summarizes the results of
+// a kubectl apply run.
 func ResultsTextTable(results []Result) string {
 	buf := &bytes.Buffer{}
 

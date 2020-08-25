@@ -102,6 +102,8 @@ func LoadClusterConfig(path string, rootPath string) (*ClusterConfig, error) {
 	return config, nil
 }
 
+// SetDefaults sets reasonable defaults for missing values in the current
+// ClusterConfig.
 func (c *ClusterConfig) SetDefaults(path string, rootPath string) error {
 	var err error
 
@@ -169,7 +171,7 @@ func (c *ClusterConfig) SetDefaults(path string, rootPath string) error {
 	return nil
 }
 
-// regionToShortRegion converts the region in the cluster config to a short form that
+// ShortRegion converts the region in the cluster config to a short form that
 // may be used in some templates.
 func (c ClusterConfig) ShortRegion() string {
 	components := strings.Split(c.Region, "-")
@@ -209,22 +211,26 @@ func (c ClusterConfig) CheckVersion(version string) error {
 	return nil
 }
 
+// AbsSubpath returns the absolute subpath of the expanded configs associated with
+// this ClusterConfig.
 func (c ClusterConfig) AbsSubpath() string {
 	if c.Subpath != "" {
 		return filepath.Join(c.ExpandedPath, c.Subpath)
-	} else {
-		return c.ExpandedPath
 	}
+	return c.ExpandedPath
 }
 
+// DescriptiveName returns a descriptive name for this ClusterConfig.
 func (c ClusterConfig) DescriptiveName() string {
 	return c.descriptiveName
 }
 
+// FullPath returns the full path to this ClusterConfig.
 func (c ClusterConfig) FullPath() string {
 	return c.fullPath
 }
 
+// RelPath returns the relative path to this ClusterConfig.
 func (c ClusterConfig) RelPath() string {
 	return c.relPath
 }
@@ -233,7 +239,6 @@ func (c ClusterConfig) RelPath() string {
 func (c ClusterConfig) PrettySubpath() string {
 	if c.Subpath == "." {
 		return "*all*"
-	} else {
-		return fmt.Sprintf("`%s`", c.Subpath)
 	}
+	return fmt.Sprintf("`%s`", c.Subpath)
 }

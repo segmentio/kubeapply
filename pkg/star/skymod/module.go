@@ -23,6 +23,7 @@ import (
 	"go.starlark.net/starlark"
 )
 
+// Module is a skycfg module, i.e. a bundle of functions in a common namespace.
 type Module struct {
 	Name  string
 	Attrs starlark.StringDict

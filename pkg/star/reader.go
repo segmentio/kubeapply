@@ -15,12 +15,14 @@ type localFileReader struct {
 
 var _ skycfg.FileReader = (*localFileReader)(nil)
 
+// NewLocalFileReader returns a skycfg FileReader that reads files from local disk.
 func NewLocalFileReader(root string) (*localFileReader, error) {
 	return &localFileReader{
 		root: root,
 	}, nil
 }
 
+// Resolve converts a skycfg import path to a local file path.
 func (r *localFileReader) Resolve(
 	ctx context.Context,
 	name string,
@@ -49,6 +51,7 @@ func (r *localFileReader) Resolve(
 	return resolved, nil
 }
 
+// ReadFile returns the contents of the file at the argument path.
 func (r *localFileReader) ReadFile(
 	ctx context.Context,
 	path string,

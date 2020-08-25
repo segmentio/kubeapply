@@ -18,6 +18,7 @@ import (
 // KubeValidator is a struct that validates the kube configs associated with a cell config.
 type KubeValidator struct{}
 
+// ValidationResult stores the results of validating a single file.
 type ValidationResult struct {
 	Filename string   `json:"filename"`
 	Kind     string   `json:"kind"`
@@ -25,6 +26,7 @@ type ValidationResult struct {
 	Errors   []string `json:"errors"`
 }
 
+// NewKubeValidator returns a new KubeValidator instance.
 func NewKubeValidator() *KubeValidator {
 	return &KubeValidator{}
 }

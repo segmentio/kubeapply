@@ -16,9 +16,9 @@ import (
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 )
 
-// CompareJsonObjs compares two objects via their JSON representations. This
+// CompareJSONObjs compares two objects via their JSON representations. This
 // is much easier to debug that comparing the objects directly.
-func CompareJsonObjs(t *testing.T, exp kruntime.Object, actual kruntime.Object) {
+func CompareJSONObjs(t *testing.T, exp kruntime.Object, actual kruntime.Object) {
 	expBytes, err := json.Marshal(exp)
 	if err != nil {
 		assert.FailNow(t, "Error marshalling expected object to JSON", err)
@@ -66,8 +66,8 @@ func KindEnabled() bool {
 
 // CreateNamespace creates a namespace in a test cluster.
 func CreateNamespace(
-	t *testing.T,
 	ctx context.Context,
+	t *testing.T,
 	namespace string,
 	kubeconfig string,
 ) {
@@ -86,8 +86,8 @@ func CreateNamespace(
 
 // DeleteNamespace deletes a namespace in a test cluster.
 func DeleteNamespace(
-	t *testing.T,
 	ctx context.Context,
+	t *testing.T,
 	namespace string,
 	kubeconfig string,
 ) {
@@ -107,8 +107,8 @@ func DeleteNamespace(
 
 // GetResources gets the objects with the given kind in the argument namespace.
 func GetResources(
-	t *testing.T,
 	ctx context.Context,
+	t *testing.T,
 	kind string,
 	namespace string,
 	kubeconfig string,

@@ -69,6 +69,7 @@ import (
 )
 
 const (
+	// JitterFactor is a multiplier used to add jitter to leader renewal times.
 	JitterFactor = 1.2
 )
 
@@ -106,6 +107,8 @@ func NewLeaderElector(lec LeaderElectionConfig) (*LeaderElector, error) {
 	return &le, nil
 }
 
+// LeaderElectionConfig contains the settings associated with a leader
+// election process.
 type LeaderElectionConfig struct {
 	// Lock is the resource that will be used for locking
 	Lock rl.Interface

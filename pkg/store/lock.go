@@ -38,12 +38,14 @@ type LocalLocker struct {
 	held map[string]struct{}
 }
 
+// NewLocalLocker returns a new LocalLocker instance, which is backed by a golang lock.
 func NewLocalLocker() *LocalLocker {
 	return &LocalLocker{
 		held: map[string]struct{}{},
 	}
 }
 
+// Acquire acquires the lock with the argument name.
 func (l *LocalLocker) Acquire(ctx context.Context, name string) error {
 	l.lock.Lock()
 	defer l.lock.Unlock()
@@ -57,6 +59,7 @@ func (l *LocalLocker) Acquire(ctx context.Context, name string) error {
 	return nil
 }
 
+// Release releases the lock with the argument name.
 func (l *LocalLocker) Release(name string) error {
 	l.lock.Lock()
 	defer l.lock.Unlock()
@@ -78,6 +81,7 @@ type KubeLocker struct {
 	coordinationClient coordv1.CoordinationV1Interface
 }
 
+// NewKubeLocker returns a Locker that is backed by a lock in Kubernetes.
 func NewKubeLocker(
 	kubeConfigPath string,
 	id string,
@@ -102,6 +106,7 @@ func NewKubeLocker(
 	}, nil
 }
 
+// Acquire acquires a lock with the argument name.
 func (k *KubeLocker) Acquire(ctx context.Context, name string) error {
 	log.Infof("Acquiring lock with name %s", name)
 
@@ -165,6 +170,7 @@ func (k *KubeLocker) Acquire(ctx context.Context, name string) error {
 	return nil
 }
 
+// Release releases the lock with the argument name.
 func (k *KubeLocker) Release(name string) error {
 	k.objLock.Lock()
 	defer k.objLock.Unlock()

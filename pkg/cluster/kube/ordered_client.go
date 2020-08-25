@@ -26,6 +26,7 @@ type OrderedClient struct {
 	debug          bool
 }
 
+// NewOrderedClient returns a new OrderedClient instance.
 func NewOrderedClient(
 	kubeConfigPath string,
 	keepConfigs bool,
@@ -40,6 +41,8 @@ func NewOrderedClient(
 	}
 }
 
+// Apply runs kubectl apply on the manifests in the argument path. The apply is done
+// in the optimal order based on resource type.
 func (k *OrderedClient) Apply(
 	ctx context.Context,
 	applyPath string,
@@ -120,15 +123,15 @@ func (k *OrderedClient) Apply(
 			k.extraEnv,
 			nil,
 		)
-	} else {
-		return nil, runKubectl(
-			ctx,
-			args,
-			k.extraEnv,
-		)
 	}
+	return nil, runKubectl(
+		ctx,
+		args,
+		k.extraEnv,
+	)
 }
 
+// Diff runs kubectl diff for the configs at the argument path.
 func (k *OrderedClient) Diff(
 	ctx context.Context,
 	configPath string,
@@ -184,6 +187,7 @@ func (k *OrderedClient) Diff(
 	)
 }
 
+// Summary returns a pretty summary of the current cluster state.
 func (k *OrderedClient) Summary(
 	ctx context.Context,
 ) (string, error) {

@@ -77,9 +77,8 @@ func (c *HelmClient) ExpandHelmTemplates(
 					},
 				)
 				return nil
-			} else {
-				return nil
 			}
+			return nil
 		},
 	)
 	if err != nil {
