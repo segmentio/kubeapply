@@ -11,6 +11,8 @@ import (
 
 var helmVersionRegexp = regexp.MustCompile(`Version:"v([0-9a-zA-Z._-]+)"`)
 
+// CheckHelmVersion checks that the helm version in the path matches
+// the argument constraint.
 func CheckHelmVersion(ctx context.Context, constraintStr string) error {
 	helmVersion, err := getHelmVersion(ctx)
 	if err != nil {

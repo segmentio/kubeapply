@@ -20,11 +20,6 @@ import (
 	"k8s.io/klog"
 )
 
-var (
-	// Set by LDFLAGS in build
-	VersionRef = "dev"
-)
-
 func init() {
 	log.SetLevel(log.InfoLevel)
 	log.SetFormatter(&prefixed.TextFormatter{

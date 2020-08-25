@@ -190,7 +190,7 @@ func StarToObjs(
 	return outputObjs, nil
 }
 
-// StarToObjs converts a starlark string into one or more Kubernetes
+// StarStrToObjs converts a starlark string into one or more Kubernetes
 // objects. It's intended for testing.
 func StarStrToObjs(
 	starStr string,

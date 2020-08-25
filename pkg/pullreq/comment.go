@@ -30,11 +30,13 @@ type ApplyCommentData struct {
 	Env               string
 }
 
+// ClusterApply contains the results of applying in a single cluster.
 type ClusterApply struct {
 	ClusterConfig *config.ClusterConfig
 	Results       []apply.Result
 }
 
+// NumUpdates returns the number of updates that were made as part of the apply.
 func (c ClusterApply) NumUpdates() int {
 	updates := 0
 
@@ -70,11 +72,13 @@ type DiffCommentData struct {
 	Env               string
 }
 
+// ClusterDiff contains the results of a diff in a single cluster.
 type ClusterDiff struct {
 	ClusterConfig *config.ClusterConfig
 	RawDiffs      string
 }
 
+// NumDiffs returns the number of resources with non-empty diff results.
 func (c ClusterDiff) NumDiffs() int {
 	if strings.TrimSpace(c.RawDiffs) == "" {
 		return 0
@@ -164,6 +168,7 @@ type StatusCommentData struct {
 	Env               string
 }
 
+// ClusterStatus contains the results of getting the status of a cluster.
 type ClusterStatus struct {
 	ClusterConfig *config.ClusterConfig
 	HealthSummary string

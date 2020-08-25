@@ -19,6 +19,7 @@ type FakeClusterClient struct {
 	kubectlErr      error
 }
 
+// NewFakeClusterClient returns a FakeClusterClient that works without errors.
 func NewFakeClusterClient(
 	ctx context.Context,
 	config *ClusterClientConfig,
@@ -29,6 +30,8 @@ func NewFakeClusterClient(
 	}, nil
 }
 
+// NewFakeClusterClientError returns a FakeClusterClient that simulates an error when
+// running kubectl.
 func NewFakeClusterClientError(
 	ctx context.Context,
 	config *ClusterClientConfig,
@@ -40,6 +43,7 @@ func NewFakeClusterClientError(
 	}, nil
 }
 
+// Apply runs a fake apply using the configs in the argument path.
 func (cc *FakeClusterClient) Apply(
 	ctx context.Context,
 	path string,
@@ -54,6 +58,8 @@ func (cc *FakeClusterClient) Apply(
 		cc.kubectlErr
 }
 
+// ApplyStructured runs a fake structured apply using the configs in the argument
+// path.
 func (cc *FakeClusterClient) ApplyStructured(
 	ctx context.Context,
 	path string,
@@ -73,6 +79,7 @@ func (cc *FakeClusterClient) ApplyStructured(
 	}, cc.kubectlErr
 }
 
+// Diff runs a fake diff using the configs in the argument path.
 func (cc *FakeClusterClient) Diff(ctx context.Context, path string) ([]byte, error) {
 	return []byte(
 			fmt.Sprintf(
@@ -84,23 +91,28 @@ func (cc *FakeClusterClient) Diff(ctx context.Context, path string) ([]byte, err
 		cc.kubectlErr
 }
 
+// Summary creates a fake summary output of the current cluster state.
 func (cc *FakeClusterClient) Summary(ctx context.Context) (string, error) {
 	return fmt.Sprintf("summary %s", cc.clusterConfig.Cluster), cc.kubectlErr
 }
 
+// GetStoreValue gets the value of the argument key.
 func (cc *FakeClusterClient) GetStoreValue(key string) (string, error) {
 	return cc.store[key], nil
 }
 
+// SetStoreValue sets the argument key to the argument value.
 func (cc *FakeClusterClient) SetStoreValue(key string, value string) error {
 	cc.store[key] = value
 	return nil
 }
 
+// Config returns this client's cluster config.
 func (cc *FakeClusterClient) Config() *config.ClusterConfig {
 	return cc.clusterConfig
 }
 
+// Close closes the client.
 func (cc *FakeClusterClient) Close() error {
 	return nil
 }

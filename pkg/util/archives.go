@@ -134,7 +134,7 @@ func RestoreData(
 	}
 }
 
-// ParseURL splits an s3 url into its bucket and key
+// ParseS3URL splits an s3 url into its bucket and key.
 func ParseS3URL(url string) (string, string, error) {
 	matches := s3URLRegex.FindStringSubmatch(url)
 	if len(matches) != 3 {

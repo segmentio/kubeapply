@@ -50,12 +50,14 @@ var KindOrder []string = []string{
 	"APIService",
 }
 
+// KindithoutMetadata lists out Kubernetes manifest types that don't have metadata.
 var KindithoutMetadata []string = []string{
 	"ConfigMapList",
 	"RoleBindingList",
 	"RoleList",
 }
 
+// Manifest is a wrapper around a Kubernetes resource manifest on local disk.
 type Manifest struct {
 	Path     string
 	Head     SimpleHeader

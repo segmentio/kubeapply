@@ -21,7 +21,7 @@ func TestKubeLocker(t *testing.T) {
 	ctx := context.Background()
 
 	namespace := fmt.Sprintf("test-kube-locker-%d", time.Now().UnixNano()/1000)
-	util.CreateNamespace(t, ctx, namespace, kubeConfigTestPath)
+	util.CreateNamespace(ctx, t, namespace, kubeConfigTestPath)
 
 	locker1, err := NewKubeLocker(kubeConfigTestPath, "client1", namespace)
 	require.Nil(t, err)

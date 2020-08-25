@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	// Set by LDFLAGS in build
+	// VersionRef is the kubeapply git SHA reference. It's set at build-time.
 	VersionRef = "dev"
 )
 

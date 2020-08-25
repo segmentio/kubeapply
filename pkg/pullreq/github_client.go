@@ -45,6 +45,7 @@ type GHPullRequestClient struct {
 	clonePath string
 }
 
+// NewGHPullRequestClient returns a new GHPullRequestClient.
 func NewGHPullRequestClient(
 	token string,
 	owner string,
@@ -59,6 +60,8 @@ func NewGHPullRequestClient(
 	}
 }
 
+// Init initializes this client by fetching information about the
+// target pull request from the Github API.
 func (prc *GHPullRequestClient) Init(ctx context.Context) error {
 	var err error
 
@@ -219,6 +222,8 @@ func (prc *GHPullRequestClient) Init(ctx context.Context) error {
 	return nil
 }
 
+// GetCoveredClusters returns the configs of the clusters potentially affected by
+// this pull request.
 func (prc *GHPullRequestClient) GetCoveredClusters(
 	env string,
 	selectedClusterIDs []string,
@@ -233,6 +238,7 @@ func (prc *GHPullRequestClient) GetCoveredClusters(
 	)
 }
 
+// PostComment posts a comment to this pull request using the Github API.
 func (prc *GHPullRequestClient) PostComment(ctx context.Context, body string) error {
 	log.Infof("Posting comment via github API: %s", body)
 	_, _, err := prc.Client.Issues.CreateComment(
@@ -248,6 +254,7 @@ func (prc *GHPullRequestClient) PostComment(ctx context.Context, body string) er
 	return err
 }
 
+// PostErrorComment posts an error comment to this pull request using the Github API.
 func (prc *GHPullRequestClient) PostErrorComment(
 	ctx context.Context,
 	env string,
@@ -299,6 +306,7 @@ func (prc *GHPullRequestClient) UpdateStatus(
 	return err
 }
 
+// Merge merges this pull request via the Github API.
 func (prc *GHPullRequestClient) Merge(
 	ctx context.Context,
 ) error {
@@ -316,6 +324,7 @@ func (prc *GHPullRequestClient) Merge(
 	return err
 }
 
+// Statuses returns the statuses of all checks for this pull request.
 func (prc *GHPullRequestClient) Statuses(
 	ctx context.Context,
 ) ([]PullRequestStatus, error) {
@@ -335,18 +344,23 @@ func (prc *GHPullRequestClient) Statuses(
 	return statuses, nil
 }
 
+// IsDraft returns whether this pull request is a draft.
 func (prc *GHPullRequestClient) IsDraft(ctx context.Context) bool {
 	return aws.BoolValue(prc.pullRequest.Draft)
 }
 
+// IsMerged returns whether this pull request has been merged.
 func (prc *GHPullRequestClient) IsMerged(ctx context.Context) bool {
 	return aws.BoolValue(prc.pullRequest.Merged)
 }
 
+// IsMergeable returns whether this pull request is mergeable according
+// to Github.
 func (prc *GHPullRequestClient) IsMergeable(ctx context.Context) bool {
 	return aws.BoolValue(prc.pullRequest.Mergeable)
 }
 
+// Approved determines whether this pull request has been approved.
 func (prc *GHPullRequestClient) Approved(ctx context.Context) bool {
 	for _, review := range prc.reviews {
 		if strings.ToLower(review.GetState()) == "approved" {
@@ -357,10 +371,12 @@ func (prc *GHPullRequestClient) Approved(ctx context.Context) bool {
 	return false
 }
 
+// Base returns the base branch for this pull request.
 func (prc *GHPullRequestClient) Base() string {
 	return prc.base
 }
 
+// BehindBy returns the number of commits this branch is behind the base by.
 func (prc *GHPullRequestClient) BehindBy() int {
 	if prc.comparison != nil {
 		return aws.IntValue(prc.comparison.BehindBy)
@@ -369,6 +385,8 @@ func (prc *GHPullRequestClient) BehindBy() int {
 	return 0
 }
 
+// HeadSHA returns the git SHA of the HEAD of the branch that this pull request
+// is using.
 func (prc *GHPullRequestClient) HeadSHA() string {
 	if prc.pullRequest.Head.SHA != nil {
 		return *prc.pullRequest.Head.SHA
@@ -377,6 +395,7 @@ func (prc *GHPullRequestClient) HeadSHA() string {
 	return "unknown"
 }
 
+// Close closes this client.
 func (prc *GHPullRequestClient) Close() error {
 	if prc.clonePath != "" {
 		return os.RemoveAll(prc.clonePath)

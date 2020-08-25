@@ -31,11 +31,11 @@ type eventCommand struct {
 func commentBodyToType(body string) commentType {
 	if strings.Contains(body, "🤖 Kubeapply apply result") {
 		return commentTypeApplyResult
-	} else {
-		components := strings.Split(body, " ")
-		if len(components) >= 2 && components[0] == "kubeapply" {
-			return commentTypeCommand
-		}
+	}
+
+	components := strings.Split(body, " ")
+	if len(components) >= 2 && components[0] == "kubeapply" {
+		return commentTypeCommand
 	}
 
 	return commentTypeOther

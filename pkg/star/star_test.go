@@ -180,7 +180,7 @@ def main(ctx):
 				assert.Equal(t, rawObj, objs[o])
 			} else {
 				// Compare JSON to make debugging easier
-				util.CompareJsonObjs(t, expObj, objs[o])
+				util.CompareJSONObjs(t, expObj, objs[o])
 			}
 		}
 	}
