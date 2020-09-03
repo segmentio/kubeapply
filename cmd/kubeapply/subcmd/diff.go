@@ -171,8 +171,17 @@ func execDiff(
 	}
 	defer kubeClient.Close()
 
-	if err := kube.ValidateUID(ctx, clusterConfig.UID, kubeClient); err != nil {
-		return "", err
+	// If a cluster UID was provided, verify that the cluster we are operating on
+	// has this same UID. Otherwise bail.
+	if clusterConfig.UID != "" {
+		actualUID, err := kubeClient.GetNamespaceUID(ctx, "kube-system")
+		if err != nil {
+			return "", err
+		}
+
+		if clusterConfig.UID != actualUID {
+			return "", fmt.Errorf("Kubeapply config does not match this cluster (wrong kube context?): kube-system uids do not match (%s!=%s)", clusterConfig.UID, actualUID)
+		}
 	}
 
 	results, err := kubeClient.Diff(ctx, clusterConfig.AbsSubpath())
