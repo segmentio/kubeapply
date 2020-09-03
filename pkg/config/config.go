@@ -31,9 +31,11 @@ type ClusterConfig struct {
 	// Required.
 	Env string `json:"env"`
 
-	// UID is a unique identifier of this cluster. If set, kubeapply will validate that
-	// uid of the cluster it is interacting with matches this value and abort otherwise.
-	// This can help prevent against applying a configuration against the wrong cluster.
+	// UID is a unique identifier of this cluster. Specifically, it is the unique
+	// identifier of the kube-system namespace. If set, kubeapply will validate that
+	// cluster it is interacting with has a matching kube-system namespace uid. This
+	// can help prevent against accidentally running a kubeapply config on a similarly-
+	// named cluster but in the wrong environment.
 	//
 	// You can fetch your cluster's UID by running:
 	//

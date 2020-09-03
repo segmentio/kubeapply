@@ -112,6 +112,11 @@ func (cc *FakeClusterClient) Config() *config.ClusterConfig {
 	return cc.clusterConfig
 }
 
+// GetNamespaceUID returns the kubernetes identifier for a given namespace in this cluster.
+func (cc *FakeClusterClient) GetNamespaceUID(ctx context.Context, namespace string) (string, error) {
+	return fmt.Sprintf("ns-%s", namespace), cc.kubectlErr
+}
+
 // Close closes the client.
 func (cc *FakeClusterClient) Close() error {
 	return nil

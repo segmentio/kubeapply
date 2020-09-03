@@ -3,6 +3,7 @@ package kube
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"text/template"
@@ -10,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/eks"
+	"github.com/segmentio/kubeapply/pkg/cluster"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -123,4 +125,24 @@ func KubeconfigMatchesCluster(path string, clusterName string) bool {
 	}
 
 	return bytes.Contains(contents, []byte(clusterName))
+}
+
+// ValidateUID will enforce that the kube cluster matches the provided UID.
+// This UID is the uid of the kube-system namespace and is optional. If the
+// UID is empty, then this validation will exit successfully.
+func ValidateUID(ctx context.Context, uid string, kubeClient cluster.ClusterClient) error {
+	if uid == "" {
+		return nil
+	}
+
+	actualUID, err := kubeClient.GetNamespaceUID(ctx, "kube-system")
+	if err != nil {
+		return err
+	}
+
+	if uid != actualUID {
+		return fmt.Errorf("Kubeapply config does not match this cluster: kube-system uids do not match (%s!=%s)", uid, actualUID)
+	}
+
+	return nil
 }

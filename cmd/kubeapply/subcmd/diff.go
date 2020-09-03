@@ -171,6 +171,10 @@ func execDiff(
 	}
 	defer kubeClient.Close()
 
+	if err := kube.ValidateUID(ctx, clusterConfig.UID, kubeClient); err != nil {
+		return "", err
+	}
+
 	results, err := kubeClient.Diff(ctx, clusterConfig.AbsSubpath())
 	return strings.TrimSpace(string(results)), err
 }

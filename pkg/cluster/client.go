@@ -38,6 +38,9 @@ type ClusterClient interface {
 	// Config returns the config for this cluster.
 	Config() *config.ClusterConfig
 
+	// GetNamespaceUID returns the kubernetes identifier for a given namespace in this cluster.
+	GetNamespaceUID(ctx context.Context, namespace string) (string, error)
+
 	// Close cleans up this client.
 	Close() error
 }
