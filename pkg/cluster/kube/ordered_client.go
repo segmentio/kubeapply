@@ -2,6 +2,8 @@ package kube
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -218,6 +220,39 @@ func (k *OrderedClient) Summary(
 
 	output, err := cmd.CombinedOutput()
 	return string(output), err
+}
+
+// GetNamespaceUID returns the kubernetes identifier for a given namespace in this cluster.
+func (k *OrderedClient) GetNamespaceUID(ctx context.Context, namespace string) (string, error) {
+	if namespace == "" {
+		return "", errors.New("expected a valid kubernetes namespace")
+	}
+
+	args := []string{
+		"--kubeconfig",
+		k.kubeConfigPath,
+		"get",
+		"namespace",
+		namespace,
+		"-o",
+		"json",
+	}
+
+	out, err := runKubectlOutput(ctx, args, nil, nil)
+	if err != nil {
+		return "", err
+	}
+
+	var j struct {
+		Metadata struct {
+			UID string `json:"uid"`
+		} `json:"metadata"`
+	}
+	if err := json.Unmarshal(out, &j); err != nil {
+		return "", err
+	}
+
+	return j.Metadata.UID, nil
 }
 
 func runKubectl(ctx context.Context, args []string, extraEnv []string) error {
