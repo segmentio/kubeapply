@@ -31,6 +31,17 @@ type ClusterConfig struct {
 	// Required.
 	Env string `json:"env"`
 
+	// UID is a unique identifier of this cluster. If set, kubeapply will validate that
+	// uid of the cluster it is interacting with matches this value and abort otherwise.
+	// This can help prevent against applying a configuration against the wrong cluster.
+	//
+	// You can fetch your cluster's UID by running:
+	//
+	//     kubectl get namespace kube-system -o json | jq -r .metadata.uid
+	//
+	// Optional.
+	UID string `json:"uid"`
+
 	// Charts is a URL for the default location of Helm charts.
 	//
 	// Required unless profile doesn't contain charts or all values files have explicit chart
