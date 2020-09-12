@@ -57,7 +57,7 @@ func TestStatusOK(t *testing.T) {
 				{
 					Context:     "kubeapply/diff (stage)",
 					State:       "success",
-					Description: "successful for cluster(s) cluster1,cluster2",
+					Description: "successful for clusters cluster1,cluster2",
 				},
 			},
 			expAllGreen:          true,
@@ -74,22 +74,22 @@ func TestStatusOK(t *testing.T) {
 				{
 					Context:     "kubeapply/diff (stage)",
 					State:       "success",
-					Description: "successful for cluster(s) cluster1,cluster2",
+					Description: "successful for clusters cluster1,cluster2",
 				},
 				{
 					Context:     "kubeapply/apply (stage)",
 					State:       "success",
-					Description: "successful for cluster(s) cluster1,cluster2",
+					Description: "successful for clusters cluster1,cluster2",
 				},
 				{
 					Context:     "kubeapply/diff (production)",
 					State:       "success",
-					Description: "successful for cluster(s) cluster3,cluster4",
+					Description: "successful for clusters cluster3,cluster4",
 				},
 				{
 					Context:     "kubeapply/apply (production)",
 					State:       "failure",
-					Description: "failure for cluster(s) cluster3,cluster4",
+					Description: "failure for clusters cluster3,cluster4",
 				},
 			},
 			expAllGreen:          false,
@@ -105,22 +105,22 @@ func TestStatusOK(t *testing.T) {
 				{
 					Context:     "kubeapply/diff (stage)",
 					State:       "success",
-					Description: "successful for cluster(s) cluster1,cluster2",
+					Description: "successful for clusters cluster1,cluster2",
 				},
 				{
 					Context:     "kubeapply/apply (stage)",
 					State:       "success",
-					Description: "successful for cluster(s) cluster1,cluster2",
+					Description: "successful for clusters cluster1,cluster2",
 				},
 				{
 					Context:     "kubeapply/diff (production)",
 					State:       "success",
-					Description: "successful for cluster(s) cluster3,cluster4",
+					Description: "successful for clusters cluster3,cluster4",
 				},
 				{
 					Context:     "kubeapply/apply (production)",
 					State:       "success",
-					Description: "successful for cluster(s) cluster3,cluster4",
+					Description: "successful for clusters cluster3,cluster4",
 				},
 			},
 			expAllGreen:          true,
@@ -136,12 +136,12 @@ func TestStatusOK(t *testing.T) {
 				{
 					Context:     "kubeapply/diff (stage)",
 					State:       "success",
-					Description: "successful for cluster(s) cluster1",
+					Description: "successful for clusters cluster1",
 				},
 				{
 					Context:     "kubeapply/apply (stage)",
 					State:       "success",
-					Description: "successful for cluster(s) cluster1",
+					Description: "successful for clusters cluster1",
 				},
 			},
 			expAllGreen:          true,
@@ -157,12 +157,12 @@ func TestStatusOK(t *testing.T) {
 				{
 					Context:     "kubeapply/diff (stage)",
 					State:       "success",
-					Description: "successful for cluster(s) cluster1,cluster2",
+					Description: "successful for clusters cluster1,cluster2",
 				},
 				{
 					Context:     "kubeapply/apply (stage)",
 					State:       "success",
-					Description: "successful for cluster(s) cluster2",
+					Description: "successful for clusters cluster2",
 				},
 			},
 			expAllGreen:          true,
@@ -178,17 +178,17 @@ func TestStatusOK(t *testing.T) {
 				{
 					Context:     "kubeapply/diff (stage)",
 					State:       "success",
-					Description: "successful for cluster(s) cluster1,cluster2",
+					Description: "successful for clusters cluster1,cluster2",
 				},
 				{
 					Context:     "kubeapply/apply (stage)",
 					State:       "success",
-					Description: "successful for cluster(s) cluster1",
+					Description: "successful for clusters cluster1",
 				},
 				{
 					Context:     "kubeapply/apply (stage)",
 					State:       "success",
-					Description: "successful for cluster(s) cluster2",
+					Description: "successful for clusters cluster2",
 				},
 			},
 			expAllGreen:          true,

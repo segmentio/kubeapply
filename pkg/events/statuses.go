@@ -11,7 +11,7 @@ import (
 
 var (
 	contextRegexp     = regexp.MustCompile("kubeapply/(\\S+) [(](\\S+)[)]")
-	descriptionRegexp = regexp.MustCompile("for cluster[(]s[)] (\\S+)")
+	descriptionRegexp = regexp.MustCompile("for clusters (\\S+)")
 )
 
 func statusAllGreen(

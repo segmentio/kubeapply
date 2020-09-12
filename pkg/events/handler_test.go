@@ -852,12 +852,12 @@ func TestHandleWebhook(t *testing.T) {
 						{
 							Context:     "kubeapply/diff (test-env)",
 							State:       "success",
-							Description: "success for cluster(s) cluster1,cluster2 and others",
+							Description: "success for clusters cluster1,cluster2 and others",
 						},
 						{
 							Context:     "kubeapply/apply (test-env)",
 							State:       "success",
-							Description: "success for cluster(s) cluster1,cluster2",
+							Description: "success for clusters cluster1,cluster2",
 						},
 					},
 					ApprovedVal: true,
@@ -907,12 +907,12 @@ func TestHandleWebhook(t *testing.T) {
 						{
 							Context:     "kubeapply/diff (test-env)",
 							State:       "success",
-							Description: "success for cluster(s) cluster1,cluster2",
+							Description: "success for clusters cluster1,cluster2",
 						},
 						{
 							Context:     "kubeapply/apply (test-env)",
 							State:       "success",
-							Description: "success for cluster(s) cluster1,cluster2",
+							Description: "success for clusters cluster1,cluster2",
 						},
 					},
 					ApprovedVal: true,
