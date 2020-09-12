@@ -359,7 +359,10 @@ func (whh *WebhookHandler) runApply(
 		ctx,
 		"pending",
 		whh.commandContext(commandApply),
-		"Running `kubeapply apply`",
+		fmt.Sprintf(
+			"Running `kubeapply apply` for cluster(s) %s",
+			clusterNames(clusterClients),
+		),
 		whh.settings.LogsURL,
 	)
 	if err != nil {
@@ -437,7 +440,10 @@ func (whh *WebhookHandler) runApply(
 			ctx,
 			"failure",
 			whh.commandContext(commandApply),
-			"Error running `kubeapply apply`",
+			fmt.Sprintf(
+				"Error running `kubeapply apply` for cluster(s) %s",
+				clusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 		return applyErr
@@ -449,7 +455,10 @@ func (whh *WebhookHandler) runApply(
 			ctx,
 			"failure",
 			whh.commandContext(commandApply),
-			"Error running `kubeapply apply`",
+			fmt.Sprintf(
+				"Error running `kubeapply apply` for cluster(s) %s",
+				clusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 		return err
@@ -468,7 +477,10 @@ func (whh *WebhookHandler) runApply(
 			ctx,
 			"failure",
 			whh.commandContext(commandApply),
-			"Successfully ran `kubeapply apply` but marking as failure to prevent automerging",
+			fmt.Sprintf(
+				"Successfully ran `kubeapply apply` for cluster(s) %s but marking as failure to prevent automerging",
+				clusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 	} else {
@@ -476,7 +488,10 @@ func (whh *WebhookHandler) runApply(
 			ctx,
 			"success",
 			whh.commandContext(commandApply),
-			"Successfully ran `kubeapply apply`",
+			fmt.Sprintf(
+				"Successfully ran `kubeapply apply` for cluster(s) %s",
+				clusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 	}
@@ -497,7 +512,10 @@ func (whh *WebhookHandler) runDiffs(
 		ctx,
 		"pending",
 		whh.commandContext(commandDiff),
-		"Running `kubeapply diff`",
+		fmt.Sprintf(
+			"Running `kubeapply diff` for cluster(s) %s",
+			clusterNames(clusterClients),
+		),
 		whh.settings.LogsURL,
 	)
 	if err != nil {
@@ -561,7 +579,10 @@ func (whh *WebhookHandler) runDiffs(
 			ctx,
 			"failure",
 			whh.commandContext(commandDiff),
-			"Error running `kubeapply diff`",
+			fmt.Sprintf(
+				"Error running `kubeapply diff` for cluster(s) %s",
+				clusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 		return diffErr
@@ -574,7 +595,10 @@ func (whh *WebhookHandler) runDiffs(
 			ctx,
 			"failure",
 			whh.commandContext(commandDiff),
-			"Error running `kubeapply diff`",
+			fmt.Sprintf(
+				"Error running `kubeapply diff` for cluster(s) %s",
+				clusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 		return err
@@ -589,7 +613,10 @@ func (whh *WebhookHandler) runDiffs(
 		ctx,
 		"success",
 		whh.commandContext(commandDiff),
-		"Successfully ran `kubeapply diff`",
+		fmt.Sprintf(
+			"Successfully ran `kubeapply diff` for cluster(s) %s",
+			clusterNames(clusterClients),
+		),
 		whh.settings.LogsURL,
 	)
 	if err != nil {
@@ -608,7 +635,10 @@ func (whh *WebhookHandler) runStatus(
 		ctx,
 		"pending",
 		whh.commandContext(commandStatus),
-		"Running `kubeapply status`",
+		fmt.Sprintf(
+			"Running `kubeapply status` for cluster(s) %s",
+			clusterNames(clusterClients),
+		),
 		whh.settings.LogsURL,
 	)
 	if err != nil {
@@ -659,7 +689,10 @@ func (whh *WebhookHandler) runStatus(
 			// Mark as success so that it doesn't block applying or merging
 			"success",
 			whh.commandContext(commandStatus),
-			"Ran `kubeapply status`",
+			fmt.Sprintf(
+				"Ran `kubeapply status` for cluster(s) %s",
+				clusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 		return statusErr
@@ -672,7 +705,10 @@ func (whh *WebhookHandler) runStatus(
 			// Mark as success so that it doesn't block applying or merging
 			"success",
 			whh.commandContext(commandStatus),
-			"Ran `kubeapply status`",
+			fmt.Sprintf(
+				"Ran `kubeapply status` for cluster(s) %s",
+				clusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 		return err
@@ -687,7 +723,10 @@ func (whh *WebhookHandler) runStatus(
 		ctx,
 		"success",
 		whh.commandContext(commandStatus),
-		"Successfully ran `kubeapply status`",
+		fmt.Sprintf(
+			"Successfully ran `kubeapply status` for cluster(s) %s",
+			clusterNames(clusterClients),
+		),
 		whh.settings.LogsURL,
 	)
 	if err != nil {
@@ -750,4 +789,15 @@ func (whh *WebhookHandler) incrementStat(
 
 func multilineError(lines ...string) error {
 	return errors.New(strings.Join(lines, "\n"))
+}
+
+func clusterNames(clients []cluster.ClusterClient) string {
+	names := []string{}
+	for _, client := range clients {
+		names = append(
+			names,
+			client.Config().DescriptiveName(),
+		)
+	}
+	return strings.Join(names, ",")
 }

@@ -48,7 +48,11 @@ vet: data
 
 .PHONY: data
 data: go-bindata
-	go-bindata -pkg data -o ./data/data.go ./pkg/pullreq/templates/... ./scripts/...
+	go-bindata -pkg data -o ./data/data.go \
+		-ignore=.*\.pyc \
+		-ignore=.*__pycache__.* \
+		./pkg/pullreq/templates/... \
+		./scripts/...
 
 .PHONY: fmtgo
 fmtgo:
