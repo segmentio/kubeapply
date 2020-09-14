@@ -26,8 +26,9 @@ func TestStatusOK(t *testing.T) {
 		{
 			statuses: []pullreq.PullRequestStatus{
 				{
-					Context: "check",
-					State:   "failure",
+					Context:     "check",
+					State:       "failure",
+					Description: "check failed",
 				},
 			},
 			expAllGreen:          false,
@@ -37,8 +38,9 @@ func TestStatusOK(t *testing.T) {
 		{
 			statuses: []pullreq.PullRequestStatus{
 				{
-					Context: "check",
-					State:   "success",
+					Context:     "check",
+					State:       "success",
+					Description: "check succeeded",
 				},
 			},
 			expAllGreen:          true,
@@ -48,12 +50,14 @@ func TestStatusOK(t *testing.T) {
 		{
 			statuses: []pullreq.PullRequestStatus{
 				{
-					Context: "check",
-					State:   "success",
+					Context:     "check",
+					State:       "success",
+					Description: "check succeeded",
 				},
 				{
-					Context: "kubeapply/diff (stage)",
-					State:   "success",
+					Context:     "kubeapply/diff (stage)",
+					State:       "success",
+					Description: "successful for clusters cluster1,cluster2",
 				},
 			},
 			expAllGreen:          true,
@@ -63,24 +67,29 @@ func TestStatusOK(t *testing.T) {
 		{
 			statuses: []pullreq.PullRequestStatus{
 				{
-					Context: "check",
-					State:   "success",
+					Context:     "check",
+					State:       "success",
+					Description: "check succeeded",
 				},
 				{
-					Context: "kubeapply/diff (stage)",
-					State:   "success",
+					Context:     "kubeapply/diff (stage)",
+					State:       "success",
+					Description: "successful for clusters cluster1,cluster2",
 				},
 				{
-					Context: "kubeapply/apply (stage)",
-					State:   "success",
+					Context:     "kubeapply/apply (stage)",
+					State:       "success",
+					Description: "successful for clusters cluster1,cluster2",
 				},
 				{
-					Context: "kubeapply/diff (production)",
-					State:   "success",
+					Context:     "kubeapply/diff (production)",
+					State:       "success",
+					Description: "successful for clusters cluster3,cluster4",
 				},
 				{
-					Context: "kubeapply/apply (production)",
-					State:   "failure",
+					Context:     "kubeapply/apply (production)",
+					State:       "failure",
+					Description: "failure for clusters cluster3,cluster4",
 				},
 			},
 			expAllGreen:          false,
@@ -94,20 +103,24 @@ func TestStatusOK(t *testing.T) {
 					State:   "success",
 				},
 				{
-					Context: "kubeapply/diff (stage)",
-					State:   "success",
+					Context:     "kubeapply/diff (stage)",
+					State:       "success",
+					Description: "successful for clusters cluster1,cluster2",
 				},
 				{
-					Context: "kubeapply/apply (stage)",
-					State:   "success",
+					Context:     "kubeapply/apply (stage)",
+					State:       "success",
+					Description: "successful for clusters cluster1,cluster2",
 				},
 				{
-					Context: "kubeapply/diff (production)",
-					State:   "success",
+					Context:     "kubeapply/diff (production)",
+					State:       "success",
+					Description: "successful for clusters cluster3,cluster4",
 				},
 				{
-					Context: "kubeapply/apply (production)",
-					State:   "success",
+					Context:     "kubeapply/apply (production)",
+					State:       "success",
+					Description: "successful for clusters cluster3,cluster4",
 				},
 			},
 			expAllGreen:          true,
@@ -121,12 +134,61 @@ func TestStatusOK(t *testing.T) {
 					State:   "success",
 				},
 				{
-					Context: "kubeapply/diff (stage)",
+					Context:     "kubeapply/diff (stage)",
+					State:       "success",
+					Description: "successful for clusters cluster1",
+				},
+				{
+					Context:     "kubeapply/apply (stage)",
+					State:       "success",
+					Description: "successful for clusters cluster1",
+				},
+			},
+			expAllGreen:          true,
+			expOKToApply:         true,
+			expWorkflowCompleted: true,
+		},
+		{
+			statuses: []pullreq.PullRequestStatus{
+				{
+					Context: "check",
 					State:   "success",
 				},
 				{
-					Context: "kubeapply/apply (stage)",
+					Context:     "kubeapply/diff (stage)",
+					State:       "success",
+					Description: "successful for clusters cluster1,cluster2",
+				},
+				{
+					Context:     "kubeapply/apply (stage)",
+					State:       "success",
+					Description: "successful for clusters cluster2",
+				},
+			},
+			expAllGreen:          true,
+			expOKToApply:         true,
+			expWorkflowCompleted: false,
+		},
+		{
+			statuses: []pullreq.PullRequestStatus{
+				{
+					Context: "check",
 					State:   "success",
+				},
+				{
+					Context:     "kubeapply/diff (stage)",
+					State:       "success",
+					Description: "successful for clusters cluster1,cluster2",
+				},
+				{
+					Context:     "kubeapply/apply (stage)",
+					State:       "success",
+					Description: "successful for clusters cluster1",
+				},
+				{
+					Context:     "kubeapply/apply (stage)",
+					State:       "success",
+					Description: "successful for clusters cluster2",
 				},
 			},
 			expAllGreen:          true,
@@ -149,14 +211,14 @@ func TestStatusOK(t *testing.T) {
 			t,
 			testCase.expOKToApply,
 			okToApply,
-			"Test case %d", index,
+			"Ok to apply, test case %d", index,
 		)
 
 		assert.Equal(
 			t,
 			testCase.expWorkflowCompleted,
 			workflowCompleted,
-			"Test case %d", index,
+			"Workflow completed, test case %d", index,
 		)
 	}
 }

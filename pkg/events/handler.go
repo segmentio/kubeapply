@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"crypto/sha1"
 	"errors"
 	"fmt"
 	"strings"
@@ -359,7 +360,10 @@ func (whh *WebhookHandler) runApply(
 		ctx,
 		"pending",
 		whh.commandContext(commandApply),
-		"Running `kubeapply apply`",
+		fmt.Sprintf(
+			"Running for clusters %s",
+			hashedClusterNames(clusterClients),
+		),
 		whh.settings.LogsURL,
 	)
 	if err != nil {
@@ -437,7 +441,10 @@ func (whh *WebhookHandler) runApply(
 			ctx,
 			"failure",
 			whh.commandContext(commandApply),
-			"Error running `kubeapply apply`",
+			fmt.Sprintf(
+				"Error running for clusters %s",
+				hashedClusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 		return applyErr
@@ -449,7 +456,10 @@ func (whh *WebhookHandler) runApply(
 			ctx,
 			"failure",
 			whh.commandContext(commandApply),
-			"Error running `kubeapply apply`",
+			fmt.Sprintf(
+				"Error running for clusters %s",
+				hashedClusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 		return err
@@ -468,7 +478,10 @@ func (whh *WebhookHandler) runApply(
 			ctx,
 			"failure",
 			whh.commandContext(commandApply),
-			"Successfully ran `kubeapply apply` but marking as failure to prevent automerging",
+			fmt.Sprintf(
+				"Successfully ran for clusters %s",
+				hashedClusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 	} else {
@@ -476,7 +489,10 @@ func (whh *WebhookHandler) runApply(
 			ctx,
 			"success",
 			whh.commandContext(commandApply),
-			"Successfully ran `kubeapply apply`",
+			fmt.Sprintf(
+				"Successfully ran for clusters %s",
+				hashedClusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 	}
@@ -497,7 +513,10 @@ func (whh *WebhookHandler) runDiffs(
 		ctx,
 		"pending",
 		whh.commandContext(commandDiff),
-		"Running `kubeapply diff`",
+		fmt.Sprintf(
+			"Running for clusters %s",
+			hashedClusterNames(clusterClients),
+		),
 		whh.settings.LogsURL,
 	)
 	if err != nil {
@@ -561,7 +580,10 @@ func (whh *WebhookHandler) runDiffs(
 			ctx,
 			"failure",
 			whh.commandContext(commandDiff),
-			"Error running `kubeapply diff`",
+			fmt.Sprintf(
+				"Error running for clusters %s",
+				hashedClusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 		return diffErr
@@ -574,7 +596,10 @@ func (whh *WebhookHandler) runDiffs(
 			ctx,
 			"failure",
 			whh.commandContext(commandDiff),
-			"Error running `kubeapply diff`",
+			fmt.Sprintf(
+				"Error running for clusters %s",
+				hashedClusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 		return err
@@ -589,7 +614,10 @@ func (whh *WebhookHandler) runDiffs(
 		ctx,
 		"success",
 		whh.commandContext(commandDiff),
-		"Successfully ran `kubeapply diff`",
+		fmt.Sprintf(
+			"Successfully ran for clusters %s",
+			hashedClusterNames(clusterClients),
+		),
 		whh.settings.LogsURL,
 	)
 	if err != nil {
@@ -608,7 +636,10 @@ func (whh *WebhookHandler) runStatus(
 		ctx,
 		"pending",
 		whh.commandContext(commandStatus),
-		"Running `kubeapply status`",
+		fmt.Sprintf(
+			"Running for clusters %s",
+			hashedClusterNames(clusterClients),
+		),
 		whh.settings.LogsURL,
 	)
 	if err != nil {
@@ -659,7 +690,10 @@ func (whh *WebhookHandler) runStatus(
 			// Mark as success so that it doesn't block applying or merging
 			"success",
 			whh.commandContext(commandStatus),
-			"Ran `kubeapply status`",
+			fmt.Sprintf(
+				"Ran for clusters %s",
+				hashedClusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 		return statusErr
@@ -672,7 +706,10 @@ func (whh *WebhookHandler) runStatus(
 			// Mark as success so that it doesn't block applying or merging
 			"success",
 			whh.commandContext(commandStatus),
-			"Ran `kubeapply status`",
+			fmt.Sprintf(
+				"Ran for clusters %s",
+				hashedClusterNames(clusterClients),
+			),
 			whh.settings.LogsURL,
 		)
 		return err
@@ -687,7 +724,10 @@ func (whh *WebhookHandler) runStatus(
 		ctx,
 		"success",
 		whh.commandContext(commandStatus),
-		"Successfully ran `kubeapply status`",
+		fmt.Sprintf(
+			"Successfully ran for clusters %s",
+			hashedClusterNames(clusterClients),
+		),
 		whh.settings.LogsURL,
 	)
 	if err != nil {
@@ -750,4 +790,23 @@ func (whh *WebhookHandler) incrementStat(
 
 func multilineError(lines ...string) error {
 	return errors.New(strings.Join(lines, "\n"))
+}
+
+// hashedClusterNames returns a string of comma-separated, hashed cluster names for status
+// descriptions. These are used to ensure that auto-merging isn't done until all clusters
+// have been diffed and applied. We use hashes instead of the full names to ensure the list
+// can fit in the description field.
+func hashedClusterNames(clients []cluster.ClusterClient) string {
+	names := []string{}
+	for _, client := range clients {
+		h := sha1.New()
+		h.Write([]byte(client.Config().DescriptiveName()))
+		hashStr := fmt.Sprintf("%x", h.Sum(nil))
+
+		names = append(
+			names,
+			hashStr[0:8],
+		)
+	}
+	return strings.Join(names, ",")
 }

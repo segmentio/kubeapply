@@ -9,7 +9,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var contextRegexp = regexp.MustCompile("kubeapply/(\\S+) [(](\\S+)[)]")
+var (
+	contextRegexp     = regexp.MustCompile("kubeapply/(\\S+) [(](\\S+)[)]")
+	descriptionRegexp = regexp.MustCompile("for clusters (\\S+)")
+)
 
 func statusAllGreen(
 	ctx context.Context,
@@ -63,42 +66,52 @@ func statusWorkflowCompleted(
 		return false
 	}
 
-	allEnvs := map[string]struct{}{}
-	diffedEnvs := map[string]struct{}{}
-	appliedEnvs := map[string]struct{}{}
+	allClusters := map[string]struct{}{}
+	diffedClusters := map[string]struct{}{}
+	appliedClusters := map[string]struct{}{}
 
 	for _, status := range statuses {
-		matches := contextRegexp.FindStringSubmatch(status.Context)
-		if len(matches) != 3 {
+		contextMatches := contextRegexp.FindStringSubmatch(status.Context)
+		if len(contextMatches) != 3 {
 			continue
 		}
 
-		command := matches[1]
-		env := matches[2]
+		command := contextMatches[1]
 
-		allEnvs[env] = struct{}{}
+		descriptionMatches := descriptionRegexp.FindStringSubmatch(
+			status.Description,
+		)
+		if len(descriptionMatches) != 2 {
+			continue
+		}
 
-		if command == "diff" {
-			// Consider all diffs
-			diffedEnvs[env] = struct{}{}
-		} else if command == "apply" && status.IsSuccess() {
-			// Only consider applies that are successful
-			appliedEnvs[env] = struct{}{}
+		clusterNames := strings.Split(descriptionMatches[1], ",")
+
+		for _, clusterName := range clusterNames {
+			allClusters[clusterName] = struct{}{}
+
+			if command == "diff" {
+				// Consider all diffs
+				diffedClusters[clusterName] = struct{}{}
+			} else if command == "apply" && status.IsSuccess() {
+				// Only consider applies that are successful
+				appliedClusters[clusterName] = struct{}{}
+			}
 		}
 	}
 
-	if len(allEnvs) == 0 {
+	if len(allClusters) == 0 {
 		log.Info("No command statuses found, workflow not complete")
 		return false
 	}
 
-	for env := range allEnvs {
-		_, diffed := diffedEnvs[env]
-		_, applied := appliedEnvs[env]
+	for clusterName := range allClusters {
+		_, diffed := diffedClusters[clusterName]
+		_, applied := appliedClusters[clusterName]
 		if !diffed || !applied {
 			log.Warnf(
-				"Env %s is not fully diffed and applied: %v, %v",
-				env,
+				"Cluster %s is not fully diffed and applied: %v, %v",
+				clusterName,
 				diffed,
 				applied,
 			)
