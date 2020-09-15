@@ -19,7 +19,7 @@ import (
 
 var applyCmd = &cobra.Command{
 	Use:   "apply [cluster configs]",
-	Short: "apply runs an ordered kubectl over the configs referenced in the config",
+	Short: "apply runs kubectl apply over the resources associated with a cluster config",
 	Args:  cobra.MinimumNArgs(1),
 	RunE:  applyRun,
 }
