@@ -42,7 +42,7 @@ convenience, but you can also just run the associated `kubeapply` commands direc
 
 ##### (1) `make start-kind`
 
-Start up a local cluster via kind and dumps a kubeconfig in `.kube/kubeapply-test-cluster.yaml`.
+Start up a local cluster via kind and dump a kubeconfig in `.kube/kubeapply-test-cluster.yaml`.
 
 ##### (2) `make expand`
 
