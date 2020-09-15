@@ -62,12 +62,12 @@ terminal.
 
 ##### (5) `make apply`
 
-Runs `kubectl apply` against the local cluster and outputs a table that summarize the changes
+Runs `kubectl apply` against the local cluster and outputs a table that summarizes the changes
 that were made.
 
 ##### (6) `kubectl ...`
 
-Runs `kubectl --kubeconfig=.kube/kubeapply-test-cluster.yaml get pods --all-namespaces`, etc.
+Run `kubectl --kubeconfig=.kube/kubeapply-test-cluster.yaml get pods --all-namespaces`, etc.
 to verify that the apply worked correctly!
 
 ##### (7) `make stop-kind`

@@ -33,10 +33,9 @@ consistent. The design choices made were motivated by the following goals:
 
 ### Disclaimer
 
-The tool is very much designed for our Kubernetes-related workflows at
-[Segment](https://segment.com). While we hope it can work for others, not all features might
-be directly applicable to other environments. We welcome feedback and collaboration to make
-`kubeapply` useful to more people!
+The tool is designed for our Kubernetes-related workflows at [Segment](https://segment.com).
+While we hope it can work for others, not all features might be directly applicable to other
+environments. We welcome feedback and collaboration to make `kubeapply` useful to more people!
 
 ## Getting started
 
