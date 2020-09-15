@@ -57,12 +57,12 @@ configs before continuing.
 
 ##### (4) `make diff`
 
-Run `kubectl diff` against the local cluster and shows the results in a pretty format in the
+Run `kubectl diff` against the local cluster and show the results in a pretty format in the
 terminal.
 
 ##### (5) `make apply`
 
-Run `kubectl apply` against the local cluster and outputs a table that summarize the changes
+Run `kubectl apply` against the local cluster and output a table that summarize the changes
 that were made.
 
 ##### (6) `kubectl ...`
@@ -72,4 +72,4 @@ to verify that the apply worked correctly!
 
 ##### (7) `make stop-kind`
 
-Stop local cluster created in first step and deletes the kubeconfig.
+Stop local cluster created in first step and delete the kubeconfig.
