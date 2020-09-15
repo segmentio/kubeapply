@@ -31,6 +31,13 @@ consistent. The design choices made were motivated by the following goals:
 4. Allow running on either the command-line or in Github
 5. Support Helm charts, simple templates, and skycfg
 
+### Disclaimer
+
+The tool is very much designed for our Kubernetes-related workflows at
+[Segment](https://segment.com). While we hope it can work for others, not all features might
+be directly applicable to other environments. We welcome feedback and collaboration to make
+`kubeapply` useful to more people!
+
 ## Getting started
 
 ### Prerequisites
@@ -100,7 +107,7 @@ but you can use any naming convention that feels comfortable.
 Each cluster config has the following format:
 
 ```yaml
-# Basic information about the cluster. The combination of these should uniquely identity
+# Basic information about the cluster. The combination of these should uniquely identify
 # a single cluster instance running in a single location.
 cluster: my-cluster    # Name of the cluster
 region: us-west-2      # Region in which the cluster is running
@@ -194,7 +201,7 @@ or, preferably, using the `kubeapply apply` command (described below).
 `kubeapply expand [path to cluster config]`
 
 This will expand out all of the configs for the cluster instance, and put them into
-a subdirectory of in the `expanded` directory. Helm charts are expanded via `helm template`;
+a subdirectory of the `expanded` directory. Helm charts are expanded via `helm template`;
 other source types use custom code in the `kubeapply` binary.
 
 #### Validate
