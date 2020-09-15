@@ -42,34 +42,34 @@ convenience, but you can also just run the associated `kubeapply` commands direc
 
 ##### (1) `make start-kind`
 
-Start up a local cluster via kind and dump a kubeconfig in `.kube/kubeapply-test-cluster.yaml`.
+Starts up a local cluster via kind and dumps a kubeconfig in `.kube/kubeapply-test-cluster.yaml`.
 
 ##### (2) `make expand`
 
-Expand configs from `profile` into the `expanded` directory for `cluster-local1`.
+Expands configs from `profile` into the `expanded` directory for `cluster-local1`.
 It should be a no-op from the git perspective unless you've made changes in the cluster
 config or profile files.
 
 ##### (3) `make validate`
 
-Run `kubeval` over the expanded configs to validate that they are legitimate Kubernetes
+Runs `kubeval` over the expanded configs to validate that they are legitimate Kubernetes
 configs before continuing.
 
 ##### (4) `make diff`
 
-Run `kubectl diff` against the local cluster and show the results in a pretty format in the
+Runs `kubectl diff` against the local cluster and shows the results in a pretty format in the
 terminal.
 
 ##### (5) `make apply`
 
-Run `kubectl apply` against the local cluster and output a table that summarize the changes
+Runs `kubectl apply` against the local cluster and outputs a table that summarize the changes
 that were made.
 
 ##### (6) `kubectl ...`
 
-Run `kubectl --kubeconfig=.kube/kubeapply-test-cluster.yaml get pods --all-namespaces`, etc.
+Runs `kubectl --kubeconfig=.kube/kubeapply-test-cluster.yaml get pods --all-namespaces`, etc.
 to verify that the apply worked correctly!
 
 ##### (7) `make stop-kind`
 
-Stop local cluster created in first step and delete the kubeconfig.
+Stops local cluster created in first step and deletes the kubeconfig.
