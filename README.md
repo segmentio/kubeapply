@@ -31,6 +31,8 @@ consistent. The design choices made were motivated by the following goals:
 4. Allow running on either the command-line or in Github
 5. Support Helm charts, simple templates, and skycfg
 
+See [this blog post](https://segment.com/blog/kubernetes-configuration/) for more details.
+
 ### Disclaimer
 
 The tool is designed for our Kubernetes-related workflows at [Segment](https://segment.com).
