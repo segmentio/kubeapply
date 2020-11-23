@@ -1,0 +1,10 @@
+---
+# kubeapply__namespace: namespace1
+# kubeapply__releaseName: namespace1
+image: "test-image1"
+---
+# kubeapply__namespace: namespace2
+# kubeapply__releaseName: namespace2
+
+image: "test-image2"
+

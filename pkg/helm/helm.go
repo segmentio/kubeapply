@@ -48,6 +48,8 @@ type HelmClient struct {
 type helmContext struct {
 	chartsPath    string
 	namespace     string
+	part          int
+	totalParts    int
 	valuesPath    string
 	valuesContent []byte
 }
@@ -88,16 +90,18 @@ func (c *HelmClient) ExpandHelmTemplates(
 			if err != nil {
 				return err
 			}
-			subValues := sep.Split(string(contents), -1)
+			subParts := sep.Split(string(contents), -1)
 
-			for _, subValue := range subValues {
+			for s, subPart := range subParts {
 				helmContexts = append(
 					helmContexts,
 					helmContext{
 						namespace:     namespace,
 						chartsPath:    chartsPath,
+						part:          s,
+						totalParts:    len(subParts),
 						valuesPath:    subPath,
-						valuesContent: []byte(subValue),
+						valuesContent: []byte(subPart),
 					},
 				)
 			}
@@ -135,7 +139,13 @@ func (c *HelmClient) ExpandHelmTemplates(
 				if err != nil {
 					errChan <- err
 				}
-				errChan <- os.RemoveAll(hctx.valuesPath)
+
+				if hctx.part == 0 {
+					// Only delete values file once
+					errChan <- os.RemoveAll(hctx.valuesPath)
+				} else {
+					errChan <- nil
+				}
 			}
 		}()
 	}
@@ -156,18 +166,22 @@ func (c *HelmClient) generateHelmTemplates(
 	hctx helmContext,
 ) error {
 	log.Infof(
-		"Processing helm chart with values %s in %s",
+		"Processing helm chart with values %s in %s (part %d/%d)",
 		filepath.Base(hctx.valuesPath),
 		hctx.namespace,
+		hctx.part+1,
+		hctx.totalParts,
 	)
 
 	trimmedContents := bytes.TrimSpace(hctx.valuesContent)
 
 	if len(trimmedContents) == 0 {
 		log.Warnf(
-			"Values file %s in %s is empty, skipping",
+			"Values file %s in %s (part %d/%d) is empty, skipping",
 			filepath.Base(hctx.valuesPath),
 			hctx.namespace,
+			hctx.part+1,
+			hctx.totalParts,
 		)
 		return nil
 	}
@@ -175,8 +189,10 @@ func (c *HelmClient) generateHelmTemplates(
 	var contentsMap map[string]interface{}
 	if err := yaml.Unmarshal(trimmedContents, &contentsMap); err != nil {
 		return fmt.Errorf(
-			"File %s is not valid YAML. If it's a template, be sure to add '.gotpl' in its name",
+			"File %s (part %d/%d) is not valid YAML. If it's a template, be sure to add '.gotpl' in its name",
 			hctx.valuesPath,
+			hctx.part+1,
+			hctx.totalParts,
 		)
 	}
 
@@ -184,9 +200,11 @@ func (c *HelmClient) generateHelmTemplates(
 
 	if getValue(headerComments, disabledHeaders...) == "true" {
 		log.Warnf(
-			"Skipping values file %s in %s because it has disabled: true",
+			"Skipping values file %s in %s (part %d/%d) because it has disabled: true",
 			filepath.Base(hctx.valuesPath),
 			hctx.namespace,
+			hctx.part+1,
+			hctx.totalParts,
 		)
 		return nil
 	}
@@ -261,14 +279,27 @@ func (c *HelmClient) generateHelmTemplates(
 
 	releaseName := getValue(headerComments, releaseNameHeaders...)
 
+	tempValuesDir, err := ioutil.TempDir("", "helm")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tempValuesDir)
+	tempValuesPath := filepath.Join(tempValuesDir, "values.yaml")
+	if err := ioutil.WriteFile(tempValuesPath, trimmedContents, 0644); err != nil {
+		return err
+	}
+
 	templateArgs := []string{
 		"template",
 		fmt.Sprintf("--namespace=%s", templateNamespace),
-		fmt.Sprintf("--values=%s", hctx.valuesPath),
+		fmt.Sprintf("--values=%s", tempValuesPath),
 		fmt.Sprintf("--output-dir=%s", filepath.Dir(hctx.valuesPath)),
 	}
 	if releaseName != "" {
 		templateArgs = append(templateArgs, fmt.Sprintf("--name-template=%s", releaseName))
+
+		// Include release name in output paths so different ones don't clobber each other
+		templateArgs = append(templateArgs, "--release-name")
 	}
 	if c.GlobalValuesPath != "" {
 		templateArgs = append(templateArgs, fmt.Sprintf("--values=%s", c.GlobalValuesPath))
