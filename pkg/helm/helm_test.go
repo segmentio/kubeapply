@@ -68,11 +68,32 @@ func TestExpandHelmTemplates(t *testing.T) {
 				"kube-system/alb-ingress-controller.helm.yaml",
 			},
 			expContents: map[string][]string{
-				"kube-system/alb-ingress-controller/templates/alb-ingress-controller.yaml": {
+				"kube-system/name-override/alb-ingress-controller/templates/alb-ingress-controller.yaml": {
 					"name: alb-ingress-controller-name-override",
 					"namespace: kube-system",
 					"image: test-image2",
 					"helm/test: override",
+				},
+			},
+		},
+		{
+			description: "chart multi",
+			configPath:  "testdata/configs-charts-multi",
+			expDoesNotExist: []string{
+				"kube-system/alb-ingress-controller.helm.yaml",
+			},
+			expContents: map[string][]string{
+				"kube-system/namespace1/alb-ingress-controller/templates/alb-ingress-controller.yaml": {
+					"name: alb-ingress-controller-namespace1",
+					"namespace: namespace1",
+					"image: test-image1",
+					"helm/test: normal",
+				},
+				"kube-system/namespace2/alb-ingress-controller/templates/alb-ingress-controller.yaml": {
+					"name: alb-ingress-controller-namespace2",
+					"namespace: namespace2",
+					"image: test-image2",
+					"helm/test: normal",
 				},
 			},
 		},

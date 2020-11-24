@@ -7,11 +7,25 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/ghodss/yaml"
 	"github.com/segmentio/kubeapply/pkg/util"
 	log "github.com/sirupsen/logrus"
+)
+
+var (
+	// TODO: Switch to a YAML library that supports doing this splitting for us.
+	sep = regexp.MustCompile("(?:^|\\s*\n)---\\s*")
+
+	// Header comments that can be set in helm chart values files to change default behavior
+	chartOverrideHeaders     = []string{"kubeapply__chart", "kubeapply__charts", "charts"}
+	chartNameHeaders         = []string{"kubeapply__chartName", "chartName"}
+	chartsSubDirHeaders      = []string{"kubeapply__chartsSubdir"}
+	disabledHeaders          = []string{"kubeapply__disabled", "disabled"}
+	namespaceOverrideHeaders = []string{"kubeapply__namespace", "namespace"}
+	releaseNameHeaders       = []string{"kubeapply__releaseName", "releaseName"}
 )
 
 // HelmClient represents a client that can be used for expanding out Helm templates into full
@@ -33,9 +47,12 @@ type HelmClient struct {
 }
 
 type helmContext struct {
-	chartsPath string
-	namespace  string
-	valuesPath string
+	chartsPath    string
+	namespace     string
+	part          int
+	totalParts    int
+	valuesPath    string
+	valuesContent []byte
 }
 
 // ExpandHelmTemplates expands out all of the helm values files in the provided configPath.
@@ -57,6 +74,9 @@ func (c *HelmClient) ExpandHelmTemplates(
 			if info.IsDir() {
 				return nil
 			}
+			if !strings.HasSuffix(subPath, ".helm.yaml") {
+				return nil
+			}
 
 			var namespace string
 			if s := strings.Split(strings.TrimPrefix(subPath, configPath), "/"); len(s) > 1 {
@@ -67,16 +87,24 @@ func (c *HelmClient) ExpandHelmTemplates(
 				return fmt.Errorf("Resource %s is defined out of a namespace.", subPath)
 			}
 
-			if strings.HasSuffix(subPath, ".helm.yaml") {
+			contents, err := ioutil.ReadFile(subPath)
+			if err != nil {
+				return err
+			}
+			subParts := sep.Split(string(contents), -1)
+
+			for s, subPart := range subParts {
 				helmContexts = append(
 					helmContexts,
 					helmContext{
-						namespace:  namespace,
-						chartsPath: chartsPath,
-						valuesPath: subPath,
+						namespace:     namespace,
+						chartsPath:    chartsPath,
+						part:          s,
+						totalParts:    len(subParts),
+						valuesPath:    subPath,
+						valuesContent: []byte(subPart),
 					},
 				)
-				return nil
 			}
 			return nil
 		},
@@ -112,7 +140,13 @@ func (c *HelmClient) ExpandHelmTemplates(
 				if err != nil {
 					errChan <- err
 				}
-				errChan <- os.RemoveAll(hctx.valuesPath)
+
+				if hctx.part == 0 {
+					// Only delete values file once
+					errChan <- os.RemoveAll(hctx.valuesPath)
+				} else {
+					errChan <- nil
+				}
 			}
 		}()
 	}
@@ -133,23 +167,22 @@ func (c *HelmClient) generateHelmTemplates(
 	hctx helmContext,
 ) error {
 	log.Infof(
-		"Processing helm chart with values %s in %s",
+		"Processing helm chart with values %s in %s (part %d/%d)",
 		filepath.Base(hctx.valuesPath),
 		hctx.namespace,
+		hctx.part+1,
+		hctx.totalParts,
 	)
 
-	// Skip over empty placeholder values files
-	contents, err := ioutil.ReadFile(hctx.valuesPath)
-	if err != nil {
-		return err
-	}
-	trimmedContents := bytes.TrimSpace(contents)
+	trimmedContents := bytes.TrimSpace(hctx.valuesContent)
 
 	if len(trimmedContents) == 0 {
 		log.Warnf(
-			"Values file %s in %s is empty, skipping",
+			"Values file %s in %s (part %d/%d) is empty, skipping",
 			filepath.Base(hctx.valuesPath),
 			hctx.namespace,
+			hctx.part+1,
+			hctx.totalParts,
 		)
 		return nil
 	}
@@ -157,24 +190,28 @@ func (c *HelmClient) generateHelmTemplates(
 	var contentsMap map[string]interface{}
 	if err := yaml.Unmarshal(trimmedContents, &contentsMap); err != nil {
 		return fmt.Errorf(
-			"File %s is not valid YAML. If it's a template, be sure to add '.gotpl' in its name",
+			"File %s (part %d/%d) is not valid YAML. If it's a template, be sure to add '.gotpl' in its name",
 			hctx.valuesPath,
+			hctx.part+1,
+			hctx.totalParts,
 		)
 	}
 
 	headerComments := getHeaderComments(trimmedContents)
 
-	if getValue(headerComments, "kubeapply__disabled", "disabled") == "true" {
+	if getValue(headerComments, disabledHeaders...) == "true" {
 		log.Warnf(
-			"Skipping values file %s in %s because it has disabled: true",
+			"Skipping values file %s in %s (part %d/%d) because it has disabled: true",
 			filepath.Base(hctx.valuesPath),
 			hctx.namespace,
+			hctx.part+1,
+			hctx.totalParts,
 		)
 		return nil
 	}
 
 	var localChartsPath string
-	chartsOverride := getValue(headerComments, "kubeapply__chart", "kubeapply__charts", "charts")
+	chartsOverride := getValue(headerComments, chartOverrideHeaders...)
 
 	if chartsOverride != "" {
 		log.Debugf("Found charts override: %s", chartsOverride)
@@ -196,7 +233,7 @@ func (c *HelmClient) generateHelmTemplates(
 			return err
 		}
 
-		chartsSubdir := getValue(headerComments, "kubeapply__chartsSubdir")
+		chartsSubdir := getValue(headerComments, chartsSubDirHeaders...)
 		if chartsSubdir != "" {
 			localChartsPath = filepath.Join(localChartsPath, chartsSubdir)
 		}
@@ -209,12 +246,20 @@ func (c *HelmClient) generateHelmTemplates(
 	baseName := filepath.Base(hctx.valuesPath)
 	nameComponents := strings.Split(baseName, ".")
 
-	chartNameOverride := getValue(headerComments, "kubeapply__chartName", "chartName")
+	chartNameOverride := getValue(headerComments, chartNameHeaders...)
 	var chartNamePath string
 	if chartNameOverride != "" {
 		chartNamePath = chartNameOverride
 	} else {
 		chartNamePath = nameComponents[0]
+	}
+
+	namespaceOverride := getValue(headerComments, namespaceOverrideHeaders...)
+	var templateNamespace string
+	if namespaceOverride != "" {
+		templateNamespace = namespaceOverride
+	} else {
+		templateNamespace = hctx.namespace
 	}
 
 	chartPath := filepath.Join(localChartsPath, chartNamePath)
@@ -228,36 +273,40 @@ func (c *HelmClient) generateHelmTemplates(
 		depArgs = append(depArgs, "--debug")
 	}
 
-	err = runHelm(ctx, depArgs)
+	err := runHelm(ctx, depArgs)
 	if err != nil {
 		return err
 	}
 
-	releaseName := getValue(headerComments, "kubeapply__releaseName", "releaseName")
+	releaseName := getValue(headerComments, releaseNameHeaders...)
+
+	tempValuesDir, err := ioutil.TempDir("", "helm")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tempValuesDir)
+	tempValuesPath := filepath.Join(tempValuesDir, "values.yaml")
+	if err := ioutil.WriteFile(tempValuesPath, trimmedContents, 0644); err != nil {
+		return err
+	}
 
 	templateArgs := []string{
 		"template",
-		fmt.Sprintf("--namespace=%s", hctx.namespace),
-		fmt.Sprintf("--values=%s", hctx.valuesPath),
+		fmt.Sprintf("--namespace=%s", templateNamespace),
+		fmt.Sprintf("--values=%s", tempValuesPath),
 		fmt.Sprintf("--output-dir=%s", filepath.Dir(hctx.valuesPath)),
 	}
 	if releaseName != "" {
 		templateArgs = append(templateArgs, fmt.Sprintf("--name-template=%s", releaseName))
+
+		// Include release name in output paths so different ones don't clobber each other
+		templateArgs = append(templateArgs, "--release-name")
 	}
 	if c.GlobalValuesPath != "" {
 		templateArgs = append(templateArgs, fmt.Sprintf("--values=%s", c.GlobalValuesPath))
 	}
 	if c.Debug {
 		templateArgs = append(templateArgs, "--debug")
-	}
-
-	nameOverride := getValue(headerComments, "kubeapply__releaseName")
-
-	if nameOverride != "" {
-		templateArgs = append(
-			templateArgs,
-			fmt.Sprintf("--name-template=%s", nameOverride),
-		)
 	}
 
 	templateArgs = append(templateArgs, chartPath)
