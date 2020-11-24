@@ -17,6 +17,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// TODO: Switch to a YAML library that supports doing this splitting for us.
 var sep = regexp.MustCompile("(?:^|\\s*\n)---\\s*")
 
 // OrderedClient is a kubectl-wrapped client that tries to be clever about the order

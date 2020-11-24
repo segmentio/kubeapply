@@ -16,6 +16,7 @@ import (
 )
 
 var (
+	// TODO: Switch to a YAML library that supports doing this splitting for us.
 	sep = regexp.MustCompile("(?:^|\\s*\n)---\\s*")
 
 	// Header comments that can be set in helm chart values files to change default behavior
