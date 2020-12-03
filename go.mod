@@ -18,11 +18,12 @@ require (
 	github.com/gorilla/mux v1.7.4
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.11 // indirect
+	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/segmentio/conf v1.2.0
-	github.com/segmentio/kubestar v0.0.0-20200125005301-caf438789e1d
 	github.com/segmentio/stats v3.0.0+incompatible
 	github.com/segmentio/stats/v4 v4.5.3
 	github.com/sirupsen/logrus v1.4.2

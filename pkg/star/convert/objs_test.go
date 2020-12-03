@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/segmentio/kubestar/pkg/star2yaml"
-	"github.com/segmentio/kubestar/pkg/util"
+	"github.com/segmentio/kubeapply/pkg/star/expand"
+	"github.com/segmentio/kubeapply/pkg/util"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -166,7 +166,7 @@ Line3""",
 
 		// Re-evaluate the generated starlark to make sure we get back
 		// to the original Kubernetes objects
-		starObjs, err := star2yaml.StarStrToObjs(result, nil)
+		starObjs, err := expand.StarStrToObjs(result, "", nil)
 		assert.Nil(t, err)
 
 		if len(testCase.objs) != len(starObjs) {
@@ -178,7 +178,7 @@ Line3""",
 		}
 
 		for o, expObj := range testCase.objs {
-			util.CompareJsonObjs(t, expObj, starObjs[o])
+			util.CompareJSONObjs(t, expObj, starObjs[o])
 		}
 	}
 }
