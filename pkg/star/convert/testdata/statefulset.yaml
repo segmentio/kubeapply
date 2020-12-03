@@ -1,0 +1,111 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+  namespace: centrifuge
+  labels:
+    app: kafka
+spec:
+  serviceName: kafka
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: "OnDelete"
+  replicas: 3
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "7071"
+      labels:
+        app: kafka
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - kafka
+            topologyKey: kubernetes.io/hostname
+      nodeSelector:
+        segment.com/pool: kafka
+      containers:
+      - name: kafka
+        image: kafka:1.2.3
+        livenessProbe:
+          exec:
+            command:
+              - sh
+              - -ec
+              - /usr/bin/jps | /bin/grep -q Kafka
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          tcpSocket:
+            port: kafka
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        ports:
+        - containerPort: 9092
+          name: kafka
+        - containerPort: 9999
+          name: jmx
+        - containerPort: 7071
+          name: jmx-exporter
+        resources:
+          {}
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: KAFKA_HEAP_OPTS
+          value: -Xmx6G -Xms6G
+        - name: KAFKA_ZOOKEEPER_CONNECT
+          value: "zk:2181/kafka"
+        - name: KAFKA_HOST_NAME
+          value: "$(POD_IP)"
+        - name: "KAFKA_MESSAGE_MAX_BYTES"
+          value: "20000000"
+        command:
+        - sh
+        - -exc
+        - |
+          export KAFKA_BROKER_ID=${POD_NAME##*-} && \
+          exec /entrypoint.sh
+        volumeMounts:
+        - name: data
+          mountPath: "/kafka"
+        - name: host-environment
+          mountPath: "/etc/host-environment"
+          readOnly: true
+      terminationGracePeriodSeconds: 60
+      volumes:
+        - name: host-environment
+          hostPath:
+            path: /etc/host-environment
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        namespace: centrifuge
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: instance-storage
+        resources:
+          requests:
+            storage: 2Gi

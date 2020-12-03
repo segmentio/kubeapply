@@ -10,7 +10,7 @@ import (
 
 	"github.com/segmentio/kubeapply/pkg/config"
 	"github.com/segmentio/kubeapply/pkg/helm"
-	"github.com/segmentio/kubeapply/pkg/star"
+	"github.com/segmentio/kubeapply/pkg/star/expand"
 	"github.com/segmentio/kubeapply/pkg/util"
 	"github.com/segmentio/kubeapply/pkg/version"
 	log "github.com/sirupsen/logrus"
@@ -173,7 +173,7 @@ func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) err
 		"Running starlark interpreter for star files in %s",
 		clusterConfig.ExpandedPath,
 	)
-	err = star.ExpandStar(
+	err = expand.ExpandStar(
 		clusterConfig.ExpandedPath,
 		filepath.Dir(clusterConfig.FullPath()),
 		starParams,
