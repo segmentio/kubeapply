@@ -69,8 +69,6 @@ func yaml2starRun(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		fmt.Println(paths)
-
 		for _, path := range paths {
 			info, err := os.Stat(path)
 			if err != nil {

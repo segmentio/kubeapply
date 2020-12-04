@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 
 	"github.com/segmentio/kubeapply/pkg/star/expand/skymod"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -12,6 +13,8 @@ func YamlToStar(filePaths []string, config Config) (string, error) {
 	fileStrs := []string{}
 
 	for _, filePath := range filePaths {
+		log.Infof("Processing file: %s", filePath)
+
 		fileBytes, err := ioutil.ReadFile(filePath)
 		if err != nil {
 			return "", err

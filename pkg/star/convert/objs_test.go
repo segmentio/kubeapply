@@ -223,7 +223,7 @@ Line3""",
 			strings.TrimSpace(result),
 		)
 
-		if testCase.config.EntrypointName == "" {
+		if testCase.config.Entrypoint == "" {
 			// Re-evaluate the generated starlark to make sure we get back
 			// to the original Kubernetes objects; we can only do this
 			// if there's a main (default) entrypoint.
