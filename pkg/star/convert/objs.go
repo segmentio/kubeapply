@@ -17,7 +17,7 @@ import (
 )
 
 // ObjsToStar converts a slice of Kubernetes objects into a starlark string.
-func ObjsToStar(objs []runtime.Object) (string, error) {
+func ObjsToStar(objs []runtime.Object, config Config) (string, error) {
 	usedModules := map[string]struct{}{}
 	objsDefs := []string{}
 	objNames := []string{}
@@ -35,7 +35,7 @@ func ObjsToStar(objs []runtime.Object) (string, error) {
 		objNamesMap[name] = struct{}{}
 
 		out := &bytes.Buffer{}
-		err := walkObj(reflect.ValueOf(objProto), 0, usedModules, out)
+		err := walkObj(reflect.ValueOf(objProto), 0, usedModules, config, out)
 		if err != nil {
 			return "", err
 		}
@@ -44,7 +44,7 @@ func ObjsToStar(objs []runtime.Object) (string, error) {
 
 	moduleNames := []string{}
 
-	for module, _ := range usedModules {
+	for module := range usedModules {
 		moduleNames = append(moduleNames, module)
 	}
 
@@ -71,9 +71,46 @@ func ObjsToStar(objs []runtime.Object) (string, error) {
 	}
 
 	resultLines = append(resultLines, "")
-	resultLines = append(resultLines, "def main(ctx):")
+
+	if config.EntrypointName == "" {
+		resultLines = append(resultLines, "def main(ctx):")
+	} else {
+		resultLines = append(resultLines, fmt.Sprintf("def %s(", config.EntrypointName))
+		resultLines = append(resultLines, fmt.Sprintf("%sctx,", indentToLevel(1)))
+		for _, arg := range config.Args {
+			resultLines = append(
+				resultLines,
+				fmt.Sprintf(
+					"%s%s = %s,",
+					indentToLevel(1),
+					arg.Name,
+					arg.DefaultValueStr(),
+				),
+			)
+		}
+		resultLines = append(resultLines, "):")
+
+		requiredCount := 0
+
+		for _, arg := range config.Args {
+			if arg.Required {
+				resultLines = append(
+					resultLines,
+					indentLines(arg.RequiredStatement(), 1, true),
+				)
+				requiredCount++
+			}
+		}
+
+		if requiredCount > 0 {
+			resultLines = append(resultLines, "")
+		}
+	}
 
 	for o, objDef := range objsDefs {
+		if o > 0 {
+			resultLines = append(resultLines, "")
+		}
 		resultLines = append(
 			resultLines,
 			fmt.Sprintf("  %s = %s", objNames[o], indentLines(objDef, 1, false)),
@@ -101,6 +138,7 @@ func walkObj(
 	val reflect.Value,
 	level int,
 	usedModules map[string]struct{},
+	config Config,
 	out io.Writer,
 ) error {
 	// Dereference pointer
@@ -112,18 +150,18 @@ func walkObj(
 	case reflect.String:
 		str := val.String()
 
-		if strings.ContainsAny(str, "\n") {
+		subVar := config.SubVariable(str)
+		if subVar != "" {
+			// Use the variable name instead of the actual string value
+			fmt.Fprint(out, subVar)
+		} else if strings.ContainsAny(str, "\n") {
 			// Use starlark multi-string format
 			fmt.Fprintf(out, `"""%s"""`, val)
 		} else {
 			// Use the quoted encoding of the string
 			fmt.Fprintf(out, strconv.Quote(str))
 		}
-	case reflect.Int:
-		fmt.Fprintf(out, "%d", val.Int())
-	case reflect.Int32:
-		fmt.Fprintf(out, "%d", val.Int())
-	case reflect.Int64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		fmt.Fprintf(out, "%d", val.Int())
 	case reflect.Slice:
 		fmt.Fprintf(out, "[\n")
@@ -131,7 +169,7 @@ func walkObj(
 		for i := 0; i < val.Len(); i++ {
 			fmt.Fprintf(out, indentToLevel(level+1))
 
-			err := walkObj(val.Index(i), level+1, usedModules, out)
+			err := walkObj(val.Index(i), level+1, usedModules, config, out)
 			if err != nil {
 				return err
 			}
@@ -149,14 +187,14 @@ func walkObj(
 			mapValue := val.MapIndex(key)
 			fmt.Fprintf(out, indentToLevel(level+1))
 
-			err := walkObj(key, level+1, usedModules, out)
+			err := walkObj(key, level+1, usedModules, config, out)
 			if err != nil {
 				return err
 			}
 
 			fmt.Fprintf(out, ": ")
 
-			err = walkObj(mapValue, level+1, usedModules, out)
+			err = walkObj(mapValue, level+1, usedModules, config, out)
 			if err != nil {
 				return err
 			}
@@ -233,7 +271,7 @@ func walkObj(
 					continue
 				}
 
-				err := walkObj(fieldValue, level+1, usedModules, out)
+				err := walkObj(fieldValue, level+1, usedModules, config, out)
 				if err != nil {
 					return err
 				}

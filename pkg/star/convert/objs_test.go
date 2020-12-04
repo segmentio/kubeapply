@@ -15,13 +15,14 @@ import (
 
 type objsToStarTestCase struct {
 	objs       []runtime.Object
+	config     Config
 	expStarStr string
 	expErr     bool
 }
 
 func TestObjsToStar(t *testing.T) {
 	testCases := []objsToStarTestCase{
-		objsToStarTestCase{
+		{
 			objs: []runtime.Object{},
 			expStarStr: `
 def main(ctx):
@@ -29,7 +30,7 @@ def main(ctx):
   return [
   ]`,
 		},
-		objsToStarTestCase{
+		{
 			objs: []runtime.Object{
 				&corev1.ConfigMap{
 					TypeMeta: metav1.TypeMeta{
@@ -50,11 +51,11 @@ def main(ctx):
 					},
 					Spec: corev1.PodSpec{
 						Containers: []corev1.Container{
-							corev1.Container{
+							{
 								Name:  "main",
 								Image: "my_image:latest",
 								Ports: []corev1.ContainerPort{
-									corev1.ContainerPort{
+									{
 										ContainerPort: 80,
 									},
 								},
@@ -73,7 +74,7 @@ def main(ctx):
 							},
 						},
 						Volumes: []corev1.Volume{
-							corev1.Volume{
+							{
 								Name: "test-volume",
 								VolumeSource: corev1.VolumeSource{
 									HostPath: &corev1.HostPathVolumeSource{
@@ -106,6 +107,7 @@ Line2
 Line3""",
     },
   )
+
   pod = corev1.Pod(
     spec = corev1.PodSpec(
       volumes = [
@@ -139,6 +141,7 @@ Line3""",
       ],
     ),
   )
+
   pod1 = corev1.Pod(
   )
 
@@ -148,10 +151,66 @@ Line3""",
     pod1,
   ]`,
 		},
+		{
+			objs: []runtime.Object{
+				&corev1.ConfigMap{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "ConfigMap",
+						APIVersion: "v1",
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "test-config",
+					},
+					Data: map[string]string{
+						"my_file.txt": "Line1\nLine2\nLine3",
+					},
+				},
+			},
+			config: Config{
+				EntrypointName: "run",
+				Args: []Arg{
+					{
+						Name:         "name",
+						DefaultValue: "test-config",
+						Required:     true,
+					},
+					{
+						Name:         "count",
+						DefaultValue: 1234,
+					},
+				},
+			},
+			expStarStr: `
+corev1 = proto.package("k8s.io.api.core.v1")
+metav1 = proto.package("k8s.io.apimachinery.pkg.apis.meta.v1")
+
+def run(
+  ctx,
+  name = "test-config",
+  count = 1234,
+):
+  if name == "":
+    fail("name must be set to non-empty value")
+
+  test_config_configmap = corev1.ConfigMap(
+    metadata = metav1.ObjectMeta(
+      name = name,
+    ),
+    data = {
+      "my_file.txt": """Line1
+Line2
+Line3""",
+    },
+  )
+
+  return [
+    test_config_configmap,
+  ]`,
+		},
 	}
 
 	for _, testCase := range testCases {
-		result, err := ObjsToStar(testCase.objs)
+		result, err := ObjsToStar(testCase.objs, testCase.config)
 		if testCase.expErr {
 			assert.NotNil(t, err)
 		} else {
@@ -164,21 +223,24 @@ Line3""",
 			strings.TrimSpace(result),
 		)
 
-		// Re-evaluate the generated starlark to make sure we get back
-		// to the original Kubernetes objects
-		starObjs, err := expand.StarStrToObjs(result, "", nil)
-		assert.Nil(t, err)
+		if testCase.config.EntrypointName == "" {
+			// Re-evaluate the generated starlark to make sure we get back
+			// to the original Kubernetes objects; we can only do this
+			// if there's a main (default) entrypoint.
+			starObjs, err := expand.StarStrToObjs(result, "", nil)
+			assert.Nil(t, err)
 
-		if len(testCase.objs) != len(starObjs) {
-			assert.FailNowf(
-				t,
-				"Wrong length of returned objects from starlark evaluation",
-				"Expected %d, got %d", len(testCase.objs), len(starObjs),
-			)
-		}
+			if len(testCase.objs) != len(starObjs) {
+				assert.FailNowf(
+					t,
+					"Wrong length of returned objects from starlark evaluation",
+					"Expected %d, got %d", len(testCase.objs), len(starObjs),
+				)
+			}
 
-		for o, expObj := range testCase.objs {
-			util.CompareJSONObjs(t, expObj, starObjs[o])
+			for o, expObj := range testCase.objs {
+				util.CompareJSONObjs(t, expObj, starObjs[o])
+			}
 		}
 	}
 }

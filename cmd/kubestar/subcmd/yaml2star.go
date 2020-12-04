@@ -17,11 +17,19 @@ var yaml2starCmd = &cobra.Command{
 }
 
 type yaml2StarFlags struct {
+	args []string
 }
 
 var yaml2StarFlagValues yaml2StarFlags
 
 func init() {
+	yaml2starCmd.Flags().StringArrayVar(
+		&yaml2StarFlagValues.args,
+		"args",
+		[]string{},
+		"list of arguments to add to entrypoint, in key=value format",
+	)
+
 	RootCmd.AddCommand(yaml2starCmd)
 }
 
@@ -49,7 +57,7 @@ func yaml2starRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	result, err := convert.YamlToStar(filePaths)
+	result, err := convert.YamlToStar(filePaths, convert.Config{})
 	if err != nil {
 		return err
 	}

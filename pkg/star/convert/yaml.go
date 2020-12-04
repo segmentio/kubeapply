@@ -8,7 +8,7 @@ import (
 )
 
 // YamlToStar converts a YAML file into a starlark representation.
-func YamlToStar(filePaths []string) (string, error) {
+func YamlToStar(filePaths []string, config Config) (string, error) {
 	fileStrs := []string{}
 
 	for _, filePath := range filePaths {
@@ -19,11 +19,11 @@ func YamlToStar(filePaths []string) (string, error) {
 		fileStrs = append(fileStrs, string(fileBytes))
 	}
 
-	return YamlStrToStar(fileStrs)
+	return YamlStrToStar(fileStrs, config)
 }
 
 // YamlStrToStar converts a YAML string into a starlark representation.
-func YamlStrToStar(yamlStrs []string) (string, error) {
+func YamlStrToStar(yamlStrs []string, config Config) (string, error) {
 	allObjs := []runtime.Object{}
 
 	for _, yamlStr := range yamlStrs {
@@ -34,5 +34,5 @@ func YamlStrToStar(yamlStrs []string) (string, error) {
 		allObjs = append(allObjs, objs...)
 	}
 
-	return ObjsToStar(allObjs)
+	return ObjsToStar(allObjs, config)
 }

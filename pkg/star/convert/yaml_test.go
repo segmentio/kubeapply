@@ -15,6 +15,7 @@ func TestYamlToStar(t *testing.T) {
 			"testdata/deployment.yaml",
 			"testdata/statefulset.yaml",
 		},
+		Config{},
 	)
 	assert.Nil(t, err)
 
