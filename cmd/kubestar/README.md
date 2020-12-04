@@ -18,7 +18,7 @@ The `kubestar` binary will be placed in `$GOPATH/bin`.
 
 The `star2yaml` subcommand evaluates a starlark entrypoint (i.e., of the form
 `def main(ctx):`) and outputs the associated Kubernetes YAML to `stdout`.
-Note that conversion is already supported in `kubeapply expand`, so this
+Note that this conversion is already supported in `kubeapply expand`, so this
 subcommand shouldn't be needed if you're already using the former.
 
 #### Usage
