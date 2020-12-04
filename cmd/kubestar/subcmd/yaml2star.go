@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/segmentio/kubeapply/pkg/star/convert"
 	"github.com/spf13/cobra"
@@ -17,7 +18,8 @@ var yaml2starCmd = &cobra.Command{
 }
 
 type yaml2StarFlags struct {
-	args []string
+	args       []string
+	entrypoint string
 }
 
 var yaml2StarFlagValues yaml2StarFlags
@@ -27,13 +29,38 @@ func init() {
 		&yaml2StarFlagValues.args,
 		"args",
 		[]string{},
-		"list of arguments to add to entrypoint, in key=value format",
+		"list of arguments to add to custom (non-main) entrypoint, in key=value format",
+	)
+	yaml2starCmd.Flags().StringVar(
+		&yaml2StarFlagValues.entrypoint,
+		"entrypoint",
+		"main",
+		"name of entrypoint",
 	)
 
 	RootCmd.AddCommand(yaml2starCmd)
 }
 
 func yaml2starRun(cmd *cobra.Command, args []string) error {
+	config := convert.Config{
+		Entrypoint: yaml2StarFlagValues.entrypoint,
+	}
+
+	for _, arg := range yaml2StarFlagValues.args {
+		components := strings.SplitN(arg, "=", 2)
+		if len(components) != 2 {
+			return fmt.Errorf("Argument not in format key=value: %s", arg)
+		}
+		config.Args = append(
+			config.Args,
+			convert.Arg{
+				Name: components[0],
+				// For now, treat all default values as (non-required) strings
+				DefaultValue: components[1],
+			},
+		)
+	}
+
 	filePaths := []string{}
 
 	for _, arg := range args {
@@ -57,7 +84,7 @@ func yaml2starRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	result, err := convert.YamlToStar(filePaths, convert.Config{})
+	result, err := convert.YamlToStar(filePaths, config)
 	if err != nil {
 		return err
 	}

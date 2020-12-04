@@ -167,7 +167,7 @@ Line3""",
 				},
 			},
 			config: Config{
-				EntrypointName: "run",
+				Entrypoint: "run",
 				Args: []Arg{
 					{
 						Name:         "name",

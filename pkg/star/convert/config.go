@@ -5,8 +5,8 @@ import (
 )
 
 type Config struct {
-	EntrypointName string
-	Args           []Arg
+	Entrypoint string
+	Args       []Arg
 
 	varSubs map[string]string
 }

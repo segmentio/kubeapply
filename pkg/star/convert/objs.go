@@ -72,10 +72,10 @@ func ObjsToStar(objs []runtime.Object, config Config) (string, error) {
 
 	resultLines = append(resultLines, "")
 
-	if config.EntrypointName == "" {
+	if config.Entrypoint == "" || config.Entrypoint == "main" {
 		resultLines = append(resultLines, "def main(ctx):")
 	} else {
-		resultLines = append(resultLines, fmt.Sprintf("def %s(", config.EntrypointName))
+		resultLines = append(resultLines, fmt.Sprintf("def %s(", config.Entrypoint))
 		resultLines = append(resultLines, fmt.Sprintf("%sctx,", indentToLevel(1)))
 		for _, arg := range config.Args {
 			resultLines = append(
