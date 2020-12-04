@@ -60,7 +60,10 @@ func star2yamlRun(cmd *cobra.Command, args []string) error {
 	if star2yamlFlagValues.varsStr != "" {
 		extraParams := map[string]interface{}{}
 
-		if err := json.Unmarshal([]byte(star2yamlFlagValues.varsStr), &extraParams); err != nil {
+		if err := json.Unmarshal(
+			[]byte(star2yamlFlagValues.varsStr),
+			&extraParams,
+		); err != nil {
 			return err
 		}
 

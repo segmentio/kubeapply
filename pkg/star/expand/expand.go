@@ -120,10 +120,11 @@ func StarToObjs(
 	root string,
 	params map[string]interface{},
 ) ([]runtime.Object, error) {
-	reader, err := NewLocalFileReader(root)
+	reader, err := NewURLFileReader(root)
 	if err != nil {
 		return nil, err
 	}
+	defer reader.Close()
 
 	config, err := skycfg.Load(
 		context.Background(),

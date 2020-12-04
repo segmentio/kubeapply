@@ -1,9 +1,9 @@
-load("deploy.star", "deployment")
+load("file://deploy.star", "deployment")
 
 def main(ctx):
   return [
     deployment("nginx"),
-    deployment("haproxy")
+    deployment("haproxy"),
   ] + util.fromYaml("""
 apiVersion: v1
 kind: Service
