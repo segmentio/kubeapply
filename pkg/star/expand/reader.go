@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/segmentio/kubeapply/pkg/util"
+	log "github.com/sirupsen/logrus"
 	"github.com/stripe/skycfg"
 )
 
@@ -78,17 +79,21 @@ func (r *urlFileReader) Resolve(
 	case "file":
 		if strings.HasPrefix(remainder, "//") {
 			// Treat path as being relative to cluster root
-			return filepath.Join(
+			resolve := filepath.Join(
 				r.root,
 				remainder[2:],
-			), nil
+			)
+			log.Debugf("Resolving name %s to path relative to root: %s", name, resolve)
+			return resolve, nil
 		}
 
 		// Treat path as being relative to this file
-		return filepath.Join(
+		resolve := filepath.Join(
 			filepath.Dir(fromPath),
 			remainder,
-		), nil
+		)
+		log.Debugf("Resolving name %s to path relative to this file: %s", name, resolve)
+		return resolve, nil
 	case "git", "git-https":
 		ref := repoRef{}
 
@@ -117,6 +122,7 @@ func (r *urlFileReader) Resolve(
 			ref.url = fmt.Sprintf("https://%s", ref.url)
 		}
 
+		log.Debugf("Resolving name %s to path %s in repo %+v", name, subPath, ref)
 		repoDir, ok := r.repoDirs[ref]
 		if !ok {
 			repoDir = filepath.Join(r.tempDir, ref.dirName())
