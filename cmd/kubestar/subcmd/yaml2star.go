@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/segmentio/kubeapply/pkg/star/convert"
@@ -29,13 +30,13 @@ func init() {
 		&yaml2StarFlagValues.args,
 		"args",
 		[]string{},
-		"list of arguments to add to custom (non-main) entrypoint, in key=value format",
+		"List of arguments to add to custom (non-main) entrypoint, in key=value format",
 	)
 	yaml2starCmd.Flags().StringVar(
 		&yaml2StarFlagValues.entrypoint,
 		"entrypoint",
 		"main",
-		"name of entrypoint",
+		"Name of entrypoint",
 	)
 
 	RootCmd.AddCommand(yaml2starCmd)
@@ -60,6 +61,10 @@ func yaml2starRun(cmd *cobra.Command, args []string) error {
 			},
 		)
 	}
+
+	sort.Slice(config.Args, func(a, b int) bool {
+		return config.Args[a].Name < config.Args[b].Name
+	})
 
 	filePaths := []string{}
 

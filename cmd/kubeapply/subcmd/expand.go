@@ -159,16 +159,6 @@ func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) err
 		}
 	}
 
-	starParams := map[string]interface{}{
-		"cluster":    clusterConfig.Cluster,
-		"env":        clusterConfig.Env,
-		"region":     clusterConfig.Region,
-		"parameters": clusterConfig.Parameters,
-	}
-	for key, value := range clusterConfig.Parameters {
-		starParams[key] = value
-	}
-
 	log.Infof(
 		"Running starlark interpreter for star files in %s",
 		clusterConfig.ExpandedPath,
@@ -176,7 +166,7 @@ func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) err
 	err = expand.ExpandStar(
 		clusterConfig.ExpandedPath,
 		filepath.Dir(clusterConfig.FullPath()),
-		starParams,
+		clusterConfig.StarParams(),
 	)
 	if err != nil {
 		return err

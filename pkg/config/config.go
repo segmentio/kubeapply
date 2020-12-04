@@ -255,3 +255,18 @@ func (c ClusterConfig) PrettySubpath() string {
 	}
 	return fmt.Sprintf("`%s`", c.Subpath)
 }
+
+// StarParams generates the base starlark params for this ClusterConfig.
+func (c ClusterConfig) StarParams() map[string]interface{} {
+	starParams := map[string]interface{}{
+		"cluster":    c.Cluster,
+		"env":        c.Env,
+		"region":     c.Region,
+		"parameters": c.Parameters,
+	}
+	for key, value := range c.Parameters {
+		starParams[key] = value
+	}
+
+	return starParams
+}

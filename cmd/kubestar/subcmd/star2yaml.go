@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/segmentio/kubeapply/pkg/config"
 	"github.com/segmentio/kubeapply/pkg/star/expand"
 	"github.com/spf13/cobra"
 )
@@ -17,28 +18,54 @@ var star2yamlCmd = &cobra.Command{
 }
 
 type star2yamlFlags struct {
-	varsStr string
+	clusterConfig string
+	varsStr       string
 }
 
 var star2yamlFlagValues star2yamlFlags
 
 func init() {
 	star2yamlCmd.Flags().StringVar(
+		&star2yamlFlagValues.clusterConfig,
+		"cluster-config",
+		"",
+		"Path to a kubeapply-formatted YAML cluster config; used to set vars in ctx object",
+	)
+	star2yamlCmd.Flags().StringVar(
 		&star2yamlFlagValues.varsStr,
 		"vars",
 		"",
-		"JSON-formatted vars to insert in ctx object",
+		"Extra JSON-formatted vars to insert in ctx object",
 	)
 
 	RootCmd.AddCommand(star2yamlCmd)
 }
 
 func star2yamlRun(cmd *cobra.Command, args []string) error {
-	vars := map[string]interface{}{}
+	var starParams map[string]interface{}
+
+	if star2yamlFlagValues.clusterConfig != "" {
+		clusterConfig, err := config.LoadClusterConfig(
+			star2yamlFlagValues.clusterConfig,
+			"",
+		)
+		if err != nil {
+			return err
+		}
+		starParams = clusterConfig.StarParams()
+	} else {
+		starParams = map[string]interface{}{}
+	}
 
 	if star2yamlFlagValues.varsStr != "" {
-		if err := json.Unmarshal([]byte(star2yamlFlagValues.varsStr), &vars); err != nil {
+		extraParams := map[string]interface{}{}
+
+		if err := json.Unmarshal([]byte(star2yamlFlagValues.varsStr), &extraParams); err != nil {
 			return err
+		}
+
+		for key, value := range extraParams {
+			starParams[key] = value
 		}
 	}
 
@@ -47,7 +74,7 @@ func star2yamlRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	result, err := expand.StarToYaml(args[0], cwd, vars)
+	result, err := expand.StarToYaml(args[0], cwd, starParams)
 	if err != nil {
 		return err
 	}
