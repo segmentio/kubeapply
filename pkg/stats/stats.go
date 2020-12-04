@@ -17,7 +17,10 @@ import (
 type StatType string
 
 const (
+	// StatTypeGauge represents the type of a guage stat.
 	StatTypeGauge StatType = "gauge"
+
+	// StatTypeCount represents the type of a count stat.
 	StatTypeCount StatType = "count"
 )
 

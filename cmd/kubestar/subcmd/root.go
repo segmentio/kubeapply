@@ -39,7 +39,7 @@ func init() {
 	)
 }
 
-// Execute runs kubeapply.
+// Execute runs kubestar.
 func Execute(versionRef string) {
 	RootCmd.Version = fmt.Sprintf("v%s (ref:%s)", version.Version, versionRef)
 

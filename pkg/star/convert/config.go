@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// Config stores the configuration associated with a YAML to starlark conversion.
 type Config struct {
 	Entrypoint string
 	Args       []Arg
@@ -11,12 +12,15 @@ type Config struct {
 	varSubs map[string]string
 }
 
+// Arg includes the details of an argument for the starlark entrypoint.
 type Arg struct {
 	Name         string
 	DefaultValue interface{}
 	Required     bool
 }
 
+// SubVariable determines which variable (if any) a raw string should
+// be replaced with.
 func (c Config) SubVariable(value string) string {
 	if c.varSubs == nil {
 		c.varSubs = map[string]string{}
@@ -35,6 +39,7 @@ func (c Config) SubVariable(value string) string {
 	return c.varSubs[value]
 }
 
+// DefaultValueStr gets the default value for this argument.
 func (a Arg) DefaultValueStr() string {
 	switch v := a.DefaultValue.(type) {
 	case string:
@@ -54,6 +59,8 @@ func (a Arg) DefaultValueStr() string {
 	}
 }
 
+// RequiredStatement returns a statement that ensures that this argument
+// is set.
 func (a Arg) RequiredStatement() string {
 	var emptyValue string
 

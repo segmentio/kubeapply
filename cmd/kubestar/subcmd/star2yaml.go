@@ -17,27 +17,27 @@ var star2yamlCmd = &cobra.Command{
 }
 
 type star2yamlFlags struct {
-	valuesStr string
+	varsStr string
 }
 
 var star2yamlFlagValues star2yamlFlags
 
 func init() {
 	star2yamlCmd.Flags().StringVar(
-		&star2yamlFlagValues.valuesStr,
-		"values",
+		&star2yamlFlagValues.varsStr,
+		"vars",
 		"",
-		"JSON values to use for starlark evaluation",
+		"JSON-formatted vars to insert in ctx object",
 	)
 
 	RootCmd.AddCommand(star2yamlCmd)
 }
 
 func star2yamlRun(cmd *cobra.Command, args []string) error {
-	values := map[string]interface{}{}
+	vars := map[string]interface{}{}
 
-	if star2yamlFlagValues.valuesStr != "" {
-		if err := json.Unmarshal([]byte(star2yamlFlagValues.valuesStr), &values); err != nil {
+	if star2yamlFlagValues.varsStr != "" {
+		if err := json.Unmarshal([]byte(star2yamlFlagValues.varsStr), &vars); err != nil {
 			return err
 		}
 	}
@@ -47,7 +47,7 @@ func star2yamlRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	result, err := expand.StarToYaml(args[0], cwd, values)
+	result, err := expand.StarToYaml(args[0], cwd, vars)
 	if err != nil {
 		return err
 	}
