@@ -1,5 +1,35 @@
 # kubeapply
 
+## Contents
+
+  * [Overview](#overview)
+  * [Motivation](#motivation)
+      * [Disclaimer](#disclaimer)
+  * [Getting started](#getting-started)
+      * [Prerequisites](#prerequisites)
+      * [Installing](#installing)
+      * [Quick tour](#quick-tour)
+  * [Configuration](#configuration)
+      * [Repo layout](#repo-layout)
+      * [Cluster config](#cluster-config)
+      * [Profile](#profile)
+      * [Expanded configs](#expanded-configs)
+  * [Usage (CLI)](#usage-cli)
+      * [Expand](#expand)
+      * [Validate](#validate)
+      * [Diff](#diff)
+      * [Apply](#apply)
+  * [Usage (Github webhooks)](#usage-github-webhooks)
+      * [Workflow](#workflow)
+      * [Backend](#backend)
+      * [Github configuration](#github-configuration)
+  * [Experimental features](#experimental-features)
+      * [kubestar](#kubestar)
+      * [Multi-profile support](#multi-profile-support)
+  * [Testing](#testing)
+      * [Unit tests](#unit-tests)
+      * [On Github changes](#on-github-changes)
+
 ## Overview
 
 `kubeapply` is a lightweight tool for git-based management of Kubernetes configs.
