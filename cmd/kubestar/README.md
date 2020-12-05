@@ -27,8 +27,10 @@ subcommand shouldn't be needed if you're already using the former.
 kubestar star2yaml [star path] [flags]
 
 Flags:
-  -h, --help            help for star2yaml
-      --vars string     JSON-formatted vars to insert in ctx object
+      --cluster-config string   Path to a kubeapply-formatted YAML cluster config; used to set vars in
+                                ctx object (optional)
+  -h, --help                    help for star2yaml
+      --vars string             Extra JSON-formatted vars to insert in ctx object (optional)
 
 Global Flags:
   -d, --debug   Enable debug logging
@@ -59,9 +61,8 @@ function that's called from elsewhere.
 kubestar yaml2star [YAML configs] [flags]
 
 Flags:
-      --args stringArray    list of arguments to add to custom (non-main)
-                            entrypoint, in key=value format
-      --entrypoint string   name of entrypoint (default "main")
+      --args stringArray    List of arguments to add to custom (non-main) entrypoint, in key=value format
+      --entrypoint string   Name of entrypoint (default "main")
   -h, --help                help for yaml2star
 
 Global Flags:
