@@ -108,13 +108,27 @@ func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) err
 		log.Debugf("Local charts path is %s", chartsPath)
 	}
 
-	log.Infof("Copying configs to %s", clusterConfig.ExpandedPath)
-	err = util.RecursiveCopy(
-		clusterConfig.ProfilePath,
-		clusterConfig.ExpandedPath,
-	)
-	if err != nil {
-		return err
+	if len(clusterConfig.Profiles) > 0 {
+		for _, profile := range clusterConfig.Profiles {
+			err = util.RestoreData(
+				ctx,
+				filepath.Dir(clusterConfig.FullPath()),
+				profile.URL,
+				filepath.Join(clusterConfig.ExpandedPath, profile.Name),
+			)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		log.Infof("Copying configs to %s", clusterConfig.ExpandedPath)
+		err = util.RecursiveCopy(
+			clusterConfig.ProfilePath,
+			clusterConfig.ExpandedPath,
+		)
+		if err != nil {
+			return err
+		}
 	}
 
 	log.Infof("Applying templates in %s", clusterConfig.ExpandedPath)

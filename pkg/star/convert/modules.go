@@ -26,6 +26,7 @@ var modules = map[string]string{
 	"rbacv1beta1":       "k8s.io/api/rbac/v1beta1",
 	"resource":          "k8s.io/apimachinery/pkg/api/resource",
 	"schedulingv1":      "k8s.io/api/scheduling/v1",
+	"schedulingv1beta1": "k8s.io/api/scheduling/v1beta1",
 	"storagev1":         "k8s.io/api/storage/v1",
 }
 
