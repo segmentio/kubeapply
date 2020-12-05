@@ -219,7 +219,12 @@ func walkObj(
 			return nil
 		} else if val.Type().Name() == "IntOrString" {
 			q := val.Interface().(intstr.IntOrString)
-			fmt.Fprintf(out, "util.intOrStr(\"%s\")", q.String())
+			if q.IntVal > 0 {
+				fmt.Fprintf(out, "util.intOrStr(%d)", q.IntVal)
+			} else {
+				fmt.Fprintf(out, "util.intOrStr(\"%s\")", q.StrVal)
+			}
+
 			return nil
 		}
 
