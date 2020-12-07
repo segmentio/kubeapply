@@ -1,4 +1,4 @@
-package star
+package expand
 
 import (
 	"sort"
@@ -160,9 +160,9 @@ def main(ctx):
 	for _, testCase := range testCases {
 		objs, err := StarStrToObjs(testCase.starStr, "root", testCase.params)
 		if testCase.expErr {
-			assert.NotNil(t, err)
+			assert.Error(t, err)
 		} else {
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 		}
 
 		if len(testCase.expObjs) != len(objs) {

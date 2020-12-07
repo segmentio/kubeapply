@@ -55,6 +55,13 @@ type ClusterConfig struct {
 	// Optional, defaults to "profile" if not set.
 	ProfilePath string `json:"profilePath"`
 
+	// Profiles is the list of profiles for this cluster. Unlike the ProfilePath above, these
+	// can be full URLs and also allows for multiple profiles. If these are set, then ProfilePath
+	// will be ignored.
+	//
+	// Optional.
+	Profiles []Profile `json:"profiles"`
+
 	// ExpandedPath is the path to the results of expanding out all of the configs for this cluster.
 	//
 	// Optional, defaults to "expanded/[env]/[region]" if not set.
@@ -89,6 +96,11 @@ type ClusterConfig struct {
 	fullPath        string
 	relPath         string
 	descriptiveName string
+}
+
+type Profile struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
 }
 
 // LoadClusterConfig loads a config from a path on disk.
@@ -254,4 +266,19 @@ func (c ClusterConfig) PrettySubpath() string {
 		return "*all*"
 	}
 	return fmt.Sprintf("`%s`", c.Subpath)
+}
+
+// StarParams generates the base starlark params for this ClusterConfig.
+func (c ClusterConfig) StarParams() map[string]interface{} {
+	starParams := map[string]interface{}{
+		"cluster":    c.Cluster,
+		"env":        c.Env,
+		"region":     c.Region,
+		"parameters": c.Parameters,
+	}
+	for key, value := range c.Parameters {
+		starParams[key] = value
+	}
+
+	return starParams
 }

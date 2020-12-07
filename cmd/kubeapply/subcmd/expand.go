@@ -10,7 +10,7 @@ import (
 
 	"github.com/segmentio/kubeapply/pkg/config"
 	"github.com/segmentio/kubeapply/pkg/helm"
-	"github.com/segmentio/kubeapply/pkg/star"
+	"github.com/segmentio/kubeapply/pkg/star/expand"
 	"github.com/segmentio/kubeapply/pkg/util"
 	"github.com/segmentio/kubeapply/pkg/version"
 	log "github.com/sirupsen/logrus"
@@ -108,13 +108,27 @@ func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) err
 		log.Debugf("Local charts path is %s", chartsPath)
 	}
 
-	log.Infof("Copying configs to %s", clusterConfig.ExpandedPath)
-	err = util.RecursiveCopy(
-		clusterConfig.ProfilePath,
-		clusterConfig.ExpandedPath,
-	)
-	if err != nil {
-		return err
+	if len(clusterConfig.Profiles) > 0 {
+		for _, profile := range clusterConfig.Profiles {
+			err = util.RestoreData(
+				ctx,
+				filepath.Dir(clusterConfig.FullPath()),
+				profile.URL,
+				filepath.Join(clusterConfig.ExpandedPath, profile.Name),
+			)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		log.Infof("Copying configs to %s", clusterConfig.ExpandedPath)
+		err = util.RecursiveCopy(
+			clusterConfig.ProfilePath,
+			clusterConfig.ExpandedPath,
+		)
+		if err != nil {
+			return err
+		}
 	}
 
 	log.Infof("Applying templates in %s", clusterConfig.ExpandedPath)
@@ -159,24 +173,14 @@ func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) err
 		}
 	}
 
-	starParams := map[string]interface{}{
-		"cluster":    clusterConfig.Cluster,
-		"env":        clusterConfig.Env,
-		"region":     clusterConfig.Region,
-		"parameters": clusterConfig.Parameters,
-	}
-	for key, value := range clusterConfig.Parameters {
-		starParams[key] = value
-	}
-
 	log.Infof(
 		"Running starlark interpreter for star files in %s",
 		clusterConfig.ExpandedPath,
 	)
-	err = star.ExpandStar(
+	err = expand.ExpandStar(
 		clusterConfig.ExpandedPath,
 		filepath.Dir(clusterConfig.FullPath()),
-		starParams,
+		clusterConfig.StarParams(),
 	)
 	if err != nil {
 		return err

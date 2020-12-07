@@ -1,5 +1,16 @@
 # kubeapply
 
+## Contents
+
+  * [Overview](#overview)
+  * [Motivation](#motivation)
+  * [Getting started](#getting-started)
+  * [Configuration](#configuration)
+  * [Usage (CLI)](#usage-cli)
+  * [Usage (Github webhooks)](#usage-github-webhooks)
+  * [Experimental features](#experimental-features)
+  * [Testing](#testing)
+
 ## Overview
 
 `kubeapply` is a lightweight tool for git-based management of Kubernetes configs.
@@ -293,6 +304,35 @@ and add a new webhook:
 
 In the "Event triggers" section, select "Issue comments" and "Pull requests" only. Then, test it
 out by opening up a new pull request that modifies an expanded kubeapply config.
+
+## Experimental features
+
+### `kubestar`
+
+This repo now contains an experimental tool, `kubestar`, for converting YAML to
+skycfg-compatible starlark. See [this README](/cmd/kubestar/README.md) for details.
+
+### Multi-profile support
+
+The cluster config now supports using multiple profiles. Among other use cases, this is useful if
+you want to share profile-style YAML templates across multiple clusters without dealing with Helm.
+
+To use this, add a `profiles` section to the cluster config:
+
+```yaml
+cluster: my-cluster
+...
+profiles:
+  - name: [name of first profile]
+    url: [url for first profile]
+  - name: [name of second profile]
+    url: [url for second profile]
+  ...
+```
+
+where the `url`s are in the same format as those for Helm chart locations,
+e.g. `file://path/to/my/file`. The outputs of each profile will be expanded into
+`[expanded dir]/[profile name]/...`.
 
 ## Testing
 

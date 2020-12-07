@@ -1,4 +1,4 @@
-package star
+package expand
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/gogo/protobuf/proto"
-	"github.com/segmentio/kubeapply/pkg/star/skymod"
+	"github.com/segmentio/kubeapply/pkg/star/expand/skymod"
 	log "github.com/sirupsen/logrus"
 	"github.com/stripe/skycfg"
 	"github.com/stripe/skycfg/gogocompat"
@@ -120,10 +120,11 @@ func StarToObjs(
 	root string,
 	params map[string]interface{},
 ) ([]runtime.Object, error) {
-	reader, err := NewLocalFileReader(root)
+	reader, err := NewURLFileReader(root)
 	if err != nil {
 		return nil, err
 	}
+	defer reader.Close()
 
 	config, err := skycfg.Load(
 		context.Background(),

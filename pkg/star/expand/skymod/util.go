@@ -16,7 +16,7 @@ import (
 	"k8s.io/kubectl/pkg/scheme"
 )
 
-var splitRegexp = regexp.MustCompile("(^|\n)\\s*---\\s*\n")
+var splitRegexp = regexp.MustCompile("(^|\n)---\\s*\n")
 
 // UtilModule defines a skycfg module with various helper functions
 // in it.
@@ -200,6 +200,24 @@ func YamlStrToObjs(yamlStr string) ([]runtime.Object, error) {
 		trimmedDoc := strings.TrimSpace(yamlDoc)
 
 		if trimmedDoc == "" {
+			continue
+		}
+		lines := strings.Split(trimmedDoc, "\n")
+
+		isEmpty := true
+		for _, line := range lines {
+			trimmedLine := strings.TrimSpace(line)
+			if len(trimmedLine) == 0 {
+				continue
+			}
+			if strings.HasPrefix(trimmedLine, "#") {
+				continue
+			}
+			isEmpty = false
+			break
+		}
+
+		if isEmpty {
 			continue
 		}
 
