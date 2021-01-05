@@ -173,7 +173,13 @@ func TestExpandHelmTemplates(t *testing.T) {
 				exists, err := util.FileExists(fullPath)
 
 				require.Nil(t, err, testCase.description)
-				require.True(t, exists, fullPath, testCase.description)
+				require.True(
+					t,
+					exists,
+					"could not find full path %s in test case %s",
+					fullPath,
+					testCase.description,
+				)
 
 				contents, err := ioutil.ReadFile(fullPath)
 				require.Nil(t, err, testCase.description)
