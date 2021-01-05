@@ -1,0 +1,11 @@
+# Name of the cluster
+cluster: ""
+
+# Docker image for the ALB Ingess Controller
+image: docker.io/amazon/aws-alb-ingress-controller:v1.1.2
+
+# Enforce which worker pool the controller will be deployed on
+nodeSelector: {}
+
+# Priority class for the Kubernetes scheduler
+priorityClassName: "cluster-critical"

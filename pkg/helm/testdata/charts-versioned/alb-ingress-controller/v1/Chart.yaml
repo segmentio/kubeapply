@@ -1,0 +1,7 @@
+name: alb-ingress-controller
+description: Helm Chart for alb-ingress-controller
+engine: gotpl
+maintainers:
+- email: team-sre@segment.com
+  name: SRE
+version: 0.1.1
