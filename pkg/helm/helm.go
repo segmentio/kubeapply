@@ -22,6 +22,7 @@ var (
 	// Header comments that can be set in helm chart values files to change default behavior
 	chartOverrideHeaders     = []string{"kubeapply__chart", "kubeapply__charts", "charts"}
 	chartNameHeaders         = []string{"kubeapply__chartName", "chartName"}
+	chartVersionHeaders      = []string{"kubeapply__chartVersion", "chartVersion"}
 	chartsSubDirHeaders      = []string{"kubeapply__chartsSubdir"}
 	disabledHeaders          = []string{"kubeapply__disabled", "disabled"}
 	namespaceOverrideHeaders = []string{"kubeapply__namespace", "namespace"}
@@ -252,6 +253,11 @@ func (c *HelmClient) generateHelmTemplates(
 		chartNamePath = chartNameOverride
 	} else {
 		chartNamePath = nameComponents[0]
+	}
+
+	chartVersion := getValue(headerComments, chartVersionHeaders...)
+	if chartVersion != "" {
+		chartNamePath = filepath.Join(chartNamePath, chartVersion)
 	}
 
 	namespaceOverride := getValue(headerComments, namespaceOverrideHeaders...)

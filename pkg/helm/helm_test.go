@@ -98,6 +98,21 @@ func TestExpandHelmTemplates(t *testing.T) {
 			},
 		},
 		{
+			description: "chart version",
+			configPath:  "testdata/configs-versioned",
+			expDoesNotExist: []string{
+				"kube-system/alb-ingress-controller.helm.yaml",
+			},
+			expContents: map[string][]string{
+				"kube-system/alb-ingress-controller/templates/alb-ingress-controller.yaml": {
+					"name: alb-ingress-controller-RELEASE-NAME-v2",
+					"namespace: kube-system",
+					"image: test-image2",
+					"helm/test: normal",
+				},
+			},
+		},
+		{
 			description: "chart disabled",
 			configPath:  "testdata/configs-disabled",
 			expDoesNotExist: []string{
@@ -158,7 +173,7 @@ func TestExpandHelmTemplates(t *testing.T) {
 				exists, err := util.FileExists(fullPath)
 
 				require.Nil(t, err, testCase.description)
-				require.True(t, exists, testCase.description)
+				require.True(t, exists, fullPath, testCase.description)
 
 				contents, err := ioutil.ReadFile(fullPath)
 				require.Nil(t, err, testCase.description)

@@ -1,0 +1,4 @@
+# kubeapply__charts: file://testdata/charts-versioned
+# kubeapply__chartVersion: v2
+
+image: "test-image2"
