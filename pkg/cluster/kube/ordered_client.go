@@ -104,6 +104,8 @@ func (k *OrderedClient) Apply(
 		"apply",
 		"--kubeconfig",
 		k.kubeConfigPath,
+		"--record",
+		"true",
 		"-R",
 		"-f",
 		tempDir,
