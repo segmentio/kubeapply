@@ -338,9 +338,9 @@ func (le *LeaderElector) tryAcquireOrRenew() bool {
 		le.observedTime = le.clock.Now()
 	}
 
-	// If the renew time is more than 3x the lease duration in the past, don't worry
+	// If the renew time is more than 2x the lease duration in the past, don't worry
 	// about clock skew and just take the lock.
-	thresholdTime := now.Time.Add(-3 * le.config.LeaseDuration)
+	thresholdTime := now.Time.Add(-2 * le.config.LeaseDuration)
 
 	if len(oldLeaderElectionRecord.HolderIdentity) > 0 &&
 		le.observedTime.Add(le.config.LeaseDuration).After(now.Time) &&
