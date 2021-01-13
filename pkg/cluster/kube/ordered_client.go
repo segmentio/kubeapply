@@ -102,6 +102,7 @@ func (k *OrderedClient) Apply(
 
 	args := []string{
 		"apply",
+		"--field-manager=''",
 		"--kubeconfig",
 		k.kubeConfigPath,
 		"-R",
@@ -167,6 +168,7 @@ func (k *OrderedClient) Diff(
 	}
 
 	args := []string{
+		"--field-manager=''",
 		"--kubeconfig",
 		k.kubeConfigPath,
 		"diff",
