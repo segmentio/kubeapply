@@ -271,7 +271,7 @@ func (le *LeaderElector) renew(ctx context.Context) {
 		le.maybeReportTransition()
 		desc := le.config.Lock.Describe()
 		if err == nil {
-			log.Infof("Successfully renewed lease %v", desc)
+			log.Debugf("Successfully renewed lease %v", desc)
 			return
 		}
 		le.config.Lock.RecordEvent("stopped leading")
