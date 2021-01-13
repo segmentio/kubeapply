@@ -337,6 +337,12 @@ func (le *LeaderElector) tryAcquireOrRenew() bool {
 		le.observedRawRecord = oldLeaderElectionRawRecord
 		le.observedTime = le.clock.Now()
 	}
+	log.Infof("Current time is %+v, observed time is %+v, lease duration is %+v",
+		now.Time.Format(time.RFC3339),
+		le.observedTime.Format(time.RFC3339),
+		le.config.LeaseDuration.Seconds(),
+	)
+
 	if len(oldLeaderElectionRecord.HolderIdentity) > 0 &&
 		le.observedTime.Add(le.config.LeaseDuration).After(now.Time) &&
 		!le.IsLeader() {
