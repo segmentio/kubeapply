@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	applyTimeout = 60 * time.Second
-	diffTimeout  = 120 * time.Second
+	applyTimeout = 600 * time.Second
+	diffTimeout  = 600 * time.Second
 )
 
 // WebhookHandler is a struct that handles incoming Github webhooks. Depending on the webhook
