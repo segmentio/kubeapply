@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -71,8 +72,15 @@ func diffRun(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	for _, arg := range args {
-		if err := diffClusterPath(ctx, arg); err != nil {
+		paths, err := filepath.Glob(arg)
+		if err != nil {
 			return err
+		}
+
+		for _, path := range paths {
+			if err := diffClusterPath(ctx, path); err != nil {
+				return err
+			}
 		}
 	}
 

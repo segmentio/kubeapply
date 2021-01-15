@@ -3,6 +3,7 @@ package subcmd
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 
 	"github.com/segmentio/kubeapply/pkg/config"
 	"github.com/segmentio/kubeapply/pkg/util"
@@ -51,8 +52,15 @@ func validateRun(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	for _, arg := range args {
-		if err := validateClusterPath(ctx, arg); err != nil {
+		paths, err := filepath.Glob(arg)
+		if err != nil {
 			return err
+		}
+
+		for _, path := range paths {
+			if err := validateClusterPath(ctx, path); err != nil {
+				return err
+			}
 		}
 	}
 

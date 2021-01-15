@@ -64,8 +64,15 @@ func expandRun(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	for _, arg := range args {
-		if err := expandClusterPath(ctx, arg, expandFlagsValues.clean); err != nil {
+		paths, err := filepath.Glob(arg)
+		if err != nil {
 			return err
+		}
+
+		for _, path := range paths {
+			if err := expandClusterPath(ctx, path, expandFlagsValues.clean); err != nil {
+				return err
+			}
 		}
 	}
 
