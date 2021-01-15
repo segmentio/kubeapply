@@ -36,6 +36,9 @@ var expandCmd = &cobra.Command{
 type expandFlags struct {
 	// Number of helm instances to run in parallel when expanding out charts.
 	helmParallelism int
+
+	// Clean old configs in expanded directory before expanding
+	clean bool
 }
 
 var expandFlagsValues expandFlags
@@ -47,6 +50,12 @@ func init() {
 		5,
 		"Parallelism on helm expansions",
 	)
+	expandCmd.Flags().BoolVar(
+		&expandFlagsValues.clean,
+		"clean",
+		false,
+		"Clean out old configs in expanded directory",
+	)
 
 	RootCmd.AddCommand(expandCmd)
 }
@@ -55,7 +64,7 @@ func expandRun(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	for _, arg := range args {
-		if err := expandClusterPath(ctx, arg); err != nil {
+		if err := expandClusterPath(ctx, arg, expandFlagsValues.clean); err != nil {
 			return err
 		}
 	}
@@ -63,7 +72,7 @@ func expandRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func expandClusterPath(ctx context.Context, path string) error {
+func expandClusterPath(ctx context.Context, path string, clean bool) error {
 	clusterConfig, err := config.LoadClusterConfig(path, "")
 	if err != nil {
 		return err
@@ -72,10 +81,14 @@ func expandClusterPath(ctx context.Context, path string) error {
 		return err
 	}
 
-	return expandCluster(ctx, clusterConfig)
+	return expandCluster(ctx, clusterConfig, clean)
 }
 
-func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) error {
+func expandCluster(
+	ctx context.Context,
+	clusterConfig *config.ClusterConfig,
+	clean bool,
+) error {
 	tempDir, err := ioutil.TempDir("", "expand")
 	if err != nil {
 		return err
@@ -106,6 +119,11 @@ func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) err
 			return err
 		}
 		log.Debugf("Local charts path is %s", chartsPath)
+	}
+
+	if clean {
+		log.Infof("Cleaning old version of expanded configs")
+		os.RemoveAll(clusterConfig.ExpandedPath)
 	}
 
 	if len(clusterConfig.Profiles) > 0 {

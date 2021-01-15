@@ -308,6 +308,37 @@ func TestStatusComment(t *testing.T) {
 	}
 }
 
+func TestCommentChunks(t *testing.T) {
+	body := "0123456789abcdefghijABCDEFGHIJ"
+	assert.Equal(
+		t,
+		[]string{body},
+		commentChunks(body, 5000),
+	)
+	assert.Equal(
+		t,
+		[]string{body},
+		commentChunks(body, 30),
+	)
+	assert.Equal(
+		t,
+		[]string{
+			"0123456789abcdefghij",
+			"ABCDEFGHIJ",
+		},
+		commentChunks(body, 20),
+	)
+	assert.Equal(
+		t,
+		[]string{
+			"0123456789",
+			"abcdefghij",
+			"ABCDEFGHIJ",
+		},
+		commentChunks(body, 10),
+	)
+}
+
 func testClusterConfigs(t *testing.T, profileDir string) []*config.ClusterConfig {
 	clusterConfigs := []*config.ClusterConfig{
 		{

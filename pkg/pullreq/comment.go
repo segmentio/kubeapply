@@ -204,3 +204,31 @@ func loadTemplates() (*template.Template, error) {
 		filepath.Join(tempDir, "pkg/pullreq/templates/*.gotpl"),
 	)
 }
+
+func commentChunks(body string, maxLen int) []string {
+	chunks := []string{}
+
+	if len(body) > maxLen {
+		numChunks := len(body) / maxLen
+		if len(body)%maxLen > 0 {
+			numChunks++
+		}
+
+		for i := 0; i < numChunks; i++ {
+			start := i * maxLen
+			end := min(len(body), start+maxLen)
+			chunks = append(chunks, body[start:end])
+		}
+	} else {
+		chunks = append(chunks, body)
+	}
+
+	return chunks
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}

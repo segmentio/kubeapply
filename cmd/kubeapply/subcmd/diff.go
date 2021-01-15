@@ -89,7 +89,7 @@ func diffClusterPath(ctx context.Context, path string) error {
 	}
 
 	if diffFlagValues.expand {
-		if err := expandCluster(ctx, clusterConfig); err != nil {
+		if err := expandCluster(ctx, clusterConfig, false); err != nil {
 			return err
 		}
 	}
@@ -180,7 +180,11 @@ func execDiff(
 		}
 
 		if clusterConfig.UID != actualUID {
-			return "", fmt.Errorf("Kubeapply config does not match this cluster (wrong kube context?): kube-system uids do not match (%s!=%s)", clusterConfig.UID, actualUID)
+			return "", fmt.Errorf(
+				"Kubeapply config does not match this cluster (wrong kube context?): kube-system uids do not match (%s!=%s)",
+				clusterConfig.UID,
+				actualUID,
+			)
 		}
 	}
 

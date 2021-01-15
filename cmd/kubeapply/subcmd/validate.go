@@ -69,7 +69,7 @@ func validateClusterPath(ctx context.Context, path string) error {
 	}
 
 	if validateFlagValues.expand {
-		if err := expandCluster(ctx, clusterConfig); err != nil {
+		if err := expandCluster(ctx, clusterConfig, false); err != nil {
 			return err
 		}
 	}

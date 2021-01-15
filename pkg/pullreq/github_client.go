@@ -18,6 +18,12 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
+const (
+	// The API allows a slightly higher value, but build in some buffer for formatting,
+	// etc.
+	githubMaxCommentLen = 64000
+)
+
 var _ PullRequestClient = (*GHPullRequestClient)(nil)
 
 // GHPullRequestClient is an implementation of PullRequestClient that hits the Github API. The
@@ -240,18 +246,49 @@ func (prc *GHPullRequestClient) GetCoveredClusters(
 
 // PostComment posts a comment to this pull request using the Github API.
 func (prc *GHPullRequestClient) PostComment(ctx context.Context, body string) error {
-	log.Infof("Posting comment via github API: %s", body)
-	_, _, err := prc.Client.Issues.CreateComment(
-		ctx,
-		prc.owner,
-		prc.repo,
-		prc.issueNum,
-		&github.IssueComment{
-			Body: aws.String(body),
-		},
-	)
+	bodyChunks := commentChunks(body, githubMaxCommentLen)
+	var err error
 
-	return err
+	for b, bodyChunk := range bodyChunks {
+		var chunkSnippet string
+
+		if len(bodyChunk) > 1000 {
+			chunkSnippet = fmt.Sprintf("%s...", bodyChunk[0:1000])
+		} else {
+			chunkSnippet = bodyChunk
+		}
+
+		log.Infof(
+			"Posting comment %d/%d via github API: %s",
+			b+1,
+			len(bodyChunks),
+			chunkSnippet,
+		)
+
+		if len(bodyChunks) > 1 {
+			bodyChunk = fmt.Sprintf(
+				"## Response chunk %d/%d\n%s",
+				b+1,
+				len(bodyChunks),
+				bodyChunk,
+			)
+		}
+
+		_, _, err = prc.Client.Issues.CreateComment(
+			ctx,
+			prc.owner,
+			prc.repo,
+			prc.issueNum,
+			&github.IssueComment{
+				Body: aws.String(bodyChunk),
+			},
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // PostErrorComment posts an error comment to this pull request using the Github API.
