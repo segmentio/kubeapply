@@ -309,7 +309,8 @@ func TestStatusComment(t *testing.T) {
 }
 
 func TestCommentChunks(t *testing.T) {
-	body := "0123456789abcdefghijABCDEFGHIJ"
+	body := "0123456789abcdefghijABC\nDEFGHIJ\nKLMNO"
+
 	assert.Equal(
 		t,
 		[]string{body},
@@ -318,22 +319,22 @@ func TestCommentChunks(t *testing.T) {
 	assert.Equal(
 		t,
 		[]string{body},
-		commentChunks(body, 30),
+		commentChunks(body, 40),
 	)
 	assert.Equal(
 		t,
 		[]string{
-			"0123456789abcdefghij",
-			"ABCDEFGHIJ",
+			"0123456789abcdefghijABC",
+			"DEFGHIJ\nKLMNO",
 		},
 		commentChunks(body, 20),
 	)
 	assert.Equal(
 		t,
 		[]string{
-			"0123456789",
-			"abcdefghij",
-			"ABCDEFGHIJ",
+			"0123456789abcdefghijABC",
+			"DEFGHIJ\nKL",
+			"MNO",
 		},
 		commentChunks(body, 10),
 	)

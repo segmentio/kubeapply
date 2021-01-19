@@ -209,15 +209,26 @@ func commentChunks(body string, maxLen int) []string {
 	chunks := []string{}
 
 	if len(body) > maxLen {
-		numChunks := len(body) / maxLen
-		if len(body)%maxLen > 0 {
-			numChunks++
-		}
+		start := 0
+		end := maxLen
 
-		for i := 0; i < numChunks; i++ {
-			start := i * maxLen
-			end := min(len(body), start+maxLen)
+		for start < end {
+			// Try to split at first newline after end
+			newlineIndex := strings.Index(body[end:], "\n")
+			if newlineIndex > 0 {
+				end += newlineIndex
+			}
+
 			chunks = append(chunks, body[start:end])
+
+			if newlineIndex > 0 {
+				// Swallow newline
+				start = end + 1
+			} else {
+				start = end
+			}
+
+			end = min(start+maxLen, len(body))
 		}
 	} else {
 		chunks = append(chunks, body)

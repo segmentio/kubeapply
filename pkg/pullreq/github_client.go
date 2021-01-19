@@ -20,7 +20,7 @@ import (
 
 const (
 	// The API allows a slightly higher value, but build in some buffer for formatting,
-	// etc.
+	// newline breaks after end, etc.
 	githubMaxCommentLen = 64000
 )
 
