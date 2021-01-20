@@ -55,9 +55,9 @@ type ClusterConfig struct {
 	// Optional, defaults to "profile" if not set.
 	ProfilePath string `json:"profilePath"`
 
-	// Profiles is the list of profiles for this cluster. Unlike the ProfilePath above, these
-	// can be full URLs and also allows for multiple profiles. If these are set, then ProfilePath
-	// will be ignored.
+	// Profiles is a list of profiles for this cluster. Unlike the ProfilePath
+	// above, these allow for multiple profiles in a single cluster. If these are set, then
+	// ProfilePath will be ignored.
 	//
 	// Optional.
 	Profiles []Profile `json:"profiles"`
@@ -90,7 +90,15 @@ type ClusterConfig struct {
 	// automatically generated via AWS API (when running in lambdas case).
 	KubeConfigPath string `json:"kubeConfig"`
 
+	// ServerSideApply sets whether we should be using server-side applies and diffs for this
+	// cluster.
+	ServerSideApply bool `json:"serverSideApply"`
+
+	// Subpath is the subset of the expanded configs that we want to diff or apply.
 	Subpath string `json:"-"`
+
+	// Profile is the current profile that's being used for config expansion.
+	Profile *Profile `json:"-"`
 
 	// For debugging / internal purposes only.
 	fullPath        string
@@ -99,8 +107,17 @@ type ClusterConfig struct {
 }
 
 type Profile struct {
+	// Name is the name of the profile.
 	Name string `json:"name"`
-	URL  string `json:"url"`
+
+	// URL is where the profile configs live.
+	URL string `json:"url"`
+
+	// Parameters are override parameters that will be merged on top of the global parameters
+	// for this cluster.
+	//
+	// Optional.
+	Parameters map[string]interface{} `json:"parameters"`
 }
 
 // LoadClusterConfig loads a config from a path on disk.

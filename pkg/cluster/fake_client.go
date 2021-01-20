@@ -47,6 +47,7 @@ func NewFakeClusterClientError(
 func (cc *FakeClusterClient) Apply(
 	ctx context.Context,
 	path string,
+	serverSide bool,
 ) ([]byte, error) {
 	return []byte(
 			fmt.Sprintf(
@@ -63,6 +64,7 @@ func (cc *FakeClusterClient) Apply(
 func (cc *FakeClusterClient) ApplyStructured(
 	ctx context.Context,
 	path string,
+	serverSide bool,
 ) ([]apply.Result, error) {
 	return []apply.Result{
 		{
@@ -80,7 +82,11 @@ func (cc *FakeClusterClient) ApplyStructured(
 }
 
 // Diff runs a fake diff using the configs in the argument path.
-func (cc *FakeClusterClient) Diff(ctx context.Context, path string) ([]byte, error) {
+func (cc *FakeClusterClient) Diff(
+	ctx context.Context,
+	path string,
+	serverSide bool,
+) ([]byte, error) {
 	return []byte(
 			fmt.Sprintf(
 				"diff result for %s with path %s",

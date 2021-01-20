@@ -27,6 +27,7 @@ type OrderedClient struct {
 	keepConfigs    bool
 	extraEnv       []string
 	debug          bool
+	serverSide     bool
 }
 
 // NewOrderedClient returns a new OrderedClient instance.
@@ -35,12 +36,14 @@ func NewOrderedClient(
 	keepConfigs bool,
 	extraEnv []string,
 	debug bool,
+	serverSide bool,
 ) *OrderedClient {
 	return &OrderedClient{
 		kubeConfigPath: kubeConfigPath,
 		keepConfigs:    keepConfigs,
 		extraEnv:       extraEnv,
 		debug:          debug,
+		serverSide:     serverSide,
 	}
 }
 
@@ -108,7 +111,9 @@ func (k *OrderedClient) Apply(
 		"-f",
 		tempDir,
 	}
-
+	if k.serverSide {
+		args = append(args, "--server-side", "true")
+	}
 	if k.debug {
 		args = append(args, "-v", "8")
 	}
@@ -175,6 +180,9 @@ func (k *OrderedClient) Diff(
 		configPath,
 	}
 
+	if k.serverSide {
+		args = append(args, "--server-side", "true")
+	}
 	if k.debug {
 		args = append(args, "-v", "8")
 	}
@@ -185,6 +193,7 @@ func (k *OrderedClient) Diff(
 		[]string{
 			fmt.Sprintf("KUBECTL_EXTERNAL_DIFF=%s", diffCmd),
 			fmt.Sprintf("USE_COLORS=%v", useColors),
+			"STRIP_MANAGED_FIELDS=true",
 		},
 		spinner,
 	)

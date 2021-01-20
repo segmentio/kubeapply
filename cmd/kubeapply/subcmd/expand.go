@@ -36,6 +36,9 @@ var expandCmd = &cobra.Command{
 type expandFlags struct {
 	// Number of helm instances to run in parallel when expanding out charts.
 	helmParallelism int
+
+	// Clean old configs in expanded directory before expanding
+	clean bool
 }
 
 var expandFlagsValues expandFlags
@@ -47,6 +50,12 @@ func init() {
 		5,
 		"Parallelism on helm expansions",
 	)
+	expandCmd.Flags().BoolVar(
+		&expandFlagsValues.clean,
+		"clean",
+		false,
+		"Clean out old configs in expanded directory",
+	)
 
 	RootCmd.AddCommand(expandCmd)
 }
@@ -55,15 +64,22 @@ func expandRun(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	for _, arg := range args {
-		if err := expandClusterPath(ctx, arg); err != nil {
+		paths, err := filepath.Glob(arg)
+		if err != nil {
 			return err
+		}
+
+		for _, path := range paths {
+			if err := expandClusterPath(ctx, path, expandFlagsValues.clean); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
-func expandClusterPath(ctx context.Context, path string) error {
+func expandClusterPath(ctx context.Context, path string, clean bool) error {
 	clusterConfig, err := config.LoadClusterConfig(path, "")
 	if err != nil {
 		return err
@@ -72,10 +88,14 @@ func expandClusterPath(ctx context.Context, path string) error {
 		return err
 	}
 
-	return expandCluster(ctx, clusterConfig)
+	return expandCluster(ctx, clusterConfig, clean)
 }
 
-func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) error {
+func expandCluster(
+	ctx context.Context,
+	clusterConfig *config.ClusterConfig,
+	clean bool,
+) error {
 	tempDir, err := ioutil.TempDir("", "expand")
 	if err != nil {
 		return err
@@ -85,6 +105,7 @@ func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) err
 	log.Infof("Expanding cluster %s", clusterConfig.DescriptiveName())
 
 	var chartsPath string
+	var chartGlobalsPath string
 
 	if clusterConfig.Charts != "" {
 		log.Debugf(
@@ -106,15 +127,40 @@ func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) err
 			return err
 		}
 		log.Debugf("Local charts path is %s", chartsPath)
+
+		chartGlobalsPath = filepath.Join(tempDir, "globals/globals.yaml")
+		err = writeGlobals(chartGlobalsPath, clusterConfig)
+		if err != nil {
+			return err
+		}
+	}
+
+	if clean {
+		log.Infof("Cleaning old version of expanded configs")
+		os.RemoveAll(clusterConfig.ExpandedPath)
 	}
 
 	if len(clusterConfig.Profiles) > 0 {
 		for _, profile := range clusterConfig.Profiles {
+			expandedPath := filepath.Join(clusterConfig.ExpandedPath, profile.Name)
+
 			err = util.RestoreData(
 				ctx,
 				filepath.Dir(clusterConfig.FullPath()),
 				profile.URL,
-				filepath.Join(clusterConfig.ExpandedPath, profile.Name),
+				expandedPath,
+			)
+			if err != nil {
+				return err
+			}
+
+			err = expandProfile(
+				ctx,
+				expandedPath,
+				chartsPath,
+				chartGlobalsPath,
+				&profile,
+				clusterConfig,
 			)
 			if err != nil {
 				return err
@@ -129,11 +175,38 @@ func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) err
 		if err != nil {
 			return err
 		}
+
+		err = expandProfile(
+			ctx,
+			clusterConfig.ExpandedPath,
+			chartsPath,
+			chartGlobalsPath,
+			nil,
+			clusterConfig,
+		)
+		if err != nil {
+			return err
+		}
 	}
 
-	log.Infof("Applying templates in %s", clusterConfig.ExpandedPath)
-	err = util.ApplyTemplate(
-		clusterConfig.ExpandedPath,
+	return nil
+}
+
+func expandProfile(
+	ctx context.Context,
+	expandedPath string,
+	chartsPath string,
+	chartGlobalsPath string,
+	profile *config.Profile,
+	clusterConfig *config.ClusterConfig,
+) error {
+	log.Infof("Applying templates in %s", expandedPath)
+
+	// TODO: Should probably wrap in another struct that has fields for both cluster config
+	// and profile.
+	clusterConfig.Profile = profile
+	err := util.ApplyTemplate(
+		expandedPath,
 		clusterConfig,
 		true,
 	)
@@ -141,9 +214,9 @@ func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) err
 		return err
 	}
 
-	log.Infof("Removing extraneous directories in %s", clusterConfig.ExpandedPath)
+	log.Infof("Removing extraneous directories in %s", expandedPath)
 	err = util.RemoveDirs(
-		clusterConfig.ExpandedPath,
+		expandedPath,
 		noExpandFile,
 	)
 	if err != nil {
@@ -151,21 +224,16 @@ func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) err
 	}
 
 	if chartsPath != "" {
-		log.Infof("Applying helm to charts in %s", clusterConfig.ExpandedPath)
-		globalsPath := filepath.Join(tempDir, "globals/globals.yaml")
-		err = writeGlobals(globalsPath, clusterConfig)
-		if err != nil {
-			return err
-		}
+		log.Infof("Applying helm to charts in %s", expandedPath)
 
 		helmClient := helm.HelmClient{
 			RootDir:          filepath.Dir(clusterConfig.FullPath()),
-			GlobalValuesPath: globalsPath,
+			GlobalValuesPath: chartGlobalsPath,
 			Parallelism:      expandFlagsValues.helmParallelism,
 		}
 		err = helmClient.ExpandHelmTemplates(
 			ctx,
-			clusterConfig.ExpandedPath,
+			expandedPath,
 			chartsPath,
 		)
 		if err != nil {
@@ -175,10 +243,10 @@ func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) err
 
 	log.Infof(
 		"Running starlark interpreter for star files in %s",
-		clusterConfig.ExpandedPath,
+		expandedPath,
 	)
 	err = expand.ExpandStar(
-		clusterConfig.ExpandedPath,
+		expandedPath,
 		filepath.Dir(clusterConfig.FullPath()),
 		clusterConfig.StarParams(),
 	)
@@ -188,7 +256,7 @@ func expandCluster(ctx context.Context, clusterConfig *config.ClusterConfig) err
 
 	log.Infof(
 		"Adding header comments to all YAML files in %s",
-		clusterConfig.ExpandedPath,
+		expandedPath,
 	)
 	err = util.AddHeaders(clusterConfig.ExpandedPath)
 	if err != nil {

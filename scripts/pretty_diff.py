@@ -6,11 +6,14 @@
     Used as custom differ for "kubectl diff" calls. Written in Python instead of go since
     Python's difflib is really nice and I haven't been able to find a fully equivalent library
     in go.
+
+    TODO: Try porting to go and using https://github.com/pmezard/go-difflib?
 """
 
 import difflib
 import os
 import os.path
+import re
 import sys
 
 
@@ -53,6 +56,12 @@ def main():
     else:
         use_colors = False
 
+    strip_managed_fields_env = os.environ.get('STRIP_MANAGED_FIELDS', 'false')
+    if strip_managed_fields_env.lower() == 'true':
+        strip_managed_fields = True
+    else:
+        strip_managed_fields = False
+
     for name in old_names | new_names:
         old_path = os.path.join(old_root, name)
         new_path = os.path.join(new_root, name)
@@ -85,22 +94,26 @@ def main():
     diff_pairs.sort(key=lambda r: r[0])
 
     for diff_pair in diff_pairs:
-        diff_files(*diff_pair, use_colors=use_colors)
+        diff_files(
+            *diff_pair,
+            use_colors=use_colors,
+            strip_managed_fields=strip_managed_fields)
 
 
-def diff_files(name, old_path, new_path, use_colors=True):
+def diff_files(
+        name, old_path, new_path,
+        use_colors=True,
+        strip_managed_fields=False):
     old_lines = []
     new_lines = []
 
     if old_path is not None:
-        with open(old_path, 'r') as old_file:
-            for line in old_file:
-                old_lines.append(line)
+        old_lines = get_lines(
+            old_path, strip_managed_fields=strip_managed_fields)
 
     if new_path is not None:
-        with open(new_path, 'r') as new_file:
-            for line in new_file:
-                new_lines.append(line)
+        new_lines = get_lines(
+            new_path, strip_managed_fields=strip_managed_fields)
 
     diff = difflib.unified_diff(
         old_lines,
@@ -127,6 +140,33 @@ def diff_files(name, old_path, new_path, use_colors=True):
                 print(line)
         elif len(line) > 0:
             print(line)
+
+
+def get_lines(path, strip_managed_fields=False):
+    inside_managed_fields = False
+
+    lines = []
+
+    with open(path, 'r') as input_file:
+        for line in input_file:
+            keep = True
+
+            if strip_managed_fields:
+                # Managed fields begin with a 'managedFields:' and end when we hit the next
+                # top-level metadata field (usually name).
+                if line.startswith('  managedFields:'):
+                    inside_managed_fields = True
+                    keep = False
+                elif inside_managed_fields:
+                    if not (line.startswith('  -') or line.startswith('   ')):
+                        inside_managed_fields = False
+                    else:
+                        keep = False
+
+            if keep:
+                lines.append(line)
+
+    return lines
 
 
 def walk_path(root_path):

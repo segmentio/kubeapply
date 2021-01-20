@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -71,8 +72,15 @@ func diffRun(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	for _, arg := range args {
-		if err := diffClusterPath(ctx, arg); err != nil {
+		paths, err := filepath.Glob(arg)
+		if err != nil {
 			return err
+		}
+
+		for _, path := range paths {
+			if err := diffClusterPath(ctx, path); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -89,7 +97,7 @@ func diffClusterPath(ctx context.Context, path string) error {
 	}
 
 	if diffFlagValues.expand {
-		if err := expandCluster(ctx, clusterConfig); err != nil {
+		if err := expandCluster(ctx, clusterConfig, false); err != nil {
 			return err
 		}
 	}
@@ -180,11 +188,15 @@ func execDiff(
 		}
 
 		if clusterConfig.UID != actualUID {
-			return "", fmt.Errorf("Kubeapply config does not match this cluster (wrong kube context?): kube-system uids do not match (%s!=%s)", clusterConfig.UID, actualUID)
+			return "", fmt.Errorf(
+				"Kubeapply config does not match this cluster (wrong kube context?): kube-system uids do not match (%s!=%s)",
+				clusterConfig.UID,
+				actualUID,
+			)
 		}
 	}
 
-	results, err := kubeClient.Diff(ctx, clusterConfig.AbsSubpath())
+	results, err := kubeClient.Diff(ctx, clusterConfig.AbsSubpath(), clusterConfig.ServerSideApply)
 	return strings.TrimSpace(string(results)), err
 }
 
