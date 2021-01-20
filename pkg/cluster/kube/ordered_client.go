@@ -193,6 +193,7 @@ func (k *OrderedClient) Diff(
 		[]string{
 			fmt.Sprintf("KUBECTL_EXTERNAL_DIFF=%s", diffCmd),
 			fmt.Sprintf("USE_COLORS=%v", useColors),
+			"STRIP_MANAGED_FIELDS=true",
 		},
 		spinner,
 	)
