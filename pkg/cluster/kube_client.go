@@ -154,20 +154,20 @@ func NewKubeClusterClient(
 // Apply does a kubectl apply for the resources at the argument path.
 func (cc *KubeClusterClient) Apply(
 	ctx context.Context,
-	path string,
+	paths []string,
 	serverSide bool,
 ) ([]byte, error) {
-	return cc.execApply(ctx, path, "", false)
+	return cc.execApply(ctx, paths, "", false)
 }
 
 // ApplyStructured does a structured kubectl apply for the resources at the
 // argument path.
 func (cc *KubeClusterClient) ApplyStructured(
 	ctx context.Context,
-	path string,
+	paths []string,
 	serverSide bool,
 ) ([]apply.Result, error) {
-	oldContents, err := cc.execApply(ctx, path, "json", true)
+	oldContents, err := cc.execApply(ctx, paths, "json", true)
 	if err != nil {
 		return nil,
 			fmt.Errorf(
@@ -182,7 +182,7 @@ func (cc *KubeClusterClient) ApplyStructured(
 		return nil, err
 	}
 
-	newContents, err := cc.execApply(ctx, path, "json", false)
+	newContents, err := cc.execApply(ctx, paths, "json", false)
 	if err != nil {
 		return nil,
 			fmt.Errorf(
@@ -203,7 +203,7 @@ func (cc *KubeClusterClient) ApplyStructured(
 // resources in the cluster.
 func (cc *KubeClusterClient) Diff(
 	ctx context.Context,
-	path string,
+	paths []string,
 	serverSide bool,
 ) ([]byte, error) {
 	if cc.useLocks {
@@ -230,7 +230,7 @@ func (cc *KubeClusterClient) Diff(
 
 	diffResult, err := cc.kubeClient.Diff(
 		ctx,
-		path,
+		paths,
 		cc.useColors,
 		cc.spinnerObj,
 	)
@@ -288,7 +288,7 @@ func (cc *KubeClusterClient) Close() error {
 
 func (cc *KubeClusterClient) execApply(
 	ctx context.Context,
-	path string,
+	paths []string,
 	format string,
 	dryRun bool,
 ) ([]byte, error) {
@@ -337,7 +337,7 @@ func (cc *KubeClusterClient) execApply(
 
 	return cc.kubeClient.Apply(
 		ctx,
-		path,
+		paths,
 		!cc.streamingOutput,
 		format,
 		dryRun,

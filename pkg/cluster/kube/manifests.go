@@ -77,65 +77,70 @@ type SimpleHeader struct {
 }
 
 // GetManifests recursively parses all of the manifests in the argument path.
-func GetManifests(path string) ([]Manifest, error) {
+func GetManifests(paths []string) ([]Manifest, error) {
 	results := []Manifest{}
 
-	err := filepath.Walk(
-		path,
-		func(subPath string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-
-			if info.IsDir() || !strings.HasSuffix(subPath, ".yaml") {
-				return nil
-			}
-
-			contents, err := ioutil.ReadFile(subPath)
-			if err != nil {
-				return err
-			}
-
-			trimmedFile := strings.TrimSpace(string(contents))
-			manifestStrs := sep.Split(trimmedFile, -1)
-
-			for _, manifestStr := range manifestStrs {
-				manifestStr = strings.TrimSpace(manifestStr)
-				if isEmpty(manifestStr) {
-					continue
-				}
-
-				head := SimpleHeader{}
-				err := yaml.Unmarshal([]byte(manifestStr), &head)
+	for _, path := range paths {
+		err := filepath.Walk(
+			path,
+			func(subPath string, info os.FileInfo, err error) error {
 				if err != nil {
-					log.Warnf("Could not parse head from %s; skipping file", subPath)
-					continue
+					return err
 				}
 
-				if head.Metadata == nil && !contains(KindithoutMetadata, head.Kind) {
-					log.Warnf(
-						"Could not read metadata from manifest %s in file %s",
-						manifestStr,
-						subPath,
+				if info.IsDir() || !strings.HasSuffix(subPath, ".yaml") {
+					return nil
+				}
+
+				contents, err := ioutil.ReadFile(subPath)
+				if err != nil {
+					return err
+				}
+
+				trimmedFile := strings.TrimSpace(string(contents))
+				manifestStrs := sep.Split(trimmedFile, -1)
+
+				for _, manifestStr := range manifestStrs {
+					manifestStr = strings.TrimSpace(manifestStr)
+					if isEmpty(manifestStr) {
+						continue
+					}
+
+					head := SimpleHeader{}
+					err := yaml.Unmarshal([]byte(manifestStr), &head)
+					if err != nil {
+						log.Warnf("Could not parse head from %s; skipping file", subPath)
+						continue
+					}
+
+					if head.Metadata == nil && !contains(KindithoutMetadata, head.Kind) {
+						log.Warnf(
+							"Could not read metadata from manifest %s in file %s",
+							manifestStr,
+							subPath,
+						)
+						continue
+					}
+
+					results = append(
+						results,
+						Manifest{
+							Path:     subPath,
+							Contents: manifestStr,
+							Head:     head,
+						},
 					)
-					continue
 				}
 
-				results = append(
-					results,
-					Manifest{
-						Path:     subPath,
-						Contents: manifestStr,
-						Head:     head,
-					},
-				)
-			}
+				return nil
+			},
+		)
+		if err != nil {
+			return results, err
+		}
+	}
 
-			return nil
-		},
-	)
-
-	return results, err
+	return results, nil
 }
 
 func contains(list []string, str string) bool {

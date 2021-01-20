@@ -152,7 +152,7 @@ func TestGetCoveredClusters(t *testing.T) {
 
 		for _, coveredCluster := range coveredClusters {
 			coveredClusterIDs = append(coveredClusterIDs, coveredCluster.DescriptiveName())
-			subpaths = append(subpaths, coveredCluster.Subpath)
+			subpaths = append(subpaths, coveredCluster.Subpaths...)
 		}
 
 		assert.Equal(t, testCase.expectedClustersIDs, coveredClusterIDs, "Test case %d", index)

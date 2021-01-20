@@ -163,7 +163,7 @@ func GetCoveredClusters(
 		config := configsMap[clusterPath]
 
 		if subpathOverride != "" {
-			config.Subpath = subpathOverride
+			config.Subpaths = []string{subpathOverride}
 		} else {
 			relExpandedPath, err := filepath.Rel(repoRoot, config.ExpandedPath)
 			if err != nil {
@@ -171,13 +171,14 @@ func GetCoveredClusters(
 			}
 
 			// Override subpath based on files that have changed
-			config.Subpath, err = lowestParent(relExpandedPath, changedFiles)
+			parentDir, err := lowestParent(relExpandedPath, changedFiles)
 			if err != nil {
 				return nil, err
 			}
+			config.Subpaths = []string{parentDir}
 		}
 
-		log.Infof("Setting subpath for cluster %s to %s", clusterPath, config.Subpath)
+		log.Infof("Setting subpaths for cluster %s to %+v", clusterPath, config.Subpaths)
 
 		changedClusters = append(changedClusters, config)
 	}

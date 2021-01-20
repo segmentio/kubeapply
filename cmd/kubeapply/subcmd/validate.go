@@ -23,10 +23,6 @@ var validateCmd = &cobra.Command{
 type validateFlags struct {
 	// Expand before validating.
 	expand bool
-
-	// Run operatation in just one subdirectory of the expanded configs
-	// (typically maps to namespace). If unset, considers all configs.
-	subpath string
 }
 
 var validateFlagValues validateFlags
@@ -37,12 +33,6 @@ func init() {
 		"expand",
 		false,
 		"Expand before validating",
-	)
-	validateCmd.Flags().StringVar(
-		&validateFlagValues.subpath,
-		"subpath",
-		"",
-		"Validate expanded configs in the provided subpath only",
 	)
 
 	RootCmd.AddCommand(validateCmd)
@@ -92,7 +82,6 @@ func validateClusterPath(ctx context.Context, path string) error {
 		)
 	}
 
-	clusterConfig.Subpath = validateFlagValues.subpath
 	return execValidation(ctx, clusterConfig)
 }
 
@@ -105,13 +94,13 @@ func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) er
 		"Checking that expanded configs for %s are valid YAML",
 		clusterConfig.DescriptiveName(),
 	)
-	err := kubeValidator.CheckYAML(clusterConfig.AbsSubpath())
+	err := kubeValidator.CheckYAML(clusterConfig.AbsSubpaths())
 	if err != nil {
 		return err
 	}
 
-	log.Infof("Running kubeval on configs in %s", clusterConfig.AbsSubpath())
-	results, err := kubeValidator.RunKubeval(ctx, clusterConfig.AbsSubpath())
+	log.Infof("Running kubeval on configs in %+v", clusterConfig.AbsSubpaths())
+	results, err := kubeValidator.RunKubeval(ctx, clusterConfig.AbsSubpaths()[0])
 	if err != nil {
 		return err
 	}

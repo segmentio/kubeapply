@@ -94,7 +94,7 @@ type ClusterConfig struct {
 	ServerSideApply bool `json:"serverSideApply"`
 
 	// Subpath is the subset of the expanded configs that we want to diff or apply.
-	Subpath string `json:"-"`
+	Subpaths []string `json:"-"`
 
 	// Profile is the current profile that's being used for config expansion.
 	Profile *Profile `json:"-"`
@@ -159,7 +159,7 @@ func (c *ClusterConfig) SetDefaults(path string, rootPath string) error {
 		}
 	}
 
-	c.Subpath = "."
+	c.Subpaths = []string{"."}
 
 	if c.Env == "" {
 		return errors.New("Env must be set")
@@ -245,13 +245,20 @@ func (c ClusterConfig) CheckVersion(version string) error {
 	return nil
 }
 
-// AbsSubpath returns the absolute subpath of the expanded configs associated with
+// AbsSubpaths returns the absolute subpaths of the expanded configs associated with
 // this ClusterConfig.
-func (c ClusterConfig) AbsSubpath() string {
-	if c.Subpath != "" {
-		return filepath.Join(c.ExpandedPath, c.Subpath)
+func (c ClusterConfig) AbsSubpaths() []string {
+	if len(c.Subpaths) > 0 {
+		absSubpaths := []string{}
+
+		for _, subPath := range c.Subpaths {
+			absSubpaths = append(absSubpaths, subPath)
+		}
+
+		return absSubpaths
 	}
-	return c.ExpandedPath
+
+	return []string{c.ExpandedPath}
 }
 
 // DescriptiveName returns a descriptive name for this ClusterConfig.
@@ -271,10 +278,10 @@ func (c ClusterConfig) RelPath() string {
 
 // PrettySubpath generates a Github-friendly format for the cluster subpath.
 func (c ClusterConfig) PrettySubpath() string {
-	if c.Subpath == "." {
+	if len(c.Subpaths) == 1 && c.Subpaths[0] == "." {
 		return "*all*"
 	}
-	return fmt.Sprintf("`%s`", c.Subpath)
+	return fmt.Sprintf("`%s`", c.Subpaths)
 }
 
 // StarParams generates the base starlark params for this ClusterConfig.

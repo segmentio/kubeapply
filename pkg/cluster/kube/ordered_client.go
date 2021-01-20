@@ -51,7 +51,7 @@ func NewOrderedClient(
 // in the optimal order based on resource type.
 func (k *OrderedClient) Apply(
 	ctx context.Context,
-	applyPath string,
+	applyPaths []string,
 	output bool,
 	format string,
 	dryRun bool,
@@ -68,7 +68,7 @@ func (k *OrderedClient) Apply(
 		}
 	}()
 
-	manifests, err := GetManifests(applyPath)
+	manifests, err := GetManifests(applyPaths)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func (k *OrderedClient) Apply(
 // Diff runs kubectl diff for the configs at the argument path.
 func (k *OrderedClient) Diff(
 	ctx context.Context,
-	configPath string,
+	configPaths []string,
 	useColors bool,
 	spinner *spinner.Spinner,
 ) ([]byte, error) {
@@ -176,8 +176,10 @@ func (k *OrderedClient) Diff(
 		k.kubeConfigPath,
 		"diff",
 		"-R",
-		"-f",
-		configPath,
+	}
+
+	for _, configPath := range configPaths {
+		args = append(args, "-f", configPath)
 	}
 
 	if k.serverSide {
