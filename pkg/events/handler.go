@@ -419,6 +419,7 @@ func (whh *WebhookHandler) runApply(
 			results, err := clusterClient.ApplyStructured(
 				applyCtx,
 				clusterClient.Config().AbsSubpath(),
+				clusterClient.Config().ServerSideApply,
 			)
 			if err != nil {
 				applyErr = fmt.Errorf("%+v", err)
@@ -549,6 +550,7 @@ func (whh *WebhookHandler) runDiffs(
 		results, err := clusterClient.Diff(
 			diffCtx,
 			clusterClient.Config().AbsSubpath(),
+			clusterClient.Config().ServerSideApply,
 		)
 		if err != nil {
 			resultsStr := string(results)

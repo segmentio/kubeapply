@@ -196,7 +196,7 @@ func execDiff(
 		}
 	}
 
-	results, err := kubeClient.Diff(ctx, clusterConfig.AbsSubpath())
+	results, err := kubeClient.Diff(ctx, clusterConfig.AbsSubpath(), clusterConfig.ServerSideApply)
 	return strings.TrimSpace(string(results)), err
 }
 

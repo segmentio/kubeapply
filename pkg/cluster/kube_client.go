@@ -103,6 +103,7 @@ func NewKubeClusterClient(
 		config.KeepConfigs,
 		nil,
 		config.Debug,
+		config.ClusterConfig.ServerSideApply,
 	)
 
 	kubeStore, err := store.NewKubeStore(
@@ -151,7 +152,11 @@ func NewKubeClusterClient(
 }
 
 // Apply does a kubectl apply for the resources at the argument path.
-func (cc *KubeClusterClient) Apply(ctx context.Context, path string) ([]byte, error) {
+func (cc *KubeClusterClient) Apply(
+	ctx context.Context,
+	path string,
+	serverSide bool,
+) ([]byte, error) {
 	return cc.execApply(ctx, path, "", false)
 }
 
@@ -160,6 +165,7 @@ func (cc *KubeClusterClient) Apply(ctx context.Context, path string) ([]byte, er
 func (cc *KubeClusterClient) ApplyStructured(
 	ctx context.Context,
 	path string,
+	serverSide bool,
 ) ([]apply.Result, error) {
 	oldContents, err := cc.execApply(ctx, path, "json", true)
 	if err != nil {
@@ -195,7 +201,11 @@ func (cc *KubeClusterClient) ApplyStructured(
 
 // Diff runs a kubectl diff between the configs at the argument path and the associated
 // resources in the cluster.
-func (cc *KubeClusterClient) Diff(ctx context.Context, path string) ([]byte, error) {
+func (cc *KubeClusterClient) Diff(
+	ctx context.Context,
+	path string,
+	serverSide bool,
+) ([]byte, error) {
 	if cc.useLocks {
 		acquireCtx, cancel := context.WithTimeout(ctx, lockAcquistionTimeout)
 		defer cancel()

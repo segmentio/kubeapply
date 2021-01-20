@@ -220,12 +220,20 @@ func applyClusterPath(ctx context.Context, path string) error {
 	defer kubeClient.Close()
 
 	if applyFlagValues.simpleOutput {
-		results, err := kubeClient.Apply(ctx, clusterConfig.AbsSubpath())
+		results, err := kubeClient.Apply(
+			ctx,
+			clusterConfig.AbsSubpath(),
+			clusterConfig.ServerSideApply,
+		)
 		if err != nil {
 			return fmt.Errorf("Error running apply: %s", string(results))
 		}
 	} else {
-		results, err := kubeClient.ApplyStructured(ctx, clusterConfig.AbsSubpath())
+		results, err := kubeClient.ApplyStructured(
+			ctx,
+			clusterConfig.AbsSubpath(),
+			clusterConfig.ServerSideApply,
+		)
 		if err != nil {
 			return err
 		}
