@@ -9,7 +9,6 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/ghodss/yaml"
-	"github.com/segmentio/kubeapply/pkg/util"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -201,13 +200,6 @@ func (c *ClusterConfig) SetDefaults(path string, rootPath string) error {
 		)
 	} else if !filepath.IsAbs(c.ExpandedPath) {
 		c.ExpandedPath = filepath.Join(configDir, c.ExpandedPath)
-	}
-
-	ok, err := util.DirExists(c.ProfilePath)
-	if err != nil {
-		return err
-	} else if !ok {
-		return fmt.Errorf("Profile path %s does not exist", c.ProfilePath)
 	}
 
 	return nil

@@ -181,7 +181,9 @@ func expandCluster(
 			clusterConfig.ExpandedPath,
 			chartsPath,
 			chartGlobalsPath,
-			nil,
+			&config.Profile{
+				Name: "main",
+			},
 			clusterConfig,
 		)
 		if err != nil {
@@ -200,7 +202,7 @@ func expandProfile(
 	profile *config.Profile,
 	clusterConfig *config.ClusterConfig,
 ) error {
-	log.Infof("Applying templates in %s", expandedPath)
+	log.Infof("Expanding profile %s in %s", profile.Name, expandedPath)
 
 	// TODO: Should probably wrap in another struct that has fields for both cluster config
 	// and profile.
