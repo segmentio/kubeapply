@@ -338,6 +338,15 @@ func TestCommentChunks(t *testing.T) {
 		},
 		commentChunks(body, 10),
 	)
+
+	assert.Equal(
+		t,
+		[]string{
+			"```diff\nABCDEFGH\nIJKLMNOPQRS\n```",
+			"```diff\nTUVWXYZ\n```\n ...",
+		},
+		commentChunks("```diff\nABCDEFGH\nIJKLMNOPQRS\nTUVWXYZ\n```\n ...", 20),
+	)
 }
 
 func testClusterConfigs(t *testing.T, profileDir string) []*config.ClusterConfig {

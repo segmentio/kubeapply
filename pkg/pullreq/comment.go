@@ -2,6 +2,7 @@ package pullreq
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -212,6 +213,8 @@ func commentChunks(body string, maxLen int) []string {
 		start := 0
 		end := maxLen
 
+		isDiff := strings.Contains(body, "```diff\n")
+
 		for start < end {
 			// Try to split at first newline after end
 			newlineIndex := strings.Index(body[end:], "\n")
@@ -219,7 +222,30 @@ func commentChunks(body string, maxLen int) []string {
 				end += newlineIndex
 			}
 
-			chunks = append(chunks, body[start:end])
+			chunk := body[start:end]
+
+			// Hacky approach to ensuring that very long diffs look ok when broken up
+			// into multiple chunks.
+			//
+			// TODO: Replace this more structured diffs that are easier to break up.
+			if isDiff {
+				hasDiffEnd := strings.Contains(chunk, "\n```\n")
+				fmt.Println(hasDiffEnd, chunk)
+
+				if len(chunks) == 0 {
+					if !hasDiffEnd {
+						chunk = chunk + "\n```"
+					}
+				} else {
+					if hasDiffEnd {
+						chunk = "```diff\n" + chunk
+					} else {
+						chunk = "```diff\n" + chunk + "\n```"
+					}
+				}
+			}
+
+			chunks = append(chunks, chunk)
 
 			if newlineIndex > 0 {
 				// Swallow newline
