@@ -82,7 +82,7 @@ func TestGetManifests(t *testing.T) {
 		},
 	)
 
-	manifests, err := GetManifests(outDir)
+	manifests, err := GetManifests([]string{outDir})
 	assert.Nil(t, err)
 	assert.Equal(t, 4, len(manifests))
 

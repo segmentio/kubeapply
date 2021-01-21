@@ -1,7 +1,7 @@
 ### 🔬 Kubeapply diff result (stage)
 ⚠️ This change is behind `master` by 3 commits.
 
-#### Cluster: `test-env:test-region:test-cluster1`<br/><br/>Subpath: `test/subpath`
+#### Cluster: `test-env:test-region:test-cluster1`<br/><br/>Subpaths (1): `test/subpath`
 
 <details>
 <summary><b>Diffs (0)</b></summary>

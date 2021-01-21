@@ -8,7 +8,7 @@
 {{- if .ClusterDiffs }}
 {{- range .ClusterDiffs }}
 
-#### Cluster: `{{ .ClusterConfig.DescriptiveName }}`<br/><br/>Subpath: {{ .ClusterConfig.PrettySubpath }}
+#### Cluster: `{{ .ClusterConfig.DescriptiveName }}`<br/><br/>Subpaths ({{ .ClusterConfig.SubpathCount }}): {{ .ClusterConfig.PrettySubpaths }}
 
 <details>
 <summary><b>Diffs ({{ .NumDiffs }})</b></summary>

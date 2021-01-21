@@ -38,9 +38,9 @@ type diffFlags struct {
 	// Path to kubeconfig. If unset, tries to fetch from the environment.
 	kubeConfig string
 
-	// Run operatation in just one subdirectory of the expanded configs
+	// Run operatation in just a subset of the subdirectories of the expanded configs
 	// (typically maps to namespace). If unset, considers all configs.
-	subpath string
+	subpaths []string
 }
 
 var diffFlagValues diffFlags
@@ -58,11 +58,11 @@ func init() {
 		"",
 		"Path to kubeconfig",
 	)
-	diffCmd.Flags().StringVar(
-		&diffFlagValues.subpath,
+	diffCmd.Flags().StringArrayVar(
+		&diffFlagValues.subpaths,
 		"subpath",
-		"",
-		"Diff for expanded configs in the provided subpath only",
+		[]string{},
+		"Diff for expanded configs in the provided subpath(s) only",
 	)
 
 	RootCmd.AddCommand(diffCmd)
@@ -133,7 +133,7 @@ func diffClusterPath(ctx context.Context, path string) error {
 	}
 
 	clusterConfig.KubeConfigPath = kubeConfig
-	clusterConfig.Subpath = diffFlagValues.subpath
+	clusterConfig.Subpaths = diffFlagValues.subpaths
 
 	diffResult, err := execDiff(ctx, clusterConfig)
 	if err != nil {
@@ -196,7 +196,11 @@ func execDiff(
 		}
 	}
 
-	results, err := kubeClient.Diff(ctx, clusterConfig.AbsSubpath(), clusterConfig.ServerSideApply)
+	results, err := kubeClient.Diff(
+		ctx,
+		clusterConfig.AbsSubpaths(),
+		clusterConfig.ServerSideApply,
+	)
 	return strings.TrimSpace(string(results)), err
 }
 

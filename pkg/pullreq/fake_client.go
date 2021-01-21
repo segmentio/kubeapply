@@ -53,9 +53,9 @@ func (prc *FakePullRequestClient) GetCoveredClusters(
 		}
 
 		if subpathOverride != "" {
-			clusterConfig.Subpath = subpathOverride
+			clusterConfig.Subpaths = []string{subpathOverride}
 		} else {
-			clusterConfig.Subpath = "."
+			clusterConfig.Subpaths = []string{"."}
 		}
 
 		coveredClusters = append(coveredClusters, clusterConfig)

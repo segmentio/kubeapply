@@ -241,6 +241,7 @@ func (prc *GHPullRequestClient) GetCoveredClusters(
 		env,
 		selectedClusterIDs,
 		subpathOverride,
+		true,
 	)
 }
 

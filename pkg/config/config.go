@@ -9,7 +9,6 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/ghodss/yaml"
-	"github.com/segmentio/kubeapply/pkg/util"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -95,7 +94,7 @@ type ClusterConfig struct {
 	ServerSideApply bool `json:"serverSideApply"`
 
 	// Subpath is the subset of the expanded configs that we want to diff or apply.
-	Subpath string `json:"-"`
+	Subpaths []string `json:"-"`
 
 	// Profile is the current profile that's being used for config expansion.
 	Profile *Profile `json:"-"`
@@ -160,7 +159,7 @@ func (c *ClusterConfig) SetDefaults(path string, rootPath string) error {
 		}
 	}
 
-	c.Subpath = "."
+	c.Subpaths = []string{"."}
 
 	if c.Env == "" {
 		return errors.New("Env must be set")
@@ -201,13 +200,6 @@ func (c *ClusterConfig) SetDefaults(path string, rootPath string) error {
 		)
 	} else if !filepath.IsAbs(c.ExpandedPath) {
 		c.ExpandedPath = filepath.Join(configDir, c.ExpandedPath)
-	}
-
-	ok, err := util.DirExists(c.ProfilePath)
-	if err != nil {
-		return err
-	} else if !ok {
-		return fmt.Errorf("Profile path %s does not exist", c.ProfilePath)
 	}
 
 	return nil
@@ -253,13 +245,23 @@ func (c ClusterConfig) CheckVersion(version string) error {
 	return nil
 }
 
-// AbsSubpath returns the absolute subpath of the expanded configs associated with
+// AbsSubpaths returns the absolute subpaths of the expanded configs associated with
 // this ClusterConfig.
-func (c ClusterConfig) AbsSubpath() string {
-	if c.Subpath != "" {
-		return filepath.Join(c.ExpandedPath, c.Subpath)
+func (c ClusterConfig) AbsSubpaths() []string {
+	if len(c.Subpaths) > 0 {
+		absSubpaths := []string{}
+
+		for _, subPath := range c.Subpaths {
+			absSubpaths = append(
+				absSubpaths,
+				filepath.Join(c.ExpandedPath, subPath),
+			)
+		}
+
+		return absSubpaths
 	}
-	return c.ExpandedPath
+
+	return []string{c.ExpandedPath}
 }
 
 // DescriptiveName returns a descriptive name for this ClusterConfig.
@@ -277,12 +279,57 @@ func (c ClusterConfig) RelPath() string {
 	return c.relPath
 }
 
-// PrettySubpath generates a Github-friendly format for the cluster subpath.
-func (c ClusterConfig) PrettySubpath() string {
-	if c.Subpath == "." {
-		return "*all*"
+// PrettySubpaths generates a Github-friendly format for the cluster subpaths.
+func (c ClusterConfig) PrettySubpaths() string {
+	subpathStrs := []string{}
+
+	for s, subpath := range c.Subpaths {
+		if s > 5 {
+			subpathStrs = append(
+				subpathStrs,
+				"...",
+			)
+			break
+		} else if subpath == "." {
+			subpathStrs = append(subpathStrs, "*all*")
+		} else {
+			subpathStrs = append(subpathStrs, fmt.Sprintf("`%s`", subpath))
+		}
 	}
-	return fmt.Sprintf("`%s`", c.Subpath)
+
+	return strings.Join(subpathStrs, ", ")
+}
+
+// PrettySubpathsList generates a Github-friendly, bulleted list for the cluster subpaths.
+func (c ClusterConfig) PrettySubpathsList() string {
+	subpathStrs := []string{}
+
+	for s, subpath := range c.Subpaths {
+		if s > 5 {
+			subpathStrs = append(
+				subpathStrs,
+				fmt.Sprintf(
+					"<li> ... %d others</li>",
+					len(c.Subpaths)-5,
+				),
+			)
+			break
+		} else if subpath == "." {
+			subpathStrs = append(subpathStrs, "<li>*all*</li>")
+		} else {
+			subpathStrs = append(subpathStrs, fmt.Sprintf("<li>`%s`</li>", subpath))
+		}
+	}
+
+	return fmt.Sprintf(
+		"<ul>%s</ul>",
+		strings.Join(subpathStrs, ""),
+	)
+}
+
+// SubpathCount generates the number of subpaths for Github comments.
+func (c ClusterConfig) SubpathCount() int {
+	return len(c.Subpaths)
 }
 
 // StarParams generates the base starlark params for this ClusterConfig.

@@ -34,39 +34,46 @@ func NewKubeValidator() *KubeValidator {
 // CheckYAML checks that each file ending with ".yaml" is actually parseable YAML. This
 // is done separately from the kubeval checks because these errors cause the latter tool
 // to not output valid JSON.
-func (k *KubeValidator) CheckYAML(path string) error {
-	return filepath.Walk(
-		path,
-		func(subPath string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if info.IsDir() || !strings.HasSuffix(subPath, ".yaml") {
-				return nil
-			}
-
-			yamlBytes, err := ioutil.ReadFile(subPath)
-			if err != nil {
-				return err
-			}
-
-			reader := bytes.NewReader(yamlBytes)
-			decoder := yaml.NewDecoder(reader)
-
-			for {
-				err := decoder.Decode(&map[string]interface{}{})
-				if err == io.EOF {
-					return nil
-				} else if err != nil {
-					return fmt.Errorf(
-						"File %s does not contain a valid YAML map: %+v",
-						subPath,
-						err,
-					)
+func (k *KubeValidator) CheckYAML(paths []string) error {
+	for _, path := range paths {
+		err := filepath.Walk(
+			path,
+			func(subPath string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
 				}
-			}
-		},
-	)
+				if info.IsDir() || !strings.HasSuffix(subPath, ".yaml") {
+					return nil
+				}
+
+				yamlBytes, err := ioutil.ReadFile(subPath)
+				if err != nil {
+					return err
+				}
+
+				reader := bytes.NewReader(yamlBytes)
+				decoder := yaml.NewDecoder(reader)
+
+				for {
+					err := decoder.Decode(&map[string]interface{}{})
+					if err == io.EOF {
+						return nil
+					} else if err != nil {
+						return fmt.Errorf(
+							"File %s does not contain a valid YAML map: %+v",
+							subPath,
+							err,
+						)
+					}
+				}
+			},
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // RunKubeval runs kubeval over all files in the provided path.

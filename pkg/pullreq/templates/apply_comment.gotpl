@@ -8,7 +8,7 @@
 {{- if .ClusterApplies }}
 {{- range .ClusterApplies }}
 
-#### Cluster: `{{ .ClusterConfig.DescriptiveName }}`<br/><br/>Subpath: {{ .ClusterConfig.PrettySubpath }}<br/><br/>Updated resources ({{ .NumUpdates }}):
+#### Cluster: `{{ .ClusterConfig.DescriptiveName }}`<br/><br/>Subpaths ({{ .ClusterConfig.SubpathCount }}): {{ .ClusterConfig.PrettySubpaths }}<br/><br/>Updated resources ({{ .NumUpdates }}):
 
 <p>
 

@@ -42,9 +42,9 @@ type applyFlags struct {
 	// Whether to just run "kubectl apply" with the default output options
 	simpleOutput bool
 
-	// Run operatation in just one subdirectory of the expanded configs
+	// Run operatation in just a subset of the subdirectories of the expanded configs
 	// (typically maps to namespace). If unset, considers all configs.
-	subpath string
+	subpaths []string
 
 	// Whether to accept all prompts automatically; does not apply if
 	// noCheck is enabled
@@ -84,11 +84,11 @@ func init() {
 		false,
 		"Run kubectl apply without any special output options",
 	)
-	applyCmd.Flags().StringVar(
-		&applyFlagValues.subpath,
+	applyCmd.Flags().StringArrayVar(
+		&applyFlagValues.subpaths,
 		"subpath",
-		"",
-		"Apply for expanded configs in the provided subpath only",
+		[]string{},
+		"Apply for expanded configs in the provided subpath(s) only",
 	)
 	applyCmd.Flags().BoolVarP(
 		&applyFlagValues.yes,
@@ -166,7 +166,7 @@ func applyClusterPath(ctx context.Context, path string) error {
 	}
 
 	clusterConfig.KubeConfigPath = kubeConfig
-	clusterConfig.Subpath = applyFlagValues.subpath
+	clusterConfig.Subpaths = applyFlagValues.subpaths
 
 	if !applyFlagValues.noCheck {
 		err := execValidation(ctx, clusterConfig)
@@ -222,7 +222,7 @@ func applyClusterPath(ctx context.Context, path string) error {
 	if applyFlagValues.simpleOutput {
 		results, err := kubeClient.Apply(
 			ctx,
-			clusterConfig.AbsSubpath(),
+			clusterConfig.AbsSubpaths(),
 			clusterConfig.ServerSideApply,
 		)
 		if err != nil {
@@ -231,7 +231,7 @@ func applyClusterPath(ctx context.Context, path string) error {
 	} else {
 		results, err := kubeClient.ApplyStructured(
 			ctx,
-			clusterConfig.AbsSubpath(),
+			clusterConfig.AbsSubpaths(),
 			clusterConfig.ServerSideApply,
 		)
 		if err != nil {

@@ -22,7 +22,7 @@ func TestApplyComment(t *testing.T) {
 	defer os.RemoveAll(profileDir)
 
 	clusterConfigs := testClusterConfigs(t, profileDir)
-	clusterConfigs[0].Subpath = "test/subpath"
+	clusterConfigs[0].Subpaths = []string{"test/subpath"}
 
 	pullRequestClient := &FakePullRequestClient{
 		ClusterConfigs: clusterConfigs,
@@ -116,7 +116,7 @@ func TestDiffComment(t *testing.T) {
 	defer os.RemoveAll(profileDir)
 
 	clusterConfigs := testClusterConfigs(t, profileDir)
-	clusterConfigs[0].Subpath = "test/subpath"
+	clusterConfigs[0].Subpaths = []string{"test/subpath"}
 
 	pullRequestClient := &FakePullRequestClient{
 		ClusterConfigs: clusterConfigs,
@@ -177,7 +177,7 @@ func TestDiffCommentBehind(t *testing.T) {
 	defer os.RemoveAll(profileDir)
 
 	clusterConfigs := testClusterConfigs(t, profileDir)
-	clusterConfigs[0].Subpath = "test/subpath"
+	clusterConfigs[0].Subpaths = []string{"test/subpath"}
 
 	pullRequestClient := &FakePullRequestClient{
 		ClusterConfigs: clusterConfigs,
@@ -242,7 +242,7 @@ func TestHelpComment(t *testing.T) {
 	defer os.RemoveAll(profileDir)
 
 	clusterConfigs := testClusterConfigs(t, profileDir)
-	clusterConfigs[0].Subpath = "test/subpath"
+	clusterConfigs[0].Subpaths = []string{"test/subpath"}
 
 	commentData := HelpCommentData{
 		ClusterConfigs: clusterConfigs,
@@ -270,7 +270,7 @@ func TestStatusComment(t *testing.T) {
 	defer os.RemoveAll(profileDir)
 
 	clusterConfigs := testClusterConfigs(t, profileDir)
-	clusterConfigs[0].Subpath = "test/subpath"
+	clusterConfigs[0].Subpaths = []string{"test/subpath"}
 
 	pullRequestClient := &FakePullRequestClient{
 		ClusterConfigs: clusterConfigs,
@@ -338,6 +338,15 @@ func TestCommentChunks(t *testing.T) {
 		},
 		commentChunks(body, 10),
 	)
+
+	assert.Equal(
+		t,
+		[]string{
+			"```diff\nABCDEFGH\nIJKLMNOPQRS\n```",
+			"```diff\nTUVWXYZ\n```\n ...",
+		},
+		commentChunks("```diff\nABCDEFGH\nIJKLMNOPQRS\nTUVWXYZ\n```\n ...", 20),
+	)
 }
 
 func testClusterConfigs(t *testing.T, profileDir string) []*config.ClusterConfig {
@@ -378,7 +387,7 @@ func testClusterConfigs(t *testing.T, profileDir string) []*config.ClusterConfig
 		)
 	}
 
-	clusterConfigs[2].Subpath = "subpath1/subpath2"
+	clusterConfigs[2].Subpaths = []string{"subpath1/subpath2"}
 
 	return clusterConfigs
 }

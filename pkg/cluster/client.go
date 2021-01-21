@@ -16,15 +16,15 @@ const (
 // ClusterClient is an interface that interacts with the API of a single Kubernetes cluster.
 type ClusterClient interface {
 	// Apply applies all of the configs at the given path.
-	Apply(ctx context.Context, path string, serverSide bool) ([]byte, error)
+	Apply(ctx context.Context, paths []string, serverSide bool) ([]byte, error)
 
 	// ApplyStructured applies all of the configs at the given path and returns structured,
 	// as opposed to raw, outputs
-	ApplyStructured(ctx context.Context, path string, serverSide bool) ([]apply.Result, error)
+	ApplyStructured(ctx context.Context, paths []string, serverSide bool) ([]apply.Result, error)
 
 	// Diff gets the diffs between the configs at the given path and the actual state of resources
 	// in the cluster.
-	Diff(ctx context.Context, path string, serverSide bool) ([]byte, error)
+	Diff(ctx context.Context, paths []string, serverSide bool) ([]byte, error)
 
 	// Summary returns a summary of all workloads in the cluster.
 	Summary(ctx context.Context) (string, error)

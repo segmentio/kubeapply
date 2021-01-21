@@ -1,6 +1,6 @@
 ### 🔬 Kubeapply diff result (stage)
 
-#### Cluster: `test-env:test-region:test-cluster1`<br/><br/>Subpath: `test/subpath`
+#### Cluster: `test-env:test-region:test-cluster1`<br/><br/>Subpaths (1): `test/subpath`
 
 <details>
 <summary><b>Diffs (2)</b></summary>
@@ -33,7 +33,7 @@ something
 - 🔬 To re-generate these diffs, post:
     - `kubeapply diff test-env:test-region:test-cluster1`
 
-#### Cluster: `test-env:test-region:test-cluster2`<br/><br/>Subpath: *all*
+#### Cluster: `test-env:test-region:test-cluster2`<br/><br/>Subpaths (1): *all*
 
 <details>
 <summary><b>Diffs (0)</b></summary>
