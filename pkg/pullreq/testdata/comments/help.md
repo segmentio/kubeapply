@@ -14,8 +14,8 @@ Note that "expanding" configs out should be done locally and is not handled by `
 
 Your change currently affects the following clusters and subpaths:
 
-| Cluster | Subpath |
+| Cluster | Subpaths |
 | ------- | ------- |
-| `test-env:test-region:test-cluster1` | `test/subpath` |
-| `test-env:test-region:test-cluster2` | *all* |
-| `test-env:test-region:test-cluster3` | `subpath1/subpath2` |
+| `test-env:test-region:test-cluster1` | <ul><li>`test/subpath`</li></ul> |
+| `test-env:test-region:test-cluster2` | <ul><li>*all*</li></ul> |
+| `test-env:test-region:test-cluster3` | <ul><li>`subpath1/subpath2`</li></ul> |

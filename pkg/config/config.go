@@ -252,7 +252,10 @@ func (c ClusterConfig) AbsSubpaths() []string {
 		absSubpaths := []string{}
 
 		for _, subPath := range c.Subpaths {
-			absSubpaths = append(absSubpaths, subPath)
+			absSubpaths = append(
+				absSubpaths,
+				filepath.Join(c.ExpandedPath, subPath),
+			)
 		}
 
 		return absSubpaths
@@ -276,12 +279,57 @@ func (c ClusterConfig) RelPath() string {
 	return c.relPath
 }
 
-// PrettySubpath generates a Github-friendly format for the cluster subpath.
-func (c ClusterConfig) PrettySubpath() string {
-	if len(c.Subpaths) == 1 && c.Subpaths[0] == "." {
-		return "*all*"
+// PrettySubpaths generates a Github-friendly format for the cluster subpaths.
+func (c ClusterConfig) PrettySubpaths() string {
+	subpathStrs := []string{}
+
+	for s, subpath := range c.Subpaths {
+		if s > 5 {
+			subpathStrs = append(
+				subpathStrs,
+				"...",
+			)
+			break
+		} else if subpath == "." {
+			subpathStrs = append(subpathStrs, "*all*")
+		} else {
+			subpathStrs = append(subpathStrs, fmt.Sprintf("`%s`", subpath))
+		}
 	}
-	return fmt.Sprintf("`%s`", c.Subpaths)
+
+	return strings.Join(subpathStrs, ", ")
+}
+
+// PrettySubpathsList generates a Github-friendly, bulleted list for the cluster subpaths.
+func (c ClusterConfig) PrettySubpathsList() string {
+	subpathStrs := []string{}
+
+	for s, subpath := range c.Subpaths {
+		if s > 5 {
+			subpathStrs = append(
+				subpathStrs,
+				fmt.Sprintf(
+					"<li> ... %d others</li>",
+					len(c.Subpaths)-5,
+				),
+			)
+			break
+		} else if subpath == "." {
+			subpathStrs = append(subpathStrs, "<li>*all*</li>")
+		} else {
+			subpathStrs = append(subpathStrs, fmt.Sprintf("<li>`%s`</li>", subpath))
+		}
+	}
+
+	return fmt.Sprintf(
+		"<ul>%s</ul>",
+		strings.Join(subpathStrs, ""),
+	)
+}
+
+// SubpathCount generates the number of subpaths for Github comments.
+func (c ClusterConfig) SubpathCount() int {
+	return len(c.Subpaths)
 }
 
 // StarParams generates the base starlark params for this ClusterConfig.

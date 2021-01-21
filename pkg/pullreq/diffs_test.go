@@ -14,6 +14,7 @@ func TestGetCoveredClusters(t *testing.T) {
 		diffs               []*github.CommitFile
 		selectedClusterIDs  []string
 		subpathOverride     string
+		multiSubpaths       bool
 		expectedClustersIDs []string
 		expectedSubpaths    []string
 	}
@@ -76,6 +77,9 @@ func TestGetCoveredClusters(t *testing.T) {
 					Filename: aws.String("clusters/clustertype/expanded/cluster1/subdir1/subdir3/file6.yaml"),
 				},
 				{
+					Filename: aws.String("clusters/clustertype/expanded/cluster1/subdir2/file4.yaml"),
+				},
+				{
 					Filename: aws.String("clusters/clustertype/expanded/cluster2/file2.yaml"),
 				},
 			},
@@ -84,7 +88,9 @@ func TestGetCoveredClusters(t *testing.T) {
 			},
 			expectedSubpaths: []string{
 				"subdir1",
+				"subdir2",
 			},
+			multiSubpaths: true,
 		},
 		{
 			diffs: []*github.CommitFile{
@@ -144,6 +150,7 @@ func TestGetCoveredClusters(t *testing.T) {
 			"stage",
 			testCase.selectedClusterIDs,
 			testCase.subpathOverride,
+			testCase.multiSubpaths,
 		)
 		assert.Nil(t, err, "Test case %d", index)
 
@@ -226,6 +233,88 @@ func TestLowestParent(t *testing.T) {
 		} else {
 			require.Nil(t, err, "test case %d", index)
 			assert.Equal(t, testCase.expResult, result, "test case %d", index)
+		}
+	}
+}
+
+func TestLowestParents(t *testing.T) {
+	type parentTestCase struct {
+		root      string
+		paths     []string
+		expResult []string
+		expErr    bool
+	}
+
+	testCases := []parentTestCase{
+		{
+			root:      "root/cluster/expanded",
+			paths:     []string{},
+			expResult: []string{"."},
+		},
+		{
+			root: "root/cluster/expanded",
+			paths: []string{
+				"root/cluster/expanded/namespace/file1.txt",
+				"root/cluster/expanded/namespace/file2.txt",
+			},
+			expResult: []string{"namespace"},
+		},
+		{
+			root: "root/cluster/expanded",
+			paths: []string{
+				"root/cluster/expanded/namespace/file1.txt",
+				"root/cluster/expanded/namespace/child/file2.txt",
+			},
+			expResult: []string{"namespace"},
+		},
+		{
+			root: "root/cluster/expanded",
+			paths: []string{
+				"root/cluster/expanded/namespace/child1/child2/file1.txt",
+				"root/cluster/expanded/namespace/child1/child2/file2.txt",
+				"root/cluster/expanded/namespace/child1/child2/file3.txt",
+			},
+			expResult: []string{"namespace/child1/child2"},
+		},
+		{
+			root: "root/cluster/expanded",
+			paths: []string{
+				"root/cluster/expanded/namespace1/child1/child1b/file1.txt",
+				"root/cluster/expanded/namespace2/child2/file2.txt",
+				"root/cluster/expanded/namespace2/child2/file3.txt",
+				"root/cluster/expanded/namespace2/child2/child2b/file4.txt",
+				"root/cluster/expanded/namespace3/child3/file5.txt",
+			},
+			expResult: []string{
+				"namespace1/child1/child1b",
+				"namespace2/child2",
+				"namespace3/child3",
+			},
+		},
+		{
+			root: "root/cluster/expanded",
+			paths: []string{
+				"root/cluster/file1.txt",
+				"root/cluster/expanded/namespace2/child/file2.txt",
+				"root/cluster/expanded/namespace2/child/file3.txt",
+			},
+			expResult: []string{"."},
+		},
+	}
+
+	for index, testCase := range testCases {
+		result, err := lowestParents(testCase.root, testCase.paths)
+		if testCase.expErr {
+			assert.NotNil(t, err, "test case %d", index)
+		} else {
+			require.Nil(t, err, "test case %d", index)
+			assert.Equal(
+				t,
+				testCase.expResult,
+				result,
+				"test case %d",
+				index,
+			)
 		}
 	}
 }

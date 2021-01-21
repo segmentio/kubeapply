@@ -14,10 +14,10 @@ Note that "expanding" configs out should be done locally and is not handled by `
 {{ if .ClusterConfigs }}
 Your change currently affects the following clusters and subpaths:
 
-| Cluster | Subpath |
+| Cluster | Subpaths |
 | ------- | ------- |
 {{- range .ClusterConfigs }}
-| `{{ .DescriptiveName }}` | {{ .PrettySubpath }} |
+| `{{ .DescriptiveName }}` | {{ .PrettySubpathsList }} |
 {{- end }}
 
 {{- else }}

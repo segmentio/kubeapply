@@ -17,6 +17,8 @@ import re
 import sys
 
 
+MAX_LINE_LEN = 256
+
 class bcolors:
     OKBLUE = '\033[94m'
     OKGREEN = '\033[92m'
@@ -164,7 +166,14 @@ def get_lines(path, strip_managed_fields=False):
                         keep = False
 
             if keep:
-                lines.append(line)
+                # Trim very long lines
+                if len(line) > MAX_LINE_LEN:
+                    lines.append(
+                        line[0:MAX_LINE_LEN] +
+                        '... (%d chars omitted)' % (len(line)-MAX_LINE_LEN),
+                    )
+                else:
+                    lines.append(line)
 
     return lines
 
