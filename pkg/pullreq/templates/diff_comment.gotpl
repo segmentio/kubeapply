@@ -11,17 +11,20 @@
 #### Cluster: `{{ .ClusterConfig.DescriptiveName }}`<br/><br/>Subpaths ({{ .ClusterConfig.SubpathCount }}): {{ .ClusterConfig.PrettySubpaths }}
 
 {{ if (gt (len .Results) 0) }}
+#### Resources with diffs ({{ len .Results}}):
+
 {{- range .Results }}
-##### Resource `{{ .Name }}`
 <details>
+<summary><b><code>{{ .Name }}</code> ({{ .NumChangedLines }} lines changed)</b></summary>
 <p>
-<summary><b>Diffs ({{ .NumChangedLines }} lines changed)</b></summary>
+
 ```diff
 {{ .RawDiff }}
 ```
+
 </p>
 </details>
-{{- end }}
+{{ end }}
 {{- else }}
 ```
 No diffs were found.

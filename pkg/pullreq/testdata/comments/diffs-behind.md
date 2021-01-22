@@ -4,15 +4,18 @@
 #### Cluster: `test-env:test-region:test-cluster1`<br/><br/>Subpaths (1): `test/subpath`
 
 
-##### Resource `test`
+#### Resources with diffs (1):
 <details>
+<summary><b><code>test</code> (2 lines changed)</b></summary>
 <p>
-<summary><b>Diffs (2 lines changed)</b></summary>
+
 ```diff
 raw diff
 ```
+
 </p>
 </details>
+
 
 #### Next steps
 
