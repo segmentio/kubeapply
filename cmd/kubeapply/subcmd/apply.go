@@ -174,15 +174,15 @@ func applyClusterPath(ctx context.Context, path string) error {
 			return err
 		}
 
-		diffResult, err := execDiff(ctx, clusterConfig)
+		_, rawResult, err := execDiff(ctx, clusterConfig, true)
 		if err != nil {
-			log.Errorf("Error running diff: %s, %+v", diffResult, err)
+			log.Errorf("Error running diff: %+v", err)
 			log.Info(
 				"Try re-running with --debug to see verbose output. Note that diffs will not work if target namespace(s) don't exist yet.",
 			)
 			return err
 		}
-		printDiff(diffResult)
+		printDiff(rawResult)
 
 		if !applyFlagValues.yes {
 			fmt.Print("Are you sure? (yes/no) ")

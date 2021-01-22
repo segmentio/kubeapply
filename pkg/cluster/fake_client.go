@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/segmentio/kubeapply/pkg/cluster/apply"
+	"github.com/segmentio/kubeapply/pkg/cluster/diff"
 	"github.com/segmentio/kubeapply/pkg/config"
 )
 
@@ -94,6 +95,27 @@ func (cc *FakeClusterClient) Diff(
 				paths,
 			),
 		),
+		cc.kubectlErr
+}
+
+// Diff runs a fake diff using the configs in the argument path.
+func (cc *FakeClusterClient) DiffStructured(
+	ctx context.Context,
+	paths []string,
+	serverSide bool,
+) (*diff.Results, error) {
+	return &diff.Results{
+			Results: []diff.Result{
+				{
+					Name: "result",
+					RawDiff: fmt.Sprintf(
+						"diff result for %s with paths %+v",
+						cc.clusterConfig.Cluster,
+						paths,
+					),
+				},
+			},
+		},
 		cc.kubectlErr
 }
 

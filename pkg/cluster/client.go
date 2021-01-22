@@ -6,6 +6,7 @@ import (
 
 	"github.com/briandowns/spinner"
 	"github.com/segmentio/kubeapply/pkg/cluster/apply"
+	"github.com/segmentio/kubeapply/pkg/cluster/diff"
 	"github.com/segmentio/kubeapply/pkg/config"
 )
 
@@ -25,6 +26,10 @@ type ClusterClient interface {
 	// Diff gets the diffs between the configs at the given path and the actual state of resources
 	// in the cluster.
 	Diff(ctx context.Context, paths []string, serverSide bool) ([]byte, error)
+
+	// Diff gets the diffs between the configs at the given path and the actual state of resources
+	// in the cluster.
+	DiffStructured(ctx context.Context, paths []string, serverSide bool) (*diff.Results, error)
 
 	// Summary returns a summary of all workloads in the cluster.
 	Summary(ctx context.Context) (string, error)
