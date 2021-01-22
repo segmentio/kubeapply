@@ -42,7 +42,7 @@ type diffFlags struct {
 	simpleOutput bool
 
 	// Run operatation in just a subset of the subdirectories of the expanded configs
-	// (typically maps to namespace). If unset, considers all configs.
+	// (typically maps to namespace). Globs are allowed. If unset, considers all configs.
 	subpaths []string
 }
 

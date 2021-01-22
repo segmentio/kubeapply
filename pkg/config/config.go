@@ -251,10 +251,14 @@ func (c ClusterConfig) AbsSubpaths() []string {
 	if len(c.Subpaths) > 0 {
 		absSubpaths := []string{}
 
-		for _, subPath := range c.Subpaths {
+		for _, subpath := range c.Subpaths {
+			expandedSubpaths, _ := filepath.Glob(
+				filepath.Join(c.ExpandedPath, subpath),
+			)
+
 			absSubpaths = append(
 				absSubpaths,
-				filepath.Join(c.ExpandedPath, subPath),
+				expandedSubpaths...,
 			)
 		}
 
