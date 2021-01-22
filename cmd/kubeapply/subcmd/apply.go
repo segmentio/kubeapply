@@ -10,6 +10,7 @@ import (
 
 	"github.com/segmentio/kubeapply/pkg/cluster"
 	"github.com/segmentio/kubeapply/pkg/cluster/apply"
+	"github.com/segmentio/kubeapply/pkg/cluster/diff"
 	"github.com/segmentio/kubeapply/pkg/cluster/kube"
 	"github.com/segmentio/kubeapply/pkg/config"
 	"github.com/segmentio/kubeapply/pkg/util"
@@ -184,7 +185,7 @@ func applyClusterPath(ctx context.Context, path string) error {
 		}
 
 		if results != nil {
-			results.PrintSummary()
+			diff.PrintSummary(results)
 		} else {
 			log.Infof("Raw diff results:\n%s", rawDiffs)
 		}

@@ -224,7 +224,7 @@ func (cc *KubeClusterClient) DiffStructured(
 	ctx context.Context,
 	paths []string,
 	serverSide bool,
-) (*diff.Results, error) {
+) ([]diff.Result, error) {
 	rawResults, err := cc.execDiff(ctx, paths, true)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -238,7 +238,7 @@ func (cc *KubeClusterClient) DiffStructured(
 	if err := json.Unmarshal(rawResults, &results); err != nil {
 		return nil, err
 	}
-	return &results, nil
+	return results.Results, nil
 }
 
 // Summary returns a summary of the current cluster state.

@@ -29,7 +29,7 @@ type ClusterClient interface {
 
 	// Diff gets the diffs between the configs at the given path and the actual state of resources
 	// in the cluster.
-	DiffStructured(ctx context.Context, paths []string, serverSide bool) (*diff.Results, error)
+	DiffStructured(ctx context.Context, paths []string, serverSide bool) ([]diff.Result, error)
 
 	// Summary returns a summary of all workloads in the cluster.
 	Summary(ctx context.Context) (string, error)

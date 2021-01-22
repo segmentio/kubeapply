@@ -547,23 +547,13 @@ func (whh *WebhookHandler) runDiffs(
 		diffCtx, cancel := context.WithTimeout(ctx, diffTimeout)
 		defer cancel()
 
-		results, err := clusterClient.Diff(
+		results, err := clusterClient.DiffStructured(
 			diffCtx,
 			clusterClient.Config().AbsSubpaths(),
 			clusterClient.Config().ServerSideApply,
 		)
 		if err != nil {
-			resultsStr := string(results)
-
-			if resultsStr != "" {
-				diffErr = fmt.Errorf(
-					"%+v\nDiff output: %s",
-					err,
-					resultsStr,
-				)
-			} else {
-				diffErr = fmt.Errorf("%+v", err)
-			}
+			diffErr = fmt.Errorf("%+v", err)
 			break
 		}
 
@@ -571,7 +561,8 @@ func (whh *WebhookHandler) runDiffs(
 			diffData.ClusterDiffs,
 			pullreq.ClusterDiff{
 				ClusterConfig: clusterClient.Config(),
-				RawDiffs:      string(results),
+				NumDiffs:      len(results),
+				Results:       results,
 			},
 		)
 	}

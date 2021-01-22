@@ -11,10 +11,10 @@ import (
 func TestDiffKube(t *testing.T) {
 	results, err := DiffKube("testdata/old", "testdata/new")
 	require.NoError(t, err)
-	require.Equal(t, 3, len(results.Results))
+	require.Equal(t, 3, len(results))
 
 	names := []string{}
-	for _, result := range results.Results {
+	for _, result := range results {
 		names = append(names, result.Name)
 	}
 
@@ -50,17 +50,17 @@ func TestDiffKube(t *testing.T) {
      spec:
        containers:
 `,
-		results.Results[0].RawDiff,
+		results[0].RawDiff,
 	)
 	assert.Equal(
 		t,
 		2,
-		results.Results[0].NumAdded,
+		results[0].NumAdded,
 	)
 	assert.Equal(
 		t,
 		2,
-		results.Results[0].NumRemoved,
+		results[0].NumRemoved,
 	)
 	assert.Equal(
 		t,
@@ -72,6 +72,6 @@ func TestDiffKube(t *testing.T) {
 				Namespace: "apps",
 			},
 		},
-		results.Results[0].Object,
+		results[0].Object,
 	)
 }

@@ -11,6 +11,7 @@ import (
 
 	"github.com/segmentio/kubeapply/data"
 	"github.com/segmentio/kubeapply/pkg/cluster/apply"
+	"github.com/segmentio/kubeapply/pkg/cluster/diff"
 	"github.com/segmentio/kubeapply/pkg/config"
 )
 
@@ -76,30 +77,8 @@ type DiffCommentData struct {
 // ClusterDiff contains the results of a diff in a single cluster.
 type ClusterDiff struct {
 	ClusterConfig *config.ClusterConfig
-	RawDiffs      string
-}
-
-// NumDiffs returns the number of resources with non-empty diff results.
-func (c ClusterDiff) NumDiffs() int {
-	if strings.TrimSpace(c.RawDiffs) == "" {
-		return 0
-	}
-
-	count := 0
-
-	// Look for "+++/---" line pairs
-	//
-	// TODO: Make diff outputs more structured so we can do this more precisely.
-	lines := strings.Split(c.RawDiffs, "\n")
-
-	for l := 1; l < len(lines); l++ {
-		if strings.HasPrefix(lines[l], "+++ ") &&
-			strings.HasPrefix(lines[l-1], "--- ") {
-			count++
-		}
-	}
-
-	return count
+	NumDiffs      int
+	Results       []diff.Result
 }
 
 // FormatDiffComment generates the body of a diff comment result.

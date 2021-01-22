@@ -8,10 +8,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Results contains all results from a given diff run. It's used for wrapping so that
+// everything can be put in a single struct when exported by kubeapply kdiff.
 type Results struct {
 	Results []Result `json:"results"`
 }
 
+// Result contains the results of diffing a single object.
 type Result struct {
 	Object     *apply.TypedKubeObj `json:"object"`
 	Name       string              `json:"name"`
@@ -20,26 +23,26 @@ type Result struct {
 	NumRemoved int                 `json:"numRemoved"`
 }
 
-func (r *Results) PrintFull() {
-	if len(r.Results) == 0 {
+func PrintFull(results []Result) {
+	if len(results) == 0 {
 		log.Infof("No diffs found")
 		return
 	}
 
-	log.Infof("Diffs summary:\n%s", ResultsTable(r))
+	log.Infof("Diffs summary:\n%s", ResultsTable(results))
 	log.Info("Raw diffs:")
-	for _, result := range r.Results {
+	for _, result := range results {
 		result.PrintRaw(true)
 	}
 }
 
-func (r *Results) PrintSummary() {
-	if len(r.Results) == 0 {
+func PrintSummary(results []Result) {
+	if len(results) == 0 {
 		log.Infof("No diffs found")
 		return
 	}
 
-	log.Infof("Diffs summary:\n%s", ResultsTable(r))
+	log.Infof("Diffs summary:\n%s", ResultsTable(results))
 }
 
 func (r *Result) PrintRaw(useColors bool) {
@@ -69,6 +72,13 @@ func (r *Result) PrintRaw(useColors bool) {
 			}
 		}
 	}
+}
+
+func (r *Result) NumChangedLines() int {
+	if r.NumAdded > r.NumRemoved {
+		return r.NumAdded
+	}
+	return r.NumRemoved
 }
 
 func printRed(line string) {

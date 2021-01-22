@@ -154,7 +154,7 @@ func diffClusterPath(ctx context.Context, path string) error {
 	}
 
 	if results != nil {
-		results.PrintFull()
+		diff.PrintFull(results)
 	} else {
 		log.Infof("Raw diff results:\n%s", rawDiffs)
 	}
@@ -166,7 +166,7 @@ func execDiff(
 	ctx context.Context,
 	clusterConfig *config.ClusterConfig,
 	simpleOutput bool,
-) (*diff.Results, string, error) {
+) ([]diff.Result, string, error) {
 	log.Info("Generating diff against versions in Kube API")
 
 	spinnerObj := spinner.New(

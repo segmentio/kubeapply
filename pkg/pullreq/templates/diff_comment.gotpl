@@ -10,22 +10,23 @@
 
 #### Cluster: `{{ .ClusterConfig.DescriptiveName }}`<br/><br/>Subpaths ({{ .ClusterConfig.SubpathCount }}): {{ .ClusterConfig.PrettySubpaths }}
 
+{{ if (gt .NumDiffs 0) }}
+{{- range .Results.Results }}
+##### Resource `{{ .Name }}`
 <details>
-<summary><b>Diffs ({{ .NumDiffs }})</b></summary>
-<p>
-
-{{ if .RawDiffs }}
+<summary><b>Diffs ({{ .NumChangedLines }} lines changed)</b></summary>
 ```diff
-{{ .RawDiffs }}
+{{ .RawDiff }}
 ```
-{{ else }}
-```
-No diffs found.
-```
-{{ end }}
-
 </p>
 </details>
+<p>
+{{- end }}
+{{- else }}
+```
+No diffs were found.
+```
+{{- end }}
 
 #### Next steps
 

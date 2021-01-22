@@ -103,17 +103,15 @@ func (cc *FakeClusterClient) DiffStructured(
 	ctx context.Context,
 	paths []string,
 	serverSide bool,
-) (*diff.Results, error) {
-	return &diff.Results{
-			Results: []diff.Result{
-				{
-					Name: "result",
-					RawDiff: fmt.Sprintf(
-						"diff result for %s with paths %+v",
-						cc.clusterConfig.Cluster,
-						paths,
-					),
-				},
+) ([]diff.Result, error) {
+	return []diff.Result{
+			{
+				Name: "result",
+				RawDiff: fmt.Sprintf(
+					"diff result for %s with paths %+v",
+					cc.clusterConfig.Cluster,
+					paths,
+				),
 			},
 		},
 		cc.kubectlErr

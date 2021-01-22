@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/segmentio/kubeapply/pkg/cluster/apply"
+	"github.com/segmentio/kubeapply/pkg/cluster/diff"
 	"github.com/segmentio/kubeapply/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -128,25 +129,42 @@ func TestDiffComment(t *testing.T) {
 	diffs := []ClusterDiff{
 		{
 			ClusterConfig: clusterConfigs[0],
-			RawDiffs: strings.Join(
-				[]string{
-					"something",
-					"--- file1",
-					"+++ file2",
-					"+ diff1",
-					"- diff2",
-					"",
-					"--- file3",
-					"+++ file4",
-					"+ diff1",
-					"- diff2",
+			Results: []diff.Result{
+				{
+					Name:    "test1",
+					RawDiff: "line1\nline2\nline3",
+					Object: &apply.TypedKubeObj{
+						Kind: "kind1",
+						KubeMetadata: apply.KubeMetadata{
+							Name:      "name1",
+							Namespace: "namespace1",
+						},
+					},
+					NumAdded:   1,
+					NumRemoved: 2,
 				},
-				"\n",
-			),
+				{
+					Name:    "test2",
+					RawDiff: "line1\nline2",
+					Object: &apply.TypedKubeObj{
+						Kind: "kind2",
+						KubeMetadata: apply.KubeMetadata{
+							Name:      "name2",
+							Namespace: "namespace2",
+						},
+					},
+					NumAdded:   1,
+					NumRemoved: 2,
+				},
+				{
+					Name:     "test3",
+					RawDiff:  "line1\nline2",
+					NumAdded: 10,
+				},
+			},
 		},
 		{
 			ClusterConfig: clusterConfigs[1],
-			RawDiffs:      "",
 		},
 	}
 
@@ -190,7 +208,14 @@ func TestDiffCommentBehind(t *testing.T) {
 	diffs := []ClusterDiff{
 		{
 			ClusterConfig: clusterConfigs[0],
-			RawDiffs:      "these are diffs",
+			Results: []diff.Result{
+				{
+					Name:       "test",
+					RawDiff:    "raw diff",
+					NumAdded:   1,
+					NumRemoved: 2,
+				},
+			},
 		},
 	}
 

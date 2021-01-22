@@ -7,7 +7,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func ResultsTable(results *Results) string {
+func ResultsTable(results []Result) string {
 	buf := &bytes.Buffer{}
 
 	table := tablewriter.NewWriter(buf)
@@ -37,7 +37,7 @@ func ResultsTable(results *Results) string {
 		},
 	)
 
-	for _, result := range results.Results {
+	for _, result := range results {
 		var kind string
 		var name string
 		var namespace string
@@ -55,18 +55,11 @@ func ResultsTable(results *Results) string {
 				kind,
 				name,
 				namespace,
-				fmt.Sprintf("%d", max(result.NumAdded, result.NumRemoved)),
+				fmt.Sprintf("%d", result.NumChangedLines()),
 			},
 		)
 	}
 
 	table.Render()
 	return string(bytes.TrimRight(buf.Bytes(), "\n"))
-}
-
-func max(a int, b int) int {
-	if a < b {
-		return b
-	}
-	return a
 }

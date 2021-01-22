@@ -37,7 +37,11 @@ func kdiffRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	jsonBytes, err := json.MarshalIndent(results, "", "  ")
+	wrappedResults := diff.Results{
+		Results: results,
+	}
+
+	jsonBytes, err := json.MarshalIndent(wrappedResults, "", "  ")
 	if err != nil {
 		return err
 	}

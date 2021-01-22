@@ -22,7 +22,7 @@ const (
 
 // DiffKube processes the results of a kubectl diff call in place of the default 'diff'
 // command.
-func DiffKube(oldRoot string, newRoot string) (*Results, error) {
+func DiffKube(oldRoot string, newRoot string) ([]Result, error) {
 	oldNames, err := walkPaths(oldRoot)
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func DiffKube(oldRoot string, newRoot string) (*Results, error) {
 		return allNamesSlice[a] < allNamesSlice[b]
 	})
 
-	results := &Results{}
+	results := []Result{}
 
 	for _, name := range allNamesSlice {
 		_, oldOk := oldNames[name]
@@ -89,8 +89,8 @@ func DiffKube(oldRoot string, newRoot string) (*Results, error) {
 		}
 
 		if diffResult != nil && diffResult.RawDiff != "" {
-			results.Results = append(
-				results.Results,
+			results = append(
+				results,
 				*diffResult,
 			)
 		}
