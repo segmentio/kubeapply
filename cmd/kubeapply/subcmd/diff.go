@@ -154,11 +154,7 @@ func diffClusterPath(ctx context.Context, path string) error {
 	}
 
 	if results != nil {
-		log.Infof("Diffs summary:\n%s", diff.ResultsTable(results))
-		log.Info("Raw diffs:")
-		for _, result := range results.Results {
-			result.Print(true)
-		}
+		results.PrintFull()
 	} else {
 		log.Infof("Raw diff results:\n%s", rawDiffs)
 	}
@@ -229,12 +225,4 @@ func execDiff(
 		clusterConfig.ServerSideApply,
 	)
 	return results, "", err
-}
-
-func printDiff(diffStr string) {
-	if diffStr == "" {
-		fmt.Println("No diffs found.")
-	} else {
-		fmt.Println(diffStr)
-	}
 }

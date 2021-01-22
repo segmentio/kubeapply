@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: other-service2
+  namespace: apps
+  managedFields:
+  - name: field1
+    value: field1
+  - name: field2
+    value: field2
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: echoserver

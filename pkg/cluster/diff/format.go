@@ -2,8 +2,8 @@ package diff
 
 import (
 	"bytes"
+	"fmt"
 
-	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -16,14 +16,12 @@ func ResultsTable(results *Results) string {
 			"Kind",
 			"Name",
 			"Namespace",
-			"Additions",
-			"Removals",
+			"Changed Lines",
 		},
 	)
 	table.SetAutoWrapText(false)
 	table.SetColumnAlignment(
 		[]int{
-			tablewriter.ALIGN_LEFT,
 			tablewriter.ALIGN_LEFT,
 			tablewriter.ALIGN_LEFT,
 			tablewriter.ALIGN_LEFT,
@@ -38,9 +36,6 @@ func ResultsTable(results *Results) string {
 			Bottom: true,
 		},
 	)
-
-	addedPrinter := color.New(color.FgRed).SprintfFunc()
-	removedPrinter := color.New(color.FgRed).SprintfFunc()
 
 	for _, result := range results.Results {
 		var kind string
@@ -60,12 +55,18 @@ func ResultsTable(results *Results) string {
 				kind,
 				name,
 				namespace,
-				addedPrinter("%d", result.NumAdded),
-				removedPrinter("%d", result.NumRemoved),
+				fmt.Sprintf("%d", max(result.NumAdded, result.NumRemoved)),
 			},
 		)
 	}
 
 	table.Render()
 	return string(bytes.TrimRight(buf.Bytes(), "\n"))
+}
+
+func max(a int, b int) int {
+	if a < b {
+		return b
+	}
+	return a
 }

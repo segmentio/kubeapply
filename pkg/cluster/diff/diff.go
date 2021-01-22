@@ -159,6 +159,9 @@ func evalDiffs(
 			return nil, err
 		}
 
+		// If we already got the object, don't bother trying to get it again since
+		// it's unlikely that the top-level fields (name, namespace, type, etc.) have
+		// been changed.
 		if obj == nil {
 			obj, err = getFileObj(newPath)
 			if err != nil {
@@ -195,35 +198,6 @@ func evalDiffs(
 	}, nil
 }
 
-func printDiff(diffStr string, useColors bool) {
-	lines := strings.Split(diffStr, "\n")
-	for _, line := range lines {
-		var prefix string
-		if len(line) > 0 {
-			prefix = line[0:1]
-		}
-
-		switch prefix {
-		case "+":
-			if useColors {
-				printGreen(line)
-			} else {
-				fmt.Println(line)
-			}
-		case "-":
-			if useColors {
-				printRed(line)
-			} else {
-				fmt.Println(line)
-			}
-		default:
-			if len(line) > 0 {
-				fmt.Println(line)
-			}
-		}
-	}
-}
-
 func getFileLines(path string) ([]string, string, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -232,6 +206,8 @@ func getFileLines(path string) ([]string, string, error) {
 	defer file.Close()
 
 	lines := []string{}
+
+	// Hash the file contents so we can avoid diffing files with the same content.
 	h := sha1.New()
 
 	scanner := bufio.NewScanner(file)
@@ -242,8 +218,10 @@ func getFileLines(path string) ([]string, string, error) {
 
 	for scanner.Scan() {
 		keep := true
-
 		line := scanner.Text()
+
+		// Skip over managedFields chunk in metadata since it's constantly
+		// changing and causing spurious diffs.
 		if strings.HasPrefix(line, "  managedFields:") {
 			insideManagedFields = true
 			keep = false
@@ -257,6 +235,7 @@ func getFileLines(path string) ([]string, string, error) {
 
 		if keep {
 			if len(line) > maxLineLen {
+				// Trim very long lines
 				line = fmt.Sprintf(
 					"%s... (%d chars omitted)",
 					line[0:maxLineLen],

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/segmentio/kubeapply/pkg/cluster/apply"
+	log "github.com/sirupsen/logrus"
 )
 
 type Results struct {
@@ -19,7 +20,29 @@ type Result struct {
 	NumRemoved int                 `json:"numRemoved"`
 }
 
-func (r *Result) Print(useColors bool) {
+func (r *Results) PrintFull() {
+	if len(r.Results) == 0 {
+		log.Infof("No diffs found")
+		return
+	}
+
+	log.Infof("Diffs summary:\n%s", ResultsTable(r))
+	log.Info("Raw diffs:")
+	for _, result := range r.Results {
+		result.PrintRaw(true)
+	}
+}
+
+func (r *Results) PrintSummary() {
+	if len(r.Results) == 0 {
+		log.Infof("No diffs found")
+		return
+	}
+
+	log.Infof("Diffs summary:\n%s", ResultsTable(r))
+}
+
+func (r *Result) PrintRaw(useColors bool) {
 	lines := strings.Split(r.RawDiff, "\n")
 	for _, line := range lines {
 		var prefix string
