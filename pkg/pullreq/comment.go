@@ -77,7 +77,6 @@ type DiffCommentData struct {
 // ClusterDiff contains the results of a diff in a single cluster.
 type ClusterDiff struct {
 	ClusterConfig *config.ClusterConfig
-	NumDiffs      int
 	Results       []diff.Result
 }
 

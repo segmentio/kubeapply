@@ -19,7 +19,7 @@ var regenerateStr = os.Getenv("REGENERATE_TESTDATA")
 
 func TestApplyComment(t *testing.T) {
 	profileDir, err := ioutil.TempDir("", "profile")
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer os.RemoveAll(profileDir)
 
 	clusterConfigs := testClusterConfigs(t, profileDir)
@@ -97,23 +97,23 @@ func TestApplyComment(t *testing.T) {
 	}
 
 	result, err := FormatApplyComment(commentData)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	expectedOutput := "testdata/comments/apply.md"
 
 	if strings.ToLower(regenerateStr) == "true" {
 		err = ioutil.WriteFile(expectedOutput, []byte(result), 0644)
-		require.Nil(t, err)
+		require.NoError(t, err)
 	} else {
 		contents, err := ioutil.ReadFile(expectedOutput)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, string(contents), result)
 	}
 }
 
 func TestDiffComment(t *testing.T) {
 	profileDir, err := ioutil.TempDir("", "profile")
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer os.RemoveAll(profileDir)
 
 	clusterConfigs := testClusterConfigs(t, profileDir)
@@ -175,23 +175,23 @@ func TestDiffComment(t *testing.T) {
 	}
 
 	result, err := FormatDiffComment(commentData)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	expectedOutput := "testdata/comments/diffs.md"
 
 	if strings.ToLower(regenerateStr) == "true" {
 		err = ioutil.WriteFile(expectedOutput, []byte(result), 0644)
-		require.Nil(t, err)
+		require.NoError(t, err)
 	} else {
 		contents, err := ioutil.ReadFile(expectedOutput)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, string(contents), result)
 	}
 }
 
 func TestDiffCommentBehind(t *testing.T) {
 	profileDir, err := ioutil.TempDir("", "profile")
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer os.RemoveAll(profileDir)
 
 	clusterConfigs := testClusterConfigs(t, profileDir)
@@ -226,16 +226,16 @@ func TestDiffCommentBehind(t *testing.T) {
 	}
 
 	result, err := FormatDiffComment(commentData)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	expectedOutput := "testdata/comments/diffs-behind.md"
 
 	if strings.ToLower(regenerateStr) == "true" {
 		err = ioutil.WriteFile(expectedOutput, []byte(result), 0644)
-		require.Nil(t, err)
+		require.NoError(t, err)
 	} else {
 		contents, err := ioutil.ReadFile(expectedOutput)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, string(contents), result)
 	}
 }
@@ -247,23 +247,23 @@ func TestErrorComment(t *testing.T) {
 	}
 
 	result, err := FormatErrorComment(commentData)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	expectedOutput := "testdata/comments/error.md"
 
 	if strings.ToLower(regenerateStr) == "true" {
 		err = ioutil.WriteFile(expectedOutput, []byte(result), 0644)
-		require.Nil(t, err)
+		require.NoError(t, err)
 	} else {
 		contents, err := ioutil.ReadFile(expectedOutput)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, string(contents), result)
 	}
 }
 
 func TestHelpComment(t *testing.T) {
 	profileDir, err := ioutil.TempDir("", "profile")
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer os.RemoveAll(profileDir)
 
 	clusterConfigs := testClusterConfigs(t, profileDir)
@@ -275,23 +275,23 @@ func TestHelpComment(t *testing.T) {
 	}
 
 	result, err := FormatHelpComment(commentData)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	expectedOutput := "testdata/comments/help.md"
 
 	if strings.ToLower(regenerateStr) == "true" {
 		err = ioutil.WriteFile(expectedOutput, []byte(result), 0644)
-		require.Nil(t, err)
+		require.NoError(t, err)
 	} else {
 		contents, err := ioutil.ReadFile(expectedOutput)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, string(contents), result)
 	}
 }
 
 func TestStatusComment(t *testing.T) {
 	profileDir, err := ioutil.TempDir("", "profile")
-	require.Nil(t, err)
+	require.NoError(t, err)
 	defer os.RemoveAll(profileDir)
 
 	clusterConfigs := testClusterConfigs(t, profileDir)
@@ -319,16 +319,16 @@ func TestStatusComment(t *testing.T) {
 	}
 
 	result, err := FormatStatusComment(commentData)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	expectedOutput := "testdata/comments/statuses.md"
 
 	if strings.ToLower(regenerateStr) == "true" {
 		err = ioutil.WriteFile(expectedOutput, []byte(result), 0644)
-		require.Nil(t, err)
+		require.NoError(t, err)
 	} else {
 		contents, err := ioutil.ReadFile(expectedOutput)
-		require.Nil(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, string(contents), result)
 	}
 }
@@ -400,7 +400,7 @@ func testClusterConfigs(t *testing.T, profileDir string) []*config.ClusterConfig
 	}
 
 	for _, clusterConfig := range clusterConfigs {
-		require.Nil(
+		require.NoError(
 			t,
 			clusterConfig.SetDefaults(
 				fmt.Sprintf(

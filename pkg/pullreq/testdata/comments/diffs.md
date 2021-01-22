@@ -2,25 +2,36 @@
 
 #### Cluster: `test-env:test-region:test-cluster1`<br/><br/>Subpaths (1): `test/subpath`
 
+
+##### Resource `test1`
 <details>
-<summary><b>Diffs (2)</b></summary>
 <p>
-
-
+<summary><b>Diffs (2 lines changed)</b></summary>
 ```diff
-something
---- file1
-+++ file2
-+ diff1
-- diff2
-
---- file3
-+++ file4
-+ diff1
-- diff2
+line1
+line2
+line3
 ```
-
-
+</p>
+</details>
+##### Resource `test2`
+<details>
+<p>
+<summary><b>Diffs (2 lines changed)</b></summary>
+```diff
+line1
+line2
+```
+</p>
+</details>
+##### Resource `test3`
+<details>
+<p>
+<summary><b>Diffs (10 lines changed)</b></summary>
+```diff
+line1
+line2
+```
 </p>
 </details>
 
@@ -35,18 +46,10 @@ something
 
 #### Cluster: `test-env:test-region:test-cluster2`<br/><br/>Subpaths (1): *all*
 
-<details>
-<summary><b>Diffs (0)</b></summary>
-<p>
-
 
 ```
-No diffs found.
+No diffs were found.
 ```
-
-
-</p>
-</details>
 
 #### Next steps
 

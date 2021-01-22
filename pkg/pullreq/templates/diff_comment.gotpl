@@ -10,17 +10,17 @@
 
 #### Cluster: `{{ .ClusterConfig.DescriptiveName }}`<br/><br/>Subpaths ({{ .ClusterConfig.SubpathCount }}): {{ .ClusterConfig.PrettySubpaths }}
 
-{{ if (gt .NumDiffs 0) }}
-{{- range .Results.Results }}
+{{ if (gt (len .Results) 0) }}
+{{- range .Results }}
 ##### Resource `{{ .Name }}`
 <details>
+<p>
 <summary><b>Diffs ({{ .NumChangedLines }} lines changed)</b></summary>
 ```diff
 {{ .RawDiff }}
 ```
 </p>
 </details>
-<p>
 {{- end }}
 {{- else }}
 ```

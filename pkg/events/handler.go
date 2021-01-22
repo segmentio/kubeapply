@@ -561,7 +561,6 @@ func (whh *WebhookHandler) runDiffs(
 			diffData.ClusterDiffs,
 			pullreq.ClusterDiff{
 				ClusterConfig: clusterClient.Config(),
-				NumDiffs:      len(results),
 				Results:       results,
 			},
 		)

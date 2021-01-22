@@ -3,16 +3,14 @@
 
 #### Cluster: `test-env:test-region:test-cluster1`<br/><br/>Subpaths (1): `test/subpath`
 
+
+##### Resource `test`
 <details>
-<summary><b>Diffs (0)</b></summary>
 <p>
-
-
+<summary><b>Diffs (2 lines changed)</b></summary>
 ```diff
-these are diffs
+raw diff
 ```
-
-
 </p>
 </details>
 
