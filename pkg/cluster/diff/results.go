@@ -23,6 +23,7 @@ type Result struct {
 	NumRemoved int                 `json:"numRemoved"`
 }
 
+// PrintFull prints out a table and the raw diffs for a results slice.
 func PrintFull(results []Result) {
 	if len(results) == 0 {
 		log.Infof("No diffs found")
@@ -36,6 +37,7 @@ func PrintFull(results []Result) {
 	}
 }
 
+// PrintSummary prints out a summary table for a results slice.
 func PrintSummary(results []Result) {
 	if len(results) == 0 {
 		log.Infof("No diffs found")
@@ -45,6 +47,7 @@ func PrintSummary(results []Result) {
 	log.Infof("Diffs summary:\n%s", ResultsTable(results))
 }
 
+// PrintRaw prints out the raw diffs for a single resource.
 func (r *Result) PrintRaw(useColors bool) {
 	lines := strings.Split(r.RawDiff, "\n")
 	for _, line := range lines {
@@ -74,6 +77,8 @@ func (r *Result) PrintRaw(useColors bool) {
 	}
 }
 
+// ClippedRawDiff returns a clipped version of the raw diff for this result. Used
+// in the Github diff comment template.
 func (r *Result) ClippedRawDiff(maxLen int) string {
 	if len(r.RawDiff) > maxLen {
 		return fmt.Sprintf(
@@ -85,6 +90,8 @@ func (r *Result) ClippedRawDiff(maxLen int) string {
 	return r.RawDiff
 }
 
+// NumChangedLines returns the rough number of lines changed (taken as the max of the num
+// added and num removed).
 func (r *Result) NumChangedLines() int {
 	if r.NumAdded > r.NumRemoved {
 		return r.NumAdded

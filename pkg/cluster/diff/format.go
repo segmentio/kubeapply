@@ -7,6 +7,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
+// ResultsTable returns a table that summarizes a slice of result diffs.
 func ResultsTable(results []Result) string {
 	buf := &bytes.Buffer{}
 

@@ -105,6 +105,7 @@ type ClusterConfig struct {
 	descriptiveName string
 }
 
+// Profile contains the configuration for a single profile.
 type Profile struct {
 	// Name is the name of the profile.
 	Name string `json:"name"`
