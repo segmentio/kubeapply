@@ -16,6 +16,7 @@ echo "Creating bundle at ${OUTPUT_ZIP}"
 
 pushd ${REPO_ROOT}/build
 zip -r9 $OUTPUT_ZIP kubeapply-lambda
+zip -r9 $OUTPUT_ZIP kubeapply
 popd
 
 TEMP_DIR=$(mktemp -d)

@@ -23,8 +23,12 @@ install: data
 kubeapply-lambda: data
 	GOOS=linux GOARCH=amd64 go build -o build/kubeapply-lambda $(LDFLAGS) ./cmd/kubeapply-lambda
 
+.PHONY: kubeapply-lambda-kubeapply
+kubeapply-lambda-kubeapply: data
+	GOOS=linux GOARCH=amd64 go build -o build/kubeapply $(LDFLAGS) ./cmd/kubeapply
+
 .PHONY: lambda-zip
-lambda-zip: clean kubeapply-lambda
+lambda-zip: clean kubeapply-lambda kubeapply-lambda-kubeapply
 	$Q./scripts/create-lambda-bundle.sh $(LAMBDAZIP)
 
 .PHONY: kubeapply-server
