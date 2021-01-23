@@ -74,6 +74,17 @@ func (r *Result) PrintRaw(useColors bool) {
 	}
 }
 
+func (r *Result) ClippedRawDiff(maxLen int) string {
+	if len(r.RawDiff) > maxLen {
+		return fmt.Sprintf(
+			"%s\n... (%d chars omitted)",
+			r.RawDiff[0:maxLen],
+			len(r.RawDiff)-maxLen,
+		)
+	}
+	return r.RawDiff
+}
+
 func (r *Result) NumChangedLines() int {
 	if r.NumAdded > r.NumRemoved {
 		return r.NumAdded

@@ -16,6 +16,7 @@ line3
 
 </p>
 </details>
+<!-- KUBEAPPLY_SPLIT -->
 
 <details>
 <summary><b><code>test2</code> (2 lines changed)</b></summary>
@@ -28,6 +29,7 @@ line2
 
 </p>
 </details>
+<!-- KUBEAPPLY_SPLIT -->
 
 <details>
 <summary><b><code>test3</code> (10 lines changed)</b></summary>
@@ -40,6 +42,7 @@ line2
 
 </p>
 </details>
+<!-- KUBEAPPLY_SPLIT -->
 
 
 #### Next steps

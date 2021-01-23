@@ -19,11 +19,12 @@
 <p>
 
 ```diff
-{{ .RawDiff }}
+{{ .ClippedRawDiff 5000 }}
 ```
 
 </p>
 </details>
+<!-- KUBEAPPLY_SPLIT -->
 {{ end }}
 {{- else }}
 ```

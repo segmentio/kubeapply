@@ -2,7 +2,6 @@ package pullreq
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -13,6 +12,11 @@ import (
 	"github.com/segmentio/kubeapply/pkg/cluster/apply"
 	"github.com/segmentio/kubeapply/pkg/cluster/diff"
 	"github.com/segmentio/kubeapply/pkg/config"
+)
+
+const (
+	// Special string used to indicate where we we can split very long comments.
+	kubeapplySplit = "<!-- KUBEAPPLY_SPLIT -->"
 )
 
 var templates *template.Template
@@ -191,47 +195,31 @@ func commentChunks(body string, maxLen int) []string {
 		start := 0
 		end := maxLen
 
-		isDiff := strings.Contains(body, "```diff\n")
+		var splitStr string
+
+		if strings.Contains(body, kubeapplySplit) {
+			splitStr = kubeapplySplit
+		} else {
+			// Just split on newlines
+			splitStr = "\n"
+		}
 
 		for start < end {
-			// Try to split at first newline after end
-			newlineIndex := strings.Index(body[end:], "\n")
-			if newlineIndex > 0 {
-				end += newlineIndex
+			// Try to split at first splitter string after end
+			splitIndex := strings.Index(body[end:], splitStr)
+			if splitIndex > 0 {
+				end += splitIndex
 			}
 
 			chunk := body[start:end]
-
-			// Hacky approach to ensuring that very long diffs look ok when broken up
-			// into multiple chunks.
-			//
-			// TODO: Replace this more structured diffs that are easier to break up.
-			if isDiff {
-				hasDiffEnd := strings.Contains(chunk, "\n```\n")
-				fmt.Println(hasDiffEnd, chunk)
-
-				if len(chunks) == 0 {
-					if !hasDiffEnd {
-						chunk = chunk + "\n```"
-					}
-				} else {
-					if hasDiffEnd {
-						chunk = "```diff\n" + chunk
-					} else {
-						chunk = "```diff\n" + chunk + "\n```"
-					}
-				}
-			}
-
 			chunks = append(chunks, chunk)
 
-			if newlineIndex > 0 {
-				// Swallow newline
-				start = end + 1
+			if splitIndex > 0 {
+				// Swallow splitter string
+				start = end + len(splitStr)
 			} else {
 				start = end
 			}
-
 			end = min(start+maxLen, len(body))
 		}
 	} else {

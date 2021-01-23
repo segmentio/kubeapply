@@ -15,6 +15,7 @@ raw diff
 
 </p>
 </details>
+<!-- KUBEAPPLY_SPLIT -->
 
 
 #### Next steps

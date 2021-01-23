@@ -367,10 +367,10 @@ func TestCommentChunks(t *testing.T) {
 	assert.Equal(
 		t,
 		[]string{
-			"```diff\nABCDEFGH\nIJKLMNOPQRS\n```",
-			"```diff\nTUVWXYZ\n```\n ...",
+			"0123456789abcdefghijABC",
+			"DEFGHIJKLMNO",
 		},
-		commentChunks("```diff\nABCDEFGH\nIJKLMNOPQRS\nTUVWXYZ\n```\n ...", 20),
+		commentChunks("0123456789abcdefghijABC<!-- KUBEAPPLY_SPLIT -->DEFGHIJKLMNO", 20),
 	)
 }
 

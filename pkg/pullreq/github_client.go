@@ -21,7 +21,7 @@ import (
 const (
 	// The API allows a slightly higher value, but build in some buffer for formatting,
 	// newline breaks after end, etc.
-	githubMaxCommentLen = 63500
+	githubMaxCommentLen = 58000
 )
 
 var _ PullRequestClient = (*GHPullRequestClient)(nil)
