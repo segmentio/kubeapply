@@ -104,6 +104,7 @@ func FormatDiffComment(commentData DiffCommentData) (string, error) {
 type ErrorCommentData struct {
 	Error error
 	Env   string
+	Notes []string
 }
 
 // FormatErrorComment generates the body of an error comment result.

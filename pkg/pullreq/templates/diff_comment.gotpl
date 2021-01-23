@@ -19,7 +19,7 @@
 <p>
 
 ```diff
-{{ .ClippedRawDiff 5000 }}
+{{ .ClippedRawDiff 4500 }}
 ```
 
 </p>

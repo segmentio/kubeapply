@@ -298,7 +298,22 @@ func (prc *GHPullRequestClient) PostErrorComment(
 	env string,
 	err error,
 ) error {
-	commentBody, err := FormatErrorComment(ErrorCommentData{Error: err, Env: env})
+	notes := []string{}
+
+	if strings.Contains(err.Error(), "Error from server (NotFound): namespaces") {
+		notes = append(
+			notes,
+			"Kubeapply cannot generate diffs against non-existent namespaces. Please create any required namespaces manually and then run again.",
+		)
+	}
+
+	commentBody, err := FormatErrorComment(
+		ErrorCommentData{
+			Error: err,
+			Env:   env,
+			Notes: notes,
+		},
+	)
 	if err != nil {
 		return err
 	}

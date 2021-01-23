@@ -261,6 +261,30 @@ func TestErrorComment(t *testing.T) {
 	}
 }
 
+func TestErrorCommentNotes(t *testing.T) {
+	commentData := ErrorCommentData{
+		Error: fmt.Errorf("This is an error!"),
+		Env:   "stage",
+		Notes: []string{
+			"Kubeapply doesn't create namespaces",
+		},
+	}
+
+	result, err := FormatErrorComment(commentData)
+	require.NoError(t, err)
+
+	expectedOutput := "testdata/comments/error-notes.md"
+
+	if strings.ToLower(regenerateStr) == "true" {
+		err = ioutil.WriteFile(expectedOutput, []byte(result), 0644)
+		require.NoError(t, err)
+	} else {
+		contents, err := ioutil.ReadFile(expectedOutput)
+		require.NoError(t, err)
+		assert.Equal(t, string(contents), result)
+	}
+}
+
 func TestHelpComment(t *testing.T) {
 	profileDir, err := ioutil.TempDir("", "profile")
 	require.NoError(t, err)
