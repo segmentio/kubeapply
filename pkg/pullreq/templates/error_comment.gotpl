@@ -3,3 +3,10 @@
 ```
 {{ .Error }}
 ```
+
+{{ if (gt (len .Notes) 0) }}
+#### Notes
+{{ range .Notes }}
+- {{ . }}
+{{ end }}
+{{ end }}

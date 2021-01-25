@@ -10,6 +10,7 @@ import (
 
 	"github.com/segmentio/kubeapply/pkg/cluster"
 	"github.com/segmentio/kubeapply/pkg/cluster/apply"
+	"github.com/segmentio/kubeapply/pkg/cluster/diff"
 	"github.com/segmentio/kubeapply/pkg/cluster/kube"
 	"github.com/segmentio/kubeapply/pkg/config"
 	"github.com/segmentio/kubeapply/pkg/util"
@@ -43,7 +44,7 @@ type applyFlags struct {
 	simpleOutput bool
 
 	// Run operatation in just a subset of the subdirectories of the expanded configs
-	// (typically maps to namespace). If unset, considers all configs.
+	// (typically maps to namespace). Globs are allowed. If unset, considers all configs.
 	subpaths []string
 
 	// Whether to accept all prompts automatically; does not apply if
@@ -174,15 +175,20 @@ func applyClusterPath(ctx context.Context, path string) error {
 			return err
 		}
 
-		diffResult, err := execDiff(ctx, clusterConfig)
+		results, rawDiffs, err := execDiff(ctx, clusterConfig, !applyFlagValues.simpleOutput)
 		if err != nil {
-			log.Errorf("Error running diff: %s, %+v", diffResult, err)
+			log.Errorf("Error running diff: %+v", err)
 			log.Info(
 				"Try re-running with --debug to see verbose output. Note that diffs will not work if target namespace(s) don't exist yet.",
 			)
 			return err
 		}
-		printDiff(diffResult)
+
+		if results != nil {
+			diff.PrintSummary(results)
+		} else {
+			log.Infof("Raw diff results:\n%s", rawDiffs)
+		}
 
 		if !applyFlagValues.yes {
 			fmt.Print("Are you sure? (yes/no) ")

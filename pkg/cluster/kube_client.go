@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/briandowns/spinner"
 	"github.com/segmentio/kubeapply/pkg/cluster/apply"
+	"github.com/segmentio/kubeapply/pkg/cluster/diff"
 	"github.com/segmentio/kubeapply/pkg/cluster/kube"
 	"github.com/segmentio/kubeapply/pkg/config"
 	"github.com/segmentio/kubeapply/pkg/store"
@@ -30,7 +31,6 @@ type KubeClusterClient struct {
 	lockID                string
 	useLocks              bool
 	checkApplyConsistency bool
-	useColors             bool
 	spinnerObj            *spinner.Spinner
 	streamingOutput       bool
 
@@ -138,7 +138,6 @@ func NewKubeClusterClient(
 		headSHA:               config.HeadSHA,
 		useLocks:              config.UseLocks,
 		checkApplyConsistency: config.CheckApplyConsistency,
-		useColors:             config.UseColors,
 		spinnerObj:            config.SpinnerObj,
 		streamingOutput:       config.StreamingOutput,
 		clusterKey:            clusterKey,
@@ -200,57 +199,46 @@ func (cc *KubeClusterClient) ApplyStructured(
 }
 
 // Diff runs a kubectl diff between the configs at the argument path and the associated
-// resources in the cluster.
+// resources in the cluster. It returns raw output that can be immediately printed to the
+// console.
 func (cc *KubeClusterClient) Diff(
 	ctx context.Context,
 	paths []string,
 	serverSide bool,
 ) ([]byte, error) {
-	if cc.useLocks {
-		acquireCtx, cancel := context.WithTimeout(ctx, lockAcquistionTimeout)
-		defer cancel()
-
-		err := cc.kubeLocker.Acquire(acquireCtx, cc.clusterConfig.Cluster)
-		if err != nil {
-			return nil, fmt.Errorf("Error acquiring lock: %+v. Try again later.", err)
-		}
-		defer func() {
-			err := cc.kubeLocker.Release(cc.clusterConfig.Cluster)
-			if err != nil {
-				log.Warnf(
-					"Error releasing lock for %s: %+v",
-					cc.clusterConfig.Cluster,
-					err,
-				)
-			}
-		}()
-	} else {
-		log.Debug("Skipping over locking")
-	}
-
-	diffResult, err := cc.kubeClient.Diff(
-		ctx,
-		paths,
-		cc.useColors,
-		cc.spinnerObj,
-	)
-	if err != nil || !cc.checkApplyConsistency {
-		return diffResult, err
-	}
-
-	diffEvent := kubeapplyDiffEvent{
-		SHA:       cc.headSHA,
-		UpdatedAt: time.Now(),
-		UpdatedBy: cc.lockID,
-	}
-	diffEventBytes, err := json.Marshal(diffEvent)
+	rawResults, err := cc.execDiff(ctx, paths, false)
 	if err != nil {
-		return diffResult, err
+		return nil, fmt.Errorf(
+			"Error running diff: %+v (output: %s)",
+			err,
+			string(rawResults),
+		)
 	}
-	diffEventStr := string(diffEventBytes)
 
-	log.Infof("Setting store key value: %s, %s", cc.clusterKey, diffEventStr)
-	return diffResult, cc.kubeStore.Set(cc.clusterKey, diffEventStr)
+	return rawResults, nil
+}
+
+// DiffStructured runs a kubectl diff between the configs at the argument path and the associated
+// resources in the cluster. It returns a structured result that can be used printed to a table.
+func (cc *KubeClusterClient) DiffStructured(
+	ctx context.Context,
+	paths []string,
+	serverSide bool,
+) ([]diff.Result, error) {
+	rawResults, err := cc.execDiff(ctx, paths, true)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"Error running diff: %+v (output: %s)",
+			err,
+			string(rawResults),
+		)
+	}
+
+	results := diff.Results{}
+	if err := json.Unmarshal(rawResults, &results); err != nil {
+		return nil, err
+	}
+	return results.Results, nil
 }
 
 // Summary returns a summary of the current cluster state.
@@ -342,4 +330,56 @@ func (cc *KubeClusterClient) execApply(
 		format,
 		dryRun,
 	)
+}
+
+func (cc *KubeClusterClient) execDiff(
+	ctx context.Context,
+	paths []string,
+	structured bool,
+) ([]byte, error) {
+	if cc.useLocks {
+		acquireCtx, cancel := context.WithTimeout(ctx, lockAcquistionTimeout)
+		defer cancel()
+
+		err := cc.kubeLocker.Acquire(acquireCtx, cc.clusterConfig.Cluster)
+		if err != nil {
+			return nil, fmt.Errorf("Error acquiring lock: %+v. Try again later.", err)
+		}
+		defer func() {
+			err := cc.kubeLocker.Release(cc.clusterConfig.Cluster)
+			if err != nil {
+				log.Warnf(
+					"Error releasing lock for %s: %+v",
+					cc.clusterConfig.Cluster,
+					err,
+				)
+			}
+		}()
+	} else {
+		log.Debug("Skipping over locking")
+	}
+
+	diffResult, err := cc.kubeClient.Diff(
+		ctx,
+		paths,
+		structured,
+		cc.spinnerObj,
+	)
+	if err != nil || !cc.checkApplyConsistency {
+		return diffResult, err
+	}
+
+	diffEvent := kubeapplyDiffEvent{
+		SHA:       cc.headSHA,
+		UpdatedAt: time.Now(),
+		UpdatedBy: cc.lockID,
+	}
+	diffEventBytes, err := json.Marshal(diffEvent)
+	if err != nil {
+		return diffResult, err
+	}
+	diffEventStr := string(diffEventBytes)
+
+	log.Infof("Setting store key value: %s, %s", cc.clusterKey, diffEventStr)
+	return diffResult, cc.kubeStore.Set(cc.clusterKey, diffEventStr)
 }

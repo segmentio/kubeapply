@@ -105,6 +105,7 @@ type ClusterConfig struct {
 	descriptiveName string
 }
 
+// Profile contains the configuration for a single profile.
 type Profile struct {
 	// Name is the name of the profile.
 	Name string `json:"name"`
@@ -251,11 +252,22 @@ func (c ClusterConfig) AbsSubpaths() []string {
 	if len(c.Subpaths) > 0 {
 		absSubpaths := []string{}
 
-		for _, subPath := range c.Subpaths {
-			absSubpaths = append(
-				absSubpaths,
-				filepath.Join(c.ExpandedPath, subPath),
-			)
+		for _, subpath := range c.Subpaths {
+			expandedSubpath := filepath.Join(c.ExpandedPath, subpath)
+
+			expandedSubpaths, err := filepath.Glob(expandedSubpath)
+			if err != nil || len(expandedSubpaths) == 0 {
+				// Just use the subpath directly
+				absSubpaths = append(
+					absSubpaths,
+					expandedSubpath,
+				)
+			} else {
+				absSubpaths = append(
+					absSubpaths,
+					expandedSubpaths...,
+				)
+			}
 		}
 
 		return absSubpaths

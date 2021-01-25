@@ -2,27 +2,48 @@
 
 #### Cluster: `test-env:test-region:test-cluster1`<br/><br/>Subpaths (1): `test/subpath`
 
+
+#### Resources with diffs (3):
 <details>
-<summary><b>Diffs (2)</b></summary>
+<summary><b><code>test1</code> (2 lines changed)</b></summary>
 <p>
 
-
 ```diff
-something
---- file1
-+++ file2
-+ diff1
-- diff2
-
---- file3
-+++ file4
-+ diff1
-- diff2
+line1
+line2
+line3
 ```
-
 
 </p>
 </details>
+<!-- KUBEAPPLY_SPLIT -->
+
+<details>
+<summary><b><code>test2</code> (2 lines changed)</b></summary>
+<p>
+
+```diff
+line1
+line2
+```
+
+</p>
+</details>
+<!-- KUBEAPPLY_SPLIT -->
+
+<details>
+<summary><b><code>test3</code> (10 lines changed)</b></summary>
+<p>
+
+```diff
+line1
+line2
+```
+
+</p>
+</details>
+<!-- KUBEAPPLY_SPLIT -->
+
 
 #### Next steps
 
@@ -35,18 +56,10 @@ something
 
 #### Cluster: `test-env:test-region:test-cluster2`<br/><br/>Subpaths (1): *all*
 
-<details>
-<summary><b>Diffs (0)</b></summary>
-<p>
-
 
 ```
-No diffs found.
+No diffs were found.
 ```
-
-
-</p>
-</details>
 
 #### Next steps
 

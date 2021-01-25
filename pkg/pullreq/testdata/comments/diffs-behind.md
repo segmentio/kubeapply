@@ -3,18 +3,20 @@
 
 #### Cluster: `test-env:test-region:test-cluster1`<br/><br/>Subpaths (1): `test/subpath`
 
+
+#### Resources with diffs (1):
 <details>
-<summary><b>Diffs (0)</b></summary>
+<summary><b><code>test</code> (2 lines changed)</b></summary>
 <p>
 
-
 ```diff
-these are diffs
+raw diff
 ```
-
 
 </p>
 </details>
+<!-- KUBEAPPLY_SPLIT -->
+
 
 #### Next steps
 

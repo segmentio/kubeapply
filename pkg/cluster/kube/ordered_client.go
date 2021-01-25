@@ -17,6 +17,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	diffScript = "kdiff-wrapper.sh"
+)
+
 // TODO: Switch to a YAML library that supports doing this splitting for us.
 var sep = regexp.MustCompile("(?:^|\\s*\n)---\\s*")
 
@@ -143,7 +147,7 @@ func (k *OrderedClient) Apply(
 func (k *OrderedClient) Diff(
 	ctx context.Context,
 	configPaths []string,
-	useColors bool,
+	structured bool,
 	spinner *spinner.Spinner,
 ) ([]byte, error) {
 	var diffCmd string
@@ -159,17 +163,6 @@ func (k *OrderedClient) Diff(
 			os.RemoveAll(tempDir)
 		}
 	}()
-
-	diffCmd = filepath.Join(tempDir, "pretty_diff.py")
-
-	err = ioutil.WriteFile(
-		diffCmd,
-		data.MustAsset("scripts/pretty_diff.py"),
-		0755,
-	)
-	if err != nil {
-		return nil, err
-	}
 
 	args := []string{
 		"--kubeconfig",
@@ -189,14 +182,29 @@ func (k *OrderedClient) Diff(
 		args = append(args, "-v", "8")
 	}
 
+	envVars := []string{}
+
+	if structured {
+		diffCmd = filepath.Join(tempDir, diffScript)
+		err = ioutil.WriteFile(
+			diffCmd,
+			data.MustAsset(fmt.Sprintf("scripts/%s", diffScript)),
+			0755,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		envVars = append(
+			envVars,
+			fmt.Sprintf("KUBECTL_EXTERNAL_DIFF=%s", diffCmd),
+		)
+	}
+
 	return runKubectlOutput(
 		ctx,
 		args,
-		[]string{
-			fmt.Sprintf("KUBECTL_EXTERNAL_DIFF=%s", diffCmd),
-			fmt.Sprintf("USE_COLORS=%v", useColors),
-			"STRIP_MANAGED_FIELDS=true",
-		},
+		envVars,
 		spinner,
 	)
 }

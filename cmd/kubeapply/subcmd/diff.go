@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/briandowns/spinner"
 	"github.com/segmentio/kubeapply/pkg/cluster"
+	"github.com/segmentio/kubeapply/pkg/cluster/diff"
 	"github.com/segmentio/kubeapply/pkg/cluster/kube"
 	"github.com/segmentio/kubeapply/pkg/config"
 	"github.com/segmentio/kubeapply/pkg/util"
@@ -38,8 +38,11 @@ type diffFlags struct {
 	// Path to kubeconfig. If unset, tries to fetch from the environment.
 	kubeConfig string
 
+	// Whether to just run "kubectl diff" with the default output options
+	simpleOutput bool
+
 	// Run operatation in just a subset of the subdirectories of the expanded configs
-	// (typically maps to namespace). If unset, considers all configs.
+	// (typically maps to namespace). Globs are allowed. If unset, considers all configs.
 	subpaths []string
 }
 
@@ -57,6 +60,12 @@ func init() {
 		"kubeconfig",
 		"",
 		"Path to kubeconfig",
+	)
+	diffCmd.Flags().BoolVar(
+		&diffFlagValues.simpleOutput,
+		"simple-output",
+		false,
+		"Run with simple output",
 	)
 	diffCmd.Flags().StringArrayVar(
 		&diffFlagValues.subpaths,
@@ -135,15 +144,20 @@ func diffClusterPath(ctx context.Context, path string) error {
 	clusterConfig.KubeConfigPath = kubeConfig
 	clusterConfig.Subpaths = diffFlagValues.subpaths
 
-	diffResult, err := execDiff(ctx, clusterConfig)
+	results, rawDiffs, err := execDiff(ctx, clusterConfig, diffFlagValues.simpleOutput)
 	if err != nil {
-		log.Errorf("Error running diff: %s, %+v", diffResult, err)
+		log.Errorf("Error running diff: %+v", err)
 		log.Info(
-			"Try re-running with --debug to see verbose output. Note that diffs will not work if target namespace(s) don't exist yet.",
+			"Try re-running with --simple-output, then with --debug to see verbose output. Note that diffs will not work if target namespace(s) don't exist yet.",
 		)
 		return err
 	}
-	printDiff(diffResult)
+
+	if results != nil {
+		diff.PrintFull(results)
+	} else {
+		log.Infof("Raw diff results:\n%s", rawDiffs)
+	}
 
 	return nil
 }
@@ -151,7 +165,8 @@ func diffClusterPath(ctx context.Context, path string) error {
 func execDiff(
 	ctx context.Context,
 	clusterConfig *config.ClusterConfig,
-) (string, error) {
+	simpleOutput bool,
+) ([]diff.Result, string, error) {
 	log.Info("Generating diff against versions in Kube API")
 
 	spinnerObj := spinner.New(
@@ -169,13 +184,12 @@ func execDiff(
 			ClusterConfig:         clusterConfig,
 			Debug:                 debug,
 			SpinnerObj:            spinnerObj,
-			UseColors:             true,
 			// TODO: Make locking an option
 			UseLocks: false,
 		},
 	)
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 	defer kubeClient.Close()
 
@@ -184,11 +198,11 @@ func execDiff(
 	if clusterConfig.UID != "" {
 		actualUID, err := kubeClient.GetNamespaceUID(ctx, "kube-system")
 		if err != nil {
-			return "", err
+			return nil, "", err
 		}
 
 		if clusterConfig.UID != actualUID {
-			return "", fmt.Errorf(
+			return nil, "", fmt.Errorf(
 				"Kubeapply config does not match this cluster (wrong kube context?): kube-system uids do not match (%s!=%s)",
 				clusterConfig.UID,
 				actualUID,
@@ -196,18 +210,19 @@ func execDiff(
 		}
 	}
 
-	results, err := kubeClient.Diff(
+	if simpleOutput {
+		rawResults, err := kubeClient.Diff(
+			ctx,
+			clusterConfig.AbsSubpaths(),
+			clusterConfig.ServerSideApply,
+		)
+		return nil, string(rawResults), err
+	}
+
+	results, err := kubeClient.DiffStructured(
 		ctx,
 		clusterConfig.AbsSubpaths(),
 		clusterConfig.ServerSideApply,
 	)
-	return strings.TrimSpace(string(results)), err
-}
-
-func printDiff(diffStr string) {
-	if diffStr == "" {
-		fmt.Println("No diffs found.")
-	} else {
-		fmt.Println(diffStr)
-	}
+	return results, "", err
 }
