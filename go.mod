@@ -16,6 +16,7 @@ require (
 	github.com/google/go-cmp v0.4.1 // indirect
 	github.com/google/go-github/v30 v30.0.0
 	github.com/gorilla/mux v1.7.4
+	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.4 // indirect
@@ -23,7 +24,9 @@ require (
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/olekukonko/tablewriter v0.0.4
+	github.com/pmezard/go-difflib v1.0.0
 	github.com/segmentio/conf v1.2.0
+	github.com/segmentio/encoding v0.2.7
 	github.com/segmentio/stats v3.0.0+incompatible
 	github.com/segmentio/stats/v4 v4.5.3
 	github.com/sirupsen/logrus v1.4.2
@@ -41,7 +44,7 @@ require (
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1
-	gopkg.in/yaml.v2 v2.2.5
+	gopkg.in/yaml.v2 v2.3.0
 	gopkg.in/yaml.v3 v3.0.0-20200601152816-913338de1bd2 // indirect
 	gopkg.in/zorkian/go-datadog-api.v2 v2.28.0
 	k8s.io/api v0.17.2

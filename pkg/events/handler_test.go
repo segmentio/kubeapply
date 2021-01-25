@@ -544,7 +544,7 @@ func TestHandleWebhook(t *testing.T) {
 				{
 					contains: []string{
 						"Kubeapply apply result (test-env)",
-						"apply result for test-cluster2 with path /git/repo/clusters/expanded/path1",
+						"apply result for test-cluster2 with paths [/git/repo/clusters/expanded/path1]",
 					},
 					doesNotContain: []string{
 						"test-cluster1",

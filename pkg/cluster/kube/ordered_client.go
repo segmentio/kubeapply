@@ -17,6 +17,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	diffScript = "kdiff-wrapper.sh"
+)
+
 // TODO: Switch to a YAML library that supports doing this splitting for us.
 var sep = regexp.MustCompile("(?:^|\\s*\n)---\\s*")
 
@@ -27,6 +31,7 @@ type OrderedClient struct {
 	keepConfigs    bool
 	extraEnv       []string
 	debug          bool
+	serverSide     bool
 }
 
 // NewOrderedClient returns a new OrderedClient instance.
@@ -35,12 +40,14 @@ func NewOrderedClient(
 	keepConfigs bool,
 	extraEnv []string,
 	debug bool,
+	serverSide bool,
 ) *OrderedClient {
 	return &OrderedClient{
 		kubeConfigPath: kubeConfigPath,
 		keepConfigs:    keepConfigs,
 		extraEnv:       extraEnv,
 		debug:          debug,
+		serverSide:     serverSide,
 	}
 }
 
@@ -48,7 +55,7 @@ func NewOrderedClient(
 // in the optimal order based on resource type.
 func (k *OrderedClient) Apply(
 	ctx context.Context,
-	applyPath string,
+	applyPaths []string,
 	output bool,
 	format string,
 	dryRun bool,
@@ -65,7 +72,7 @@ func (k *OrderedClient) Apply(
 		}
 	}()
 
-	manifests, err := GetManifests(applyPath)
+	manifests, err := GetManifests(applyPaths)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +116,9 @@ func (k *OrderedClient) Apply(
 		"-f",
 		tempDir,
 	}
-
+	if k.serverSide {
+		args = append(args, "--server-side", "true")
+	}
 	if k.debug {
 		args = append(args, "-v", "8")
 	}
@@ -138,8 +147,8 @@ func (k *OrderedClient) Apply(
 // Diff runs kubectl diff for the configs at the argument path.
 func (k *OrderedClient) Diff(
 	ctx context.Context,
-	configPath string,
-	useColors bool,
+	configPaths []string,
+	structured bool,
 	spinner *spinner.Spinner,
 ) ([]byte, error) {
 	var diffCmd string
@@ -156,38 +165,48 @@ func (k *OrderedClient) Diff(
 		}
 	}()
 
-	diffCmd = filepath.Join(tempDir, "pretty_diff.py")
-
-	err = ioutil.WriteFile(
-		diffCmd,
-		data.MustAsset("scripts/pretty_diff.py"),
-		0755,
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	args := []string{
 		"--field-manager=''",
 		"--kubeconfig",
 		k.kubeConfigPath,
 		"diff",
 		"-R",
-		"-f",
-		configPath,
 	}
 
+	for _, configPath := range configPaths {
+		args = append(args, "-f", configPath)
+	}
+
+	if k.serverSide {
+		args = append(args, "--server-side", "true")
+	}
 	if k.debug {
 		args = append(args, "-v", "8")
+	}
+
+	envVars := []string{}
+
+	if structured {
+		diffCmd = filepath.Join(tempDir, diffScript)
+		err = ioutil.WriteFile(
+			diffCmd,
+			data.MustAsset(fmt.Sprintf("scripts/%s", diffScript)),
+			0755,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		envVars = append(
+			envVars,
+			fmt.Sprintf("KUBECTL_EXTERNAL_DIFF=%s", diffCmd),
+		)
 	}
 
 	return runKubectlOutput(
 		ctx,
 		args,
-		[]string{
-			fmt.Sprintf("KUBECTL_EXTERNAL_DIFF=%s", diffCmd),
-			fmt.Sprintf("USE_COLORS=%v", useColors),
-		},
+		envVars,
 		spinner,
 	)
 }

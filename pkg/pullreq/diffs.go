@@ -21,7 +21,8 @@ import (
 // 4. Go over all the diffs, mapping them back to the cluster(s) that are configuring them
 // 5. Drop any clusters that are not associated with any diffs
 // 6. Find the lowest parent among each set of cluster diffs and use this to set the subpath
-//    in the associated cluster config
+//    in the associated cluster config or, if multiSubpaths is set to true, all changed
+//    subpaths.
 //
 // There are a few overrides that adjust this behavior:
 // 1. selectedClusterIDs: If set, then clusters in this slice are never dropped, even if they
@@ -34,6 +35,7 @@ func GetCoveredClusters(
 	env string,
 	selectedClusterIDs []string,
 	subpathOverride string,
+	multiSubpaths bool,
 ) ([]*config.ClusterConfig, error) {
 	selectedClusterIDsMap := map[string]struct{}{}
 	for _, selectedClusterID := range selectedClusterIDs {
@@ -163,21 +165,29 @@ func GetCoveredClusters(
 		config := configsMap[clusterPath]
 
 		if subpathOverride != "" {
-			config.Subpath = subpathOverride
+			config.Subpaths = []string{subpathOverride}
 		} else {
 			relExpandedPath, err := filepath.Rel(repoRoot, config.ExpandedPath)
 			if err != nil {
 				return nil, err
 			}
 
-			// Override subpath based on files that have changed
-			config.Subpath, err = lowestParent(relExpandedPath, changedFiles)
-			if err != nil {
-				return nil, err
+			if multiSubpaths {
+				config.Subpaths, err = lowestParents(relExpandedPath, changedFiles)
+				if err != nil {
+					return nil, err
+				}
+			} else {
+				// Override subpath based on files that have changed
+				parentDir, err := lowestParent(relExpandedPath, changedFiles)
+				if err != nil {
+					return nil, err
+				}
+				config.Subpaths = []string{parentDir}
 			}
 		}
 
-		log.Infof("Setting subpath for cluster %s to %s", clusterPath, config.Subpath)
+		log.Infof("Setting subpaths for cluster %s to %+v", clusterPath, config.Subpaths)
 
 		changedClusters = append(changedClusters, config)
 	}
@@ -221,6 +231,7 @@ func getExpandedConfigFiles(
 	return configFiles, nil
 }
 
+// lowestParent returns a single lowest parent among a set of paths.
 func lowestParent(root string, paths []string) (string, error) {
 	if len(paths) == 0 {
 		// If there are no paths, just treat the root as the parent
@@ -272,4 +283,54 @@ outer:
 	}
 
 	return lowestParentPath, nil
+}
+
+// lowestParents returns the set of non-overlapping lowest parents among multiple paths.
+// Unlike the lowestParent version above, this will return multiple values if changes
+// are being made in different parts of the tree.
+func lowestParents(root string, paths []string) ([]string, error) {
+	if len(paths) == 0 {
+		// If there are no paths, just treat the root as the parent
+		return []string{"."}, nil
+	}
+
+	pathDirsMap := map[string]struct{}{}
+
+	for _, path := range paths {
+		relPath, err := filepath.Rel(root, path)
+		if err != nil {
+			return nil, err
+		}
+
+		if strings.HasPrefix(relPath, "../") {
+			// We were passed in a path that was above the root; just return
+			// the root
+			return []string{"."}, nil
+		}
+
+		relDir := filepath.Dir(relPath)
+		pathDirsMap[relDir] = struct{}{}
+	}
+
+	prunedPathDirs := []string{}
+
+outer:
+	for pathDir := range pathDirsMap {
+		// For each parent, check if that parent is in the map; if so, then don't
+		// include this directory
+		components := strings.Split(pathDir, "/")
+		for i := 1; i < len(components); i++ {
+			parent := strings.Join(components[0:i], "/")
+			if _, ok := pathDirsMap[parent]; ok {
+				continue outer
+			}
+		}
+		prunedPathDirs = append(prunedPathDirs, pathDir)
+	}
+
+	sort.Slice(prunedPathDirs, func(a, b int) bool {
+		return prunedPathDirs[a] < prunedPathDirs[b]
+	})
+
+	return prunedPathDirs, nil
 }

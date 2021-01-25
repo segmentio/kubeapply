@@ -8,24 +8,29 @@
 {{- if .ClusterDiffs }}
 {{- range .ClusterDiffs }}
 
-#### Cluster: `{{ .ClusterConfig.DescriptiveName }}`<br/><br/>Subpath: {{ .ClusterConfig.PrettySubpath }}
+#### Cluster: `{{ .ClusterConfig.DescriptiveName }}`<br/><br/>Subpaths ({{ .ClusterConfig.SubpathCount }}): {{ .ClusterConfig.PrettySubpaths }}
 
+{{ if (gt (len .Results) 0) }}
+#### Resources with diffs ({{ len .Results}}):
+
+{{- range .Results }}
 <details>
-<summary><b>Diffs ({{ .NumDiffs }})</b></summary>
+<summary><b><code>{{ .Name }}</code> ({{ .NumChangedLines }} lines changed)</b></summary>
 <p>
 
-{{ if .RawDiffs }}
 ```diff
-{{ .RawDiffs }}
+{{ .ClippedRawDiff 4500 }}
 ```
-{{ else }}
-```
-No diffs found.
-```
-{{ end }}
 
 </p>
 </details>
+<!-- KUBEAPPLY_SPLIT -->
+{{ end }}
+{{- else }}
+```
+No diffs were found.
+```
+{{- end }}
 
 #### Next steps
 

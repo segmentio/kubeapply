@@ -5,10 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/segmentio/kubeapply/pkg/cluster"
 	"github.com/segmentio/kubeapply/pkg/cluster/apply"
+	"github.com/segmentio/kubeapply/pkg/cluster/diff"
 	"github.com/segmentio/kubeapply/pkg/cluster/kube"
 	"github.com/segmentio/kubeapply/pkg/config"
 	"github.com/segmentio/kubeapply/pkg/util"
@@ -41,9 +43,9 @@ type applyFlags struct {
 	// Whether to just run "kubectl apply" with the default output options
 	simpleOutput bool
 
-	// Run operatation in just one subdirectory of the expanded configs
-	// (typically maps to namespace). If unset, considers all configs.
-	subpath string
+	// Run operatation in just a subset of the subdirectories of the expanded configs
+	// (typically maps to namespace). Globs are allowed. If unset, considers all configs.
+	subpaths []string
 
 	// Whether to accept all prompts automatically; does not apply if
 	// noCheck is enabled
@@ -83,11 +85,11 @@ func init() {
 		false,
 		"Run kubectl apply without any special output options",
 	)
-	applyCmd.Flags().StringVar(
-		&applyFlagValues.subpath,
+	applyCmd.Flags().StringArrayVar(
+		&applyFlagValues.subpaths,
 		"subpath",
-		"",
-		"Apply for expanded configs in the provided subpath only",
+		[]string{},
+		"Apply for expanded configs in the provided subpath(s) only",
 	)
 	applyCmd.Flags().BoolVarP(
 		&applyFlagValues.yes,
@@ -104,8 +106,15 @@ func applyRun(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	for _, arg := range args {
-		if err := applyClusterPath(ctx, arg); err != nil {
+		paths, err := filepath.Glob(arg)
+		if err != nil {
 			return err
+		}
+
+		for _, path := range paths {
+			if err := applyClusterPath(ctx, path); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -122,7 +131,7 @@ func applyClusterPath(ctx context.Context, path string) error {
 	}
 
 	if applyFlagValues.expand {
-		if err := expandCluster(ctx, clusterConfig); err != nil {
+		if err := expandCluster(ctx, clusterConfig, false); err != nil {
 			return err
 		}
 	}
@@ -158,7 +167,7 @@ func applyClusterPath(ctx context.Context, path string) error {
 	}
 
 	clusterConfig.KubeConfigPath = kubeConfig
-	clusterConfig.Subpath = applyFlagValues.subpath
+	clusterConfig.Subpaths = applyFlagValues.subpaths
 
 	if !applyFlagValues.noCheck {
 		err := execValidation(ctx, clusterConfig)
@@ -166,15 +175,20 @@ func applyClusterPath(ctx context.Context, path string) error {
 			return err
 		}
 
-		diffResult, err := execDiff(ctx, clusterConfig)
+		results, rawDiffs, err := execDiff(ctx, clusterConfig, !applyFlagValues.simpleOutput)
 		if err != nil {
-			log.Errorf("Error running diff: %s, %+v", diffResult, err)
+			log.Errorf("Error running diff: %+v", err)
 			log.Info(
 				"Try re-running with --debug to see verbose output. Note that diffs will not work if target namespace(s) don't exist yet.",
 			)
 			return err
 		}
-		printDiff(diffResult)
+
+		if results != nil {
+			diff.PrintSummary(results)
+		} else {
+			log.Infof("Raw diff results:\n%s", rawDiffs)
+		}
 
 		if !applyFlagValues.yes {
 			fmt.Print("Are you sure? (yes/no) ")
@@ -212,12 +226,20 @@ func applyClusterPath(ctx context.Context, path string) error {
 	defer kubeClient.Close()
 
 	if applyFlagValues.simpleOutput {
-		results, err := kubeClient.Apply(ctx, clusterConfig.AbsSubpath())
+		results, err := kubeClient.Apply(
+			ctx,
+			clusterConfig.AbsSubpaths(),
+			clusterConfig.ServerSideApply,
+		)
 		if err != nil {
 			return fmt.Errorf("Error running apply: %s", string(results))
 		}
 	} else {
-		results, err := kubeClient.ApplyStructured(ctx, clusterConfig.AbsSubpath())
+		results, err := kubeClient.ApplyStructured(
+			ctx,
+			clusterConfig.AbsSubpaths(),
+			clusterConfig.ServerSideApply,
+		)
 		if err != nil {
 			return err
 		}

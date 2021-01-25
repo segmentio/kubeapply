@@ -10,7 +10,13 @@ import (
 
 	"github.com/segmentio/kubeapply/data"
 	"github.com/segmentio/kubeapply/pkg/cluster/apply"
+	"github.com/segmentio/kubeapply/pkg/cluster/diff"
 	"github.com/segmentio/kubeapply/pkg/config"
+)
+
+const (
+	// Special string used to indicate where we we can split very long comments.
+	kubeapplySplit = "<!-- KUBEAPPLY_SPLIT -->"
 )
 
 var templates *template.Template
@@ -75,30 +81,7 @@ type DiffCommentData struct {
 // ClusterDiff contains the results of a diff in a single cluster.
 type ClusterDiff struct {
 	ClusterConfig *config.ClusterConfig
-	RawDiffs      string
-}
-
-// NumDiffs returns the number of resources with non-empty diff results.
-func (c ClusterDiff) NumDiffs() int {
-	if strings.TrimSpace(c.RawDiffs) == "" {
-		return 0
-	}
-
-	count := 0
-
-	// Look for "+++/---" line pairs
-	//
-	// TODO: Make diff outputs more structured so we can do this more precisely.
-	lines := strings.Split(c.RawDiffs, "\n")
-
-	for l := 1; l < len(lines); l++ {
-		if strings.HasPrefix(lines[l], "+++ ") &&
-			strings.HasPrefix(lines[l-1], "--- ") {
-			count++
-		}
-	}
-
-	return count
+	Results       []diff.Result
 }
 
 // FormatDiffComment generates the body of a diff comment result.
@@ -121,6 +104,7 @@ func FormatDiffComment(commentData DiffCommentData) (string, error) {
 type ErrorCommentData struct {
 	Error error
 	Env   string
+	Notes []string
 }
 
 // FormatErrorComment generates the body of an error comment result.
@@ -203,4 +187,52 @@ func loadTemplates() (*template.Template, error) {
 	return templates.ParseGlob(
 		filepath.Join(tempDir, "pkg/pullreq/templates/*.gotpl"),
 	)
+}
+
+func commentChunks(body string, maxLen int) []string {
+	chunks := []string{}
+
+	if len(body) > maxLen {
+		start := 0
+		end := maxLen
+
+		var splitStr string
+
+		if strings.Contains(body, kubeapplySplit) {
+			splitStr = kubeapplySplit
+		} else {
+			// Just split on newlines
+			splitStr = "\n"
+		}
+
+		for start < end {
+			// Try to split at first splitter string after end
+			splitIndex := strings.Index(body[end:], splitStr)
+			if splitIndex > 0 {
+				end += splitIndex
+			}
+
+			chunk := body[start:end]
+			chunks = append(chunks, chunk)
+
+			if splitIndex > 0 {
+				// Swallow splitter string
+				start = end + len(splitStr)
+			} else {
+				start = end
+			}
+			end = min(start+maxLen, len(body))
+		}
+	} else {
+		chunks = append(chunks, body)
+	}
+
+	return chunks
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

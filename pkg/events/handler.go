@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	applyTimeout = 60 * time.Second
-	diffTimeout  = 120 * time.Second
+	applyTimeout = 600 * time.Second
+	diffTimeout  = 600 * time.Second
 )
 
 // WebhookHandler is a struct that handles incoming Github webhooks. Depending on the webhook
@@ -418,7 +418,8 @@ func (whh *WebhookHandler) runApply(
 
 			results, err := clusterClient.ApplyStructured(
 				applyCtx,
-				clusterClient.Config().AbsSubpath(),
+				clusterClient.Config().AbsSubpaths(),
+				clusterClient.Config().ServerSideApply,
 			)
 			if err != nil {
 				applyErr = fmt.Errorf("%+v", err)
@@ -546,22 +547,13 @@ func (whh *WebhookHandler) runDiffs(
 		diffCtx, cancel := context.WithTimeout(ctx, diffTimeout)
 		defer cancel()
 
-		results, err := clusterClient.Diff(
+		results, err := clusterClient.DiffStructured(
 			diffCtx,
-			clusterClient.Config().AbsSubpath(),
+			clusterClient.Config().AbsSubpaths(),
+			clusterClient.Config().ServerSideApply,
 		)
 		if err != nil {
-			resultsStr := string(results)
-
-			if resultsStr != "" {
-				diffErr = fmt.Errorf(
-					"%+v\nDiff output: %s",
-					err,
-					resultsStr,
-				)
-			} else {
-				diffErr = fmt.Errorf("%+v", err)
-			}
+			diffErr = fmt.Errorf("%+v", err)
 			break
 		}
 
@@ -569,7 +561,7 @@ func (whh *WebhookHandler) runDiffs(
 			diffData.ClusterDiffs,
 			pullreq.ClusterDiff{
 				ClusterConfig: clusterClient.Config(),
-				RawDiffs:      string(results),
+				Results:       results,
 			},
 		)
 	}
