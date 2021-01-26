@@ -60,7 +60,13 @@ jobs:
               -t ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/kubeapply:${SHORT_GIT_SHA} \
               --build-arg VERSION_REF=${SHORT_GIT_SHA} \
               .
+            docker build \
+              -f Dockerfile.lambda \
+              -t ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/kubeapply-lambda:${SHORT_GIT_SHA} \
+              --build-arg VERSION_REF=${SHORT_GIT_SHA} \
+              .
             docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/kubeapply:${SHORT_GIT_SHA}
+            docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/kubeapply-lambda:${SHORT_GIT_SHA}
 
 workflows:
   version: 2
