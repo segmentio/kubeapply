@@ -15,9 +15,9 @@ func ResultsTextTable(results []Result) string {
 	table := tablewriter.NewWriter(buf)
 	table.SetHeader(
 		[]string{
+			"Namespace",
 			"Kind",
 			"Name",
-			"Namespace",
 			"Created",
 			"Old Version",
 			"New Version",
@@ -60,9 +60,9 @@ func ResultsTextTable(results []Result) string {
 
 		table.Append(
 			[]string{
+				printer("%s", result.Namespace),
 				printer("%s", result.Kind),
 				printer("%s", result.Name),
-				printer("%s", result.Namespace),
 				printer("%s", result.CreatedTimestamp()),
 				printer("%s", result.OldVersion),
 				printer("%s", result.NewVersion),
