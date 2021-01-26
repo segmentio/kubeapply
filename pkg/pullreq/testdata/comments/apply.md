@@ -7,7 +7,7 @@
 
 | Namespace | Kind | Name | Old Version | New Version |
 | --------- | ---- | ---- | ----------- | ----------- |
-test-namespace | test-kind | test-name | 1234 | **3456** |
+| test-namespace | test-kind | test-name | 1234 | **3456** |
 
 </p>
 
@@ -18,7 +18,7 @@ test-namespace | test-kind | test-name | 1234 | **3456** |
 
 | Namespace | Kind | Name | Old Version | New Version |
 | --------- | ---- | ---- | ----------- | ----------- |
-test-namespace3 | test-kind3 | test-name3 | 1234 | **3456** |
+| test-namespace3 | test-kind3 | test-name3 | 1234 | **3456** |
 
 </p>
 
