@@ -22,8 +22,6 @@ ENV GO111MODULE=on
 
 RUN make kubeapply VERSION_REF=${VERSION_REF} && \
     cp build/kubeapply /usr/local/bin
-RUN make kubeapply-lambda && \
-    cp build/kubeapply-lambda /usr/local/bin
 
 # Copy into final image
 FROM ubuntu:18.04
@@ -41,4 +39,3 @@ COPY --from=builder /usr/local/bin/helm /usr/local/bin
 COPY --from=builder /usr/local/bin/kubeval /usr/local/bin
 COPY --from=builder /usr/local/bin/kubectl /usr/local/bin
 COPY --from=builder /usr/local/bin/kubeapply /usr/local/bin
-COPY --from=builder /usr/local/bin/kubeapply-lambda /usr/local/bin
