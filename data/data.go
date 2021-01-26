@@ -95,7 +95,7 @@ func pkgPullreqTemplatesApply_commentGotpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "pkg/pullreq/templates/apply_comment.gotpl", size: 1052, mode: os.FileMode(0644), modTime: time.Unix(1611627862, 0)}
+	info := bindataFileInfo{name: "pkg/pullreq/templates/apply_comment.gotpl", size: 1052, mode: os.FileMode(0644), modTime: time.Unix(1611631812, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x39, 0x98, 0xb8, 0x81, 0x9e, 0xbb, 0x97, 0xdd, 0x58, 0x91, 0x82, 0x55, 0x99, 0xef, 0x6c, 0xc3, 0x49, 0xe7, 0xe0, 0x9d, 0x4, 0x30, 0x35, 0x16, 0xb9, 0xa3, 0x44, 0x34, 0x84, 0x2e, 0x0, 0x1b}}
 	return a, nil
 }
@@ -255,7 +255,7 @@ func scriptsCreateLambdaBundleSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "scripts/create-lambda-bundle.sh", size: 819, mode: os.FileMode(0755), modTime: time.Unix(1611616180, 0)}
+	info := bindataFileInfo{name: "scripts/create-lambda-bundle.sh", size: 819, mode: os.FileMode(0755), modTime: time.Unix(1611633754, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x53, 0x3c, 0xc6, 0xbf, 0x2d, 0x5c, 0xb1, 0x3b, 0x37, 0x5, 0xa4, 0x16, 0x52, 0x5a, 0xd4, 0x49, 0xbb, 0xf8, 0x4, 0x83, 0x3c, 0xbf, 0x10, 0x39, 0xcf, 0x18, 0xbf, 0x52, 0x35, 0xee, 0xca, 0x3}}
 	return a, nil
 }
