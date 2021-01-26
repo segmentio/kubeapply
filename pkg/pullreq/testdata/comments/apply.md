@@ -5,9 +5,9 @@
 <p>
 
 
-| Kind | Name | Namespace | Old Version | New Version |
-| ---- | ---- | --------- | ----------- | ----------- |
-| test-kind | test-name | test-namespace | 1234 | **3456** |
+| Namespace | Kind | Name | Old Version | New Version |
+| --------- | ---- | ---- | ----------- | ----------- |
+test-namespace | test-kind | test-name | 1234 | **3456** |
 
 </p>
 
@@ -16,9 +16,9 @@
 <p>
 
 
-| Kind | Name | Namespace | Old Version | New Version |
-| ---- | ---- | --------- | ----------- | ----------- |
-| test-kind3 | test-name3 | test-namespace3 | 1234 | **3456** |
+| Namespace | Kind | Name | Old Version | New Version |
+| --------- | ---- | ---- | ----------- | ----------- |
+test-namespace3 | test-kind3 | test-name3 | 1234 | **3456** |
 
 </p>
 

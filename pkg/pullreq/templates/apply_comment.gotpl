@@ -13,13 +13,13 @@
 <p>
 
 {{ if (gt .NumUpdates 0) }}
-| Kind | Name | Namespace | Old Version | New Version |
-| ---- | ---- | --------- | ----------- | ----------- |
+| Namespace | Kind | Name | Old Version | New Version |
+| --------- | ---- | ---- | ----------- | ----------- |
 {{- range .Results }}
 {{- if .IsCreated }}
-| {{ .Kind }} | {{ .Name }} | {{ .Namespace }} | {{ .OldVersion }} | **{{ .NewVersion }}** |
+| {{ .Namespace }} | {{ .Kind }} | {{ .Name }} | {{ .OldVersion }} | **{{ .NewVersion }}** |
 {{- else if .IsUpdated }}
-| {{ .Kind }} | {{ .Name }} | {{ .Namespace }} | {{ .OldVersion }} | **{{ .NewVersion }}** |
+| {{ .Namespace }} | {{ .Kind }} | {{ .Name }} | {{ .OldVersion }} | **{{ .NewVersion }}** |
 {{- end }}
 {{- end }}
 {{- else }}

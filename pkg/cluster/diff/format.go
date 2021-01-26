@@ -14,9 +14,9 @@ func ResultsTable(results []Result) string {
 	table := tablewriter.NewWriter(buf)
 	table.SetHeader(
 		[]string{
+			"Namespace",
 			"Kind",
 			"Name",
-			"Namespace",
 			"Changed Lines",
 		},
 	)
@@ -53,9 +53,9 @@ func ResultsTable(results []Result) string {
 
 		table.Append(
 			[]string{
+				namespace,
 				kind,
 				name,
-				namespace,
 				fmt.Sprintf("%d", result.NumChangedLines()),
 			},
 		)
