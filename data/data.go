@@ -304,7 +304,7 @@ func scriptsKindctlSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "scripts/kindctl.sh", size: 1760, mode: os.FileMode(493), modTime: time.Unix(1595012548, 0)}
+	info := bindataFileInfo{name: "scripts/kindctl.sh", size: 1760, mode: os.FileMode(493), modTime: time.Unix(1611963885, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
