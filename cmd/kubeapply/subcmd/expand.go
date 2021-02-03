@@ -23,7 +23,7 @@ const (
 	noExpandFile = ".noexpand"
 
 	// Require a minimum helm version to ensure that expansion works properly
-	helmVersionConstraint = ">= 3.2"
+	helmVersionConstraint = ">= 3.5"
 )
 
 var expandCmd = &cobra.Command{
