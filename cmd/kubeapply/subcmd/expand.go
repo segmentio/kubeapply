@@ -211,6 +211,7 @@ func expandProfile(
 		expandedPath,
 		clusterConfig,
 		true,
+		true,
 	)
 	if err != nil {
 		return err
