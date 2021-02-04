@@ -18,7 +18,8 @@ import (
 )
 
 const (
-	diffScript = "kdiff-wrapper.sh"
+	structuredDiffScript = "kdiff-wrapper.sh"
+	rawDiffScript        = "raw-diff.sh"
 )
 
 // TODO: Switch to a YAML library that supports doing this splitting for us.
@@ -183,23 +184,28 @@ func (k *OrderedClient) Diff(
 	}
 
 	envVars := []string{}
+	var diffScript string
 
 	if structured {
-		diffCmd = filepath.Join(tempDir, diffScript)
-		err = ioutil.WriteFile(
-			diffCmd,
-			data.MustAsset(fmt.Sprintf("scripts/%s", diffScript)),
-			0755,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		envVars = append(
-			envVars,
-			fmt.Sprintf("KUBECTL_EXTERNAL_DIFF=%s", diffCmd),
-		)
+		diffScript = structuredDiffScript
+	} else {
+		diffScript = rawDiffScript
 	}
+
+	diffCmd = filepath.Join(tempDir, diffScript)
+	err = ioutil.WriteFile(
+		diffCmd,
+		data.MustAsset(fmt.Sprintf("scripts/%s", diffScript)),
+		0755,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	envVars = append(
+		envVars,
+		fmt.Sprintf("KUBECTL_EXTERNAL_DIFF=%s", diffCmd),
+	)
 
 	return runKubectlOutput(
 		ctx,

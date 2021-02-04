@@ -13,6 +13,7 @@
 // scripts/kdiff-wrapper.sh
 // scripts/kindctl.sh
 // scripts/pull-deps.sh
+// scripts/raw-diff.sh
 package data
 
 import (
@@ -329,6 +330,26 @@ func scriptsPullDepsSh() (*asset, error) {
 	return a, nil
 }
 
+var _scriptsRawDiffSh = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x24\xcc\x31\x8a\xc3\x30\x10\x40\xd1\x7e\x4e\xf1\x17\xbb\x15\xc6\xdb\x6e\xb1\x55\xda\x5c\xc0\xb8\x90\xc9\x28\x12\x18\x09\x46\x63\x9c\xe4\xf4\x21\xa4\x7f\xbc\xe1\x67\xda\x4a\x9d\xb6\xd8\xb3\xc8\xad\xa4\x44\x38\x08\x57\xc6\x99\xf1\x57\x64\xe0\x52\xfb\x61\x8a\xe7\xe8\x9c\x4a\xab\xfb\x13\x7d\x14\xe7\x2c\x9e\xa9\xad\x86\x97\x5a\xa3\x7b\xf4\xa3\x53\x3a\x9e\xd5\x94\x33\x76\x22\xa6\x71\x47\xcd\x9a\x49\x49\x2c\x0b\xe3\x3f\xe1\xee\xcc\xac\xeb\xdf\x47\x56\x01\xbe\xdf\x2c\xa9\xc8\x3b\x00\x00\xff\xff\x66\x89\xc3\x1f\x8f\x00\x00\x00")
+
+func scriptsRawDiffShBytes() ([]byte, error) {
+	return bindataRead(
+		_scriptsRawDiffSh,
+		"scripts/raw-diff.sh",
+	)
+}
+
+func scriptsRawDiffSh() (*asset, error) {
+	bytes, err := scriptsRawDiffShBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "scripts/raw-diff.sh", size: 143, mode: os.FileMode(420), modTime: time.Unix(1612469663, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
 // Asset loads and returns the asset for the given name.
 // It returns an error if the asset could not be found or
 // could not be loaded.
@@ -393,6 +414,7 @@ var _bindata = map[string]func() (*asset, error){
 	"scripts/kdiff-wrapper.sh":                   scriptsKdiffWrapperSh,
 	"scripts/kindctl.sh":                         scriptsKindctlSh,
 	"scripts/pull-deps.sh":                       scriptsPullDepsSh,
+	"scripts/raw-diff.sh":                        scriptsRawDiffSh,
 }
 
 // AssetDir returns the file names below a certain
@@ -457,6 +479,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"kdiff-wrapper.sh":        &bintree{scriptsKdiffWrapperSh, map[string]*bintree{}},
 		"kindctl.sh":              &bintree{scriptsKindctlSh, map[string]*bintree{}},
 		"pull-deps.sh":            &bintree{scriptsPullDepsSh, map[string]*bintree{}},
+		"raw-diff.sh":             &bintree{scriptsRawDiffSh, map[string]*bintree{}},
 	}},
 }}
 

@@ -266,7 +266,10 @@ func (cc *KubeClusterClient) Config() *config.ClusterConfig {
 }
 
 // GetNamespaceUID returns the kubernetes identifier for a given namespace in this cluster.
-func (cc *KubeClusterClient) GetNamespaceUID(ctx context.Context, namespace string) (string, error) {
+func (cc *KubeClusterClient) GetNamespaceUID(
+	ctx context.Context,
+	namespace string,
+) (string, error) {
 	return cc.kubeClient.GetNamespaceUID(ctx, namespace)
 }
 
