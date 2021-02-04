@@ -49,7 +49,8 @@ func ApplyTemplate(
 
 			err = applyTemplateFile(subPath, data, true, strict, outFile)
 			if err != nil {
-				return err
+				// Wrap the error so that we can provide more context
+				return fmt.Errorf("Error expanding path %s: %+v", subPath, err)
 			}
 
 			if deleteSources {
