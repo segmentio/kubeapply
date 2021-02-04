@@ -56,9 +56,9 @@ environments. We welcome feedback and collaboration to make `kubeapply` useful t
 
 `kubeapply` depends on the following tools:
 
-- [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/): v1.13 or newer
+- [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/): v1.16 or newer
 - [`helm`](https://helm.sh/docs/intro/install/): v3.5.0 or newer (only needed if using helm charts)
-- [`kubeval`](https://kubeval.instrumenta.dev/installation/): v1.13 or newer
+- [`kubeval`](https://kubeval.instrumenta.dev/installation/): v0.15.0 or newer
 
 Make sure that they're installed locally and available in your path.
 
