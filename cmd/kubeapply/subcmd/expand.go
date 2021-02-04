@@ -34,27 +34,27 @@ var expandCmd = &cobra.Command{
 }
 
 type expandFlags struct {
-	// Number of helm instances to run in parallel when expanding out charts.
-	helmParallelism int
-
 	// Clean old configs in expanded directory before expanding
 	clean bool
+
+	// Number of helm instances to run in parallel when expanding out charts.
+	helmParallelism int
 }
 
 var expandFlagsValues expandFlags
 
 func init() {
-	expandCmd.Flags().IntVar(
-		&expandFlagsValues.helmParallelism,
-		"parallelism",
-		5,
-		"Parallelism on helm expansions",
-	)
 	expandCmd.Flags().BoolVar(
 		&expandFlagsValues.clean,
 		"clean",
 		false,
 		"Clean out old configs in expanded directory",
+	)
+	expandCmd.Flags().IntVar(
+		&expandFlagsValues.helmParallelism,
+		"helm-parallelism",
+		5,
+		"Parallelism on helm expansions",
 	)
 
 	RootCmd.AddCommand(expandCmd)
