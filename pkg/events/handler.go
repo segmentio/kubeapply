@@ -422,7 +422,11 @@ func (whh *WebhookHandler) runApply(
 				clusterClient.Config().ServerSideApply,
 			)
 			if err != nil {
-				applyErr = fmt.Errorf("%+v", err)
+				applyErr = fmt.Errorf(
+					"Error applying for cluster %s: %+v",
+					clusterName,
+					err,
+				)
 				break
 			}
 
@@ -553,7 +557,11 @@ func (whh *WebhookHandler) runDiffs(
 			clusterClient.Config().ServerSideApply,
 		)
 		if err != nil {
-			diffErr = fmt.Errorf("%+v", err)
+			diffErr = fmt.Errorf(
+				"Error diffing for cluster %s: %+v",
+				clusterName,
+				err,
+			)
 			break
 		}
 

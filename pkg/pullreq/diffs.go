@@ -52,6 +52,9 @@ func GetCoveredClusters(
 	err := filepath.Walk(
 		repoRoot,
 		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
 			if info.IsDir() {
 				return nil
 			}
@@ -212,6 +215,9 @@ func getExpandedConfigFiles(
 	err := filepath.Walk(
 		configObj.ExpandedPath,
 		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
 			if info.IsDir() {
 				return nil
 			}

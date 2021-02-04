@@ -115,6 +115,9 @@ func RemoveDirs(rootDir string, indicatorName string) error {
 	err := filepath.Walk(
 		rootDir,
 		func(subPath string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
 			if !info.IsDir() && strings.ToLower(filepath.Base(subPath)) == indicatorName {
 				dirsToRemove = append(dirsToRemove, filepath.Dir(subPath))
 			}

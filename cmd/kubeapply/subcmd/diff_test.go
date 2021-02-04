@@ -25,6 +25,4 @@ func TestDiff(t *testing.T) {
 		filepath.Join(testClusterDir, "cluster.yaml"),
 	)
 	require.Nil(t, err)
-
-	// TODO: Make this test more sophisticated.
 }

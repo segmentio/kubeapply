@@ -22,14 +22,18 @@ var extraTemplateFuncs = template.FuncMap{
 
 // ApplyTemplate runs golang templating on all files in the provided path,
 // replacing them in-place with their templated versions.
-func ApplyTemplate(dir string, data interface{}, deleteSources bool) error {
+func ApplyTemplate(
+	dir string,
+	data interface{},
+	deleteSources bool,
+	strict bool,
+) error {
 	return filepath.Walk(
 		dir,
 		func(subPath string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
-
 			if info.IsDir() || !strings.Contains(subPath, ".gotpl.") {
 				return nil
 			}
@@ -42,9 +46,10 @@ func ApplyTemplate(dir string, data interface{}, deleteSources bool) error {
 			}
 			defer outFile.Close()
 
-			err = applyTemplateFile(subPath, data, true, outFile)
+			err = applyTemplateFile(subPath, data, true, strict, outFile)
 			if err != nil {
-				return err
+				// Wrap the error so that we can provide more context
+				return fmt.Errorf("Error expanding path %s: %+v", subPath, err)
 			}
 
 			if deleteSources {
@@ -63,6 +68,7 @@ func applyTemplateFile(
 	path string,
 	data interface{},
 	allowContents bool,
+	strict bool,
 	out io.Writer,
 ) error {
 	templateFuncs := sprig.TxtFuncMap()
@@ -72,14 +78,18 @@ func applyTemplateFile(
 	}
 
 	if allowContents {
-		templateFuncs["fileContents"] = fileContentsGenerator(path, data)
-		templateFuncs["configMapEntry"] = configMapEntryGenerator(path, data)
-		templateFuncs["configMapEntries"] = configMapEntriesGenerator(path, data)
+		templateFuncs["fileContents"] = fileContentsGenerator(path, data, strict)
+		templateFuncs["configMapEntry"] = configMapEntryGenerator(path, data, strict)
+		templateFuncs["configMapEntries"] = configMapEntriesGenerator(path, data, strict)
 	}
 
-	tmpl, err := template.New(filepath.Base(path)).
-		Funcs(templateFuncs).
-		ParseFiles(path)
+	tmpl := template.New(filepath.Base(path)).Funcs(templateFuncs)
+	if strict {
+		tmpl = tmpl.Option("missingkey=error")
+	}
+
+	var err error
+	tmpl, err = tmpl.ParseFiles(path)
 	if err != nil {
 		return err
 	}
@@ -90,6 +100,7 @@ func applyTemplateFile(
 func fileContentsGenerator(
 	templatePath string,
 	data interface{},
+	strict bool,
 ) func(string) (string, error) {
 	return func(relPath string) (string, error) {
 		configPath := filepath.Join(
@@ -97,7 +108,7 @@ func fileContentsGenerator(
 			relPath,
 		)
 		buf := &bytes.Buffer{}
-		err := applyTemplateFile(configPath, data, false, buf)
+		err := applyTemplateFile(configPath, data, false, strict, buf)
 		if err != nil {
 			return "", err
 		}
@@ -109,6 +120,7 @@ func fileContentsGenerator(
 func configMapEntryGenerator(
 	templatePath string,
 	data interface{},
+	strict bool,
 ) func(string) (string, error) {
 	return func(relPath string) (string, error) {
 		configPath := filepath.Join(
@@ -116,7 +128,7 @@ func configMapEntryGenerator(
 			relPath,
 		)
 		buf := &bytes.Buffer{}
-		err := applyTemplateFile(configPath, data, false, buf)
+		err := applyTemplateFile(configPath, data, false, strict, buf)
 		if err != nil {
 			return "", err
 		}
@@ -144,6 +156,7 @@ func configMapEntryGenerator(
 func configMapEntriesGenerator(
 	templatePath string,
 	data interface{},
+	strict bool,
 ) func(string) (string, error) {
 	return func(relPath string) (string, error) {
 		outputLines := []string{}
@@ -171,7 +184,7 @@ func configMapEntriesGenerator(
 				dirFile.Name(),
 			)
 			buf := &bytes.Buffer{}
-			err := applyTemplateFile(configPath, data, false, buf)
+			err := applyTemplateFile(configPath, data, false, strict, buf)
 			if err != nil {
 				return "", err
 			}
