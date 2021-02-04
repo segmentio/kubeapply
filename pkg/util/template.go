@@ -34,7 +34,6 @@ func ApplyTemplate(
 			if err != nil {
 				return err
 			}
-
 			if info.IsDir() || !strings.Contains(subPath, ".gotpl.") {
 				return nil
 			}

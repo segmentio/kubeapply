@@ -112,7 +112,6 @@ func getAllFiles(t *testing.T, path string) []string {
 			if err != nil {
 				return err
 			}
-
 			if info.IsDir() {
 				return nil
 			}
