@@ -233,7 +233,7 @@ func (le *LeaderElector) acquire(ctx context.Context) bool {
 	desc := le.config.Lock.Describe()
 	klog.Infof("attempting to acquire leader lease  %v...", desc)
 	wait.JitterUntil(func() {
-		succeeded = le.tryAcquireOrRenew()
+		succeeded = le.tryAcquireOrRenew(ctx)
 		le.maybeReportTransition()
 		if !succeeded {
 			klog.V(4).Infof("failed to acquire lease %v", desc)
@@ -257,7 +257,7 @@ func (le *LeaderElector) renew(ctx context.Context) {
 			done := make(chan bool, 1)
 			go func() {
 				defer close(done)
-				done <- le.tryAcquireOrRenew()
+				done <- le.tryAcquireOrRenew(ctx)
 			}()
 
 			select {
@@ -281,12 +281,12 @@ func (le *LeaderElector) renew(ctx context.Context) {
 
 	// if we hold the lease, give it up
 	if le.config.ReleaseOnCancel {
-		le.release()
+		le.release(ctx)
 	}
 }
 
 // release attempts to release the leader lease if we have acquired it.
-func (le *LeaderElector) release() bool {
+func (le *LeaderElector) release(ctx context.Context) bool {
 	if !le.IsLeader() {
 		return true
 	}
@@ -294,7 +294,7 @@ func (le *LeaderElector) release() bool {
 		LeaderTransitions:    le.observedRecord.LeaderTransitions,
 		LeaseDurationSeconds: int(le.config.LeaseDuration.Seconds()),
 	}
-	if err := le.config.Lock.Update(leaderElectionRecord); err != nil {
+	if err := le.config.Lock.Update(ctx, leaderElectionRecord); err != nil {
 		klog.Errorf("Failed to release lock: %v", err)
 		return false
 	}
@@ -306,7 +306,7 @@ func (le *LeaderElector) release() bool {
 // tryAcquireOrRenew tries to acquire a leader lease if it is not already acquired,
 // else it tries to renew the lease if it has already been acquired. Returns true
 // on success else returns false.
-func (le *LeaderElector) tryAcquireOrRenew() bool {
+func (le *LeaderElector) tryAcquireOrRenew(ctx context.Context) bool {
 	now := metav1.Now()
 	leaderElectionRecord := rl.LeaderElectionRecord{
 		HolderIdentity:       le.config.Lock.Identity(),
@@ -316,13 +316,13 @@ func (le *LeaderElector) tryAcquireOrRenew() bool {
 	}
 
 	// 1. obtain or create the ElectionRecord
-	oldLeaderElectionRecord, oldLeaderElectionRawRecord, err := le.config.Lock.Get()
+	oldLeaderElectionRecord, oldLeaderElectionRawRecord, err := le.config.Lock.Get(ctx)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			klog.Errorf("error retrieving resource lock %v: %v", le.config.Lock.Describe(), err)
 			return false
 		}
-		if err = le.config.Lock.Create(leaderElectionRecord); err != nil {
+		if err = le.config.Lock.Create(ctx, leaderElectionRecord); err != nil {
 			klog.Errorf("error initially creating leader election record: %v", err)
 			return false
 		}
@@ -354,7 +354,7 @@ func (le *LeaderElector) tryAcquireOrRenew() bool {
 	}
 
 	// update the lock itself
-	if err = le.config.Lock.Update(leaderElectionRecord); err != nil {
+	if err = le.config.Lock.Update(ctx, leaderElectionRecord); err != nil {
 		klog.Errorf("Failed to update lock: %v", err)
 		return false
 	}

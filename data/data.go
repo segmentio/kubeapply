@@ -105,7 +105,7 @@ func pkgPullreqTemplatesApply_commentGotpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "pkg/pullreq/templates/apply_comment.gotpl", size: 1052, mode: os.FileMode(420), modTime: time.Unix(1611631812, 0)}
+	info := bindataFileInfo{name: "pkg/pullreq/templates/apply_comment.gotpl", size: 1052, mode: os.FileMode(420), modTime: time.Unix(1612551594, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -345,7 +345,7 @@ func scriptsRawDiffSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "scripts/raw-diff.sh", size: 143, mode: os.FileMode(420), modTime: time.Unix(1612477884, 0)}
+	info := bindataFileInfo{name: "scripts/raw-diff.sh", size: 143, mode: os.FileMode(420), modTime: time.Unix(1612551594, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

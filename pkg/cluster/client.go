@@ -35,10 +35,10 @@ type ClusterClient interface {
 	Summary(ctx context.Context) (string, error)
 
 	// GetStoreValue gets the value of the given key.
-	GetStoreValue(key string) (string, error)
+	GetStoreValue(ctx context.Context, key string) (string, error)
 
 	// SetStoreValue sets the given key/value pair in the cluster.
-	SetStoreValue(key string, value string) error
+	SetStoreValue(ctx context.Context, key string, value string) error
 
 	// Config returns the config for this cluster.
 	Config() *config.ClusterConfig
