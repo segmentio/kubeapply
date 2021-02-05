@@ -175,7 +175,7 @@ func applyClusterPath(ctx context.Context, path string) error {
 			return err
 		}
 
-		results, rawDiffs, err := execDiff(ctx, clusterConfig, !applyFlagValues.simpleOutput)
+		results, rawDiffs, err := execDiff(ctx, clusterConfig, applyFlagValues.simpleOutput)
 		if err != nil {
 			log.Errorf("Error running diff: %+v", err)
 			log.Info(
@@ -185,7 +185,7 @@ func applyClusterPath(ctx context.Context, path string) error {
 		}
 
 		if results != nil {
-			diff.PrintSummary(results)
+			diff.PrintFull(results)
 		} else {
 			log.Infof("Raw diff results:\n%s", rawDiffs)
 		}

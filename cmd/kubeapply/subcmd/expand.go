@@ -23,7 +23,7 @@ const (
 	noExpandFile = ".noexpand"
 
 	// Require a minimum helm version to ensure that expansion works properly
-	helmVersionConstraint = ">= 3.2"
+	helmVersionConstraint = ">= 3.5"
 )
 
 var expandCmd = &cobra.Command{
@@ -34,27 +34,27 @@ var expandCmd = &cobra.Command{
 }
 
 type expandFlags struct {
-	// Number of helm instances to run in parallel when expanding out charts.
-	helmParallelism int
-
 	// Clean old configs in expanded directory before expanding
 	clean bool
+
+	// Number of helm instances to run in parallel when expanding out charts.
+	helmParallelism int
 }
 
 var expandFlagsValues expandFlags
 
 func init() {
-	expandCmd.Flags().IntVar(
-		&expandFlagsValues.helmParallelism,
-		"parallelism",
-		5,
-		"Parallelism on helm expansions",
-	)
 	expandCmd.Flags().BoolVar(
 		&expandFlagsValues.clean,
 		"clean",
 		false,
 		"Clean out old configs in expanded directory",
+	)
+	expandCmd.Flags().IntVar(
+		&expandFlagsValues.helmParallelism,
+		"helm-parallelism",
+		5,
+		"Parallelism on helm expansions",
 	)
 
 	RootCmd.AddCommand(expandCmd)
@@ -210,6 +210,7 @@ func expandProfile(
 	err := util.ApplyTemplate(
 		expandedPath,
 		clusterConfig,
+		true,
 		true,
 	)
 	if err != nil {

@@ -26,6 +26,7 @@ func TestApplyTemplate(t *testing.T) {
 			"value2": "value2Data",
 		},
 		true,
+		false,
 	)
 	require.Nil(t, err)
 
@@ -83,6 +84,25 @@ configMap2:
 	)
 }
 
+func TestApplyTemplateStrict(t *testing.T) {
+	tempDir, err := ioutil.TempDir("", "templates")
+	require.Nil(t, err)
+	defer os.RemoveAll(tempDir)
+
+	err = RecursiveCopy("testdata/templates", tempDir)
+	require.Nil(t, err)
+
+	err = ApplyTemplate(
+		tempDir,
+		map[string]string{
+			"value1": "value1Data",
+		},
+		true,
+		true,
+	)
+	require.Error(t, err)
+}
+
 func getAllFiles(t *testing.T, path string) []string {
 	allFiles := []string{}
 
@@ -92,7 +112,6 @@ func getAllFiles(t *testing.T, path string) []string {
 			if err != nil {
 				return err
 			}
-
 			if info.IsDir() {
 				return nil
 			}

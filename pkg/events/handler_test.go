@@ -338,7 +338,7 @@ func TestHandleWebhook(t *testing.T) {
 			expComments: []commentMatch{
 				{
 					contains: []string{
-						"Error comment: kubectl error",
+						"Error comment: Error diffing for cluster test-env:test-region:test-cluster2: kubectl error",
 					},
 				},
 			},
@@ -581,7 +581,7 @@ func TestHandleWebhook(t *testing.T) {
 			expComments: []commentMatch{
 				{
 					contains: []string{
-						"Error comment: kubectl error",
+						"Error comment: Error applying for cluster test-env:test-region:test-cluster2: kubectl error",
 					},
 				},
 			},

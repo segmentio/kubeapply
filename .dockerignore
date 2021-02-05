@@ -1,4 +1,5 @@
 Dockerfile
+Dockerfile.lambda
 build
 deps
 *zip

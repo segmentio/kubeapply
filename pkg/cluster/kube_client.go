@@ -195,7 +195,11 @@ func (cc *KubeClusterClient) ApplyStructured(
 		return nil, err
 	}
 
-	return apply.ObjsToResults(oldObjs, newObjs)
+	results, err := apply.ObjsToResults(oldObjs, newObjs)
+	if err != nil {
+		return nil, err
+	}
+	return sortedApplyResults(results), nil
 }
 
 // Diff runs a kubectl diff between the configs at the argument path and the associated
@@ -238,7 +242,7 @@ func (cc *KubeClusterClient) DiffStructured(
 	if err := json.Unmarshal(rawResults, &results); err != nil {
 		return nil, err
 	}
-	return results.Results, nil
+	return sortedDiffResults(results.Results), nil
 }
 
 // Summary returns a summary of the current cluster state.
@@ -262,7 +266,10 @@ func (cc *KubeClusterClient) Config() *config.ClusterConfig {
 }
 
 // GetNamespaceUID returns the kubernetes identifier for a given namespace in this cluster.
-func (cc *KubeClusterClient) GetNamespaceUID(ctx context.Context, namespace string) (string, error) {
+func (cc *KubeClusterClient) GetNamespaceUID(
+	ctx context.Context,
+	namespace string,
+) (string, error) {
 	return cc.kubeClient.GetNamespaceUID(ctx, namespace)
 }
 
