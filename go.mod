@@ -1,6 +1,6 @@
 module github.com/segmentio/kubeapply
 
-go 1.14
+go 1.15
 
 require (
 	github.com/Masterminds/semver/v3 v3.1.0
@@ -33,7 +33,7 @@ require (
 	github.com/stripe/skycfg v0.0.0-20200303020846-4f599970a3e6
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/zorkian/go-datadog-api v2.28.0+incompatible // indirect
-	go.starlark.net v0.0.0-20200330013621-be5394c419b6
+	go.starlark.net v0.0.0-20201204201740-42d4f566359b
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
@@ -47,3 +47,6 @@ require (
 	k8s.io/klog v1.0.0
 	k8s.io/kubectl v0.20.2
 )
+
+// Need to pin to older version to get around https://github.com/stripe/skycfg/issues/86.
+replace github.com/golang/protobuf v1.4.3 => github.com/golang/protobuf v1.3.2
