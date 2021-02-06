@@ -323,8 +323,14 @@ func (le *LeaderElector) tryAcquireOrRenew(ctx context.Context) bool {
 		le.observedRawRecord = oldLeaderElectionRawRecord
 		le.observedTime = le.clock.Now()
 	}
+
+	// If the renew time is more than 2x the lease duration in the past, don't worry
+	// about clock skew and just take the lock.
+	thresholdTime := now.Time.Add(-2 * le.config.LeaseDuration)
+
 	if len(oldLeaderElectionRecord.HolderIdentity) > 0 &&
 		le.observedTime.Add(le.config.LeaseDuration).After(now.Time) &&
+		oldLeaderElectionRecord.RenewTime.Time.After(thresholdTime) &&
 		!le.IsLeader() {
 		log.Infof("Lock is held by %v and has not yet expired", oldLeaderElectionRecord.HolderIdentity)
 		return false
