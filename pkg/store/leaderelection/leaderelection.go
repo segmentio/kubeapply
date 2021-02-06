@@ -55,13 +55,13 @@ import (
 	"fmt"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	rl "k8s.io/client-go/tools/leaderelection/resourcelock"
-	"k8s.io/klog/v2"
 )
 
 const (
@@ -225,16 +225,16 @@ func (le *LeaderElector) acquire(ctx context.Context) bool {
 	defer cancel()
 	succeeded := false
 	desc := le.config.Lock.Describe()
-	klog.Infof("attempting to acquire leader lease %v...", desc)
+	log.Infof("Attempting to acquire leader lease %v...", desc)
 	wait.JitterUntil(func() {
 		succeeded = le.tryAcquireOrRenew(ctx)
 		le.maybeReportTransition()
 		if !succeeded {
-			klog.V(4).Infof("failed to acquire lease %v", desc)
+			log.Infof("Failed to acquire lease %v", desc)
 			return
 		}
 		le.config.Lock.RecordEvent("became leader")
-		klog.Infof("successfully acquired lease %v", desc)
+		log.Infof("Successfully acquired lease %v", desc)
 		cancel()
 	}, le.config.RetryPeriod, JitterFactor, true, ctx.Done())
 	return succeeded
@@ -254,22 +254,22 @@ func (le *LeaderElector) renew(ctx context.Context) {
 		le.maybeReportTransition()
 		desc := le.config.Lock.Describe()
 		if err == nil {
-			klog.V(5).Infof("successfully renewed lease %v", desc)
+			log.Debugf("Successfully renewed lease %v", desc)
 			return
 		}
 		le.config.Lock.RecordEvent("stopped leading")
-		klog.Infof("failed to renew lease %v: %v", desc, err)
+		log.Infof("Failed to renew lease %v: %v", desc, err)
 		cancel()
 	}, le.config.RetryPeriod, ctx.Done())
 
 	// if we hold the lease, give it up
 	if le.config.ReleaseOnCancel {
-		le.release()
+		le.release(ctx)
 	}
 }
 
 // release attempts to release the leader lease if we have acquired it.
-func (le *LeaderElector) release() bool {
+func (le *LeaderElector) release(ctx context.Context) bool {
 	if !le.IsLeader() {
 		return true
 	}
@@ -280,8 +280,8 @@ func (le *LeaderElector) release() bool {
 		RenewTime:            now,
 		AcquireTime:          now,
 	}
-	if err := le.config.Lock.Update(context.TODO(), leaderElectionRecord); err != nil {
-		klog.Errorf("Failed to release lock: %v", err)
+	if err := le.config.Lock.Update(ctx, leaderElectionRecord); err != nil {
+		log.Errorf("Failed to release lock: %v", err)
 		return false
 	}
 	le.observedRecord = leaderElectionRecord
@@ -305,11 +305,11 @@ func (le *LeaderElector) tryAcquireOrRenew(ctx context.Context) bool {
 	oldLeaderElectionRecord, oldLeaderElectionRawRecord, err := le.config.Lock.Get(ctx)
 	if err != nil {
 		if !errors.IsNotFound(err) {
-			klog.Errorf("error retrieving resource lock %v: %v", le.config.Lock.Describe(), err)
+			log.Errorf("Error retrieving resource lock %v: %v", le.config.Lock.Describe(), err)
 			return false
 		}
 		if err = le.config.Lock.Create(ctx, leaderElectionRecord); err != nil {
-			klog.Errorf("error initially creating leader election record: %v", err)
+			log.Errorf("Error initially creating leader election record: %v", err)
 			return false
 		}
 		le.observedRecord = leaderElectionRecord
@@ -326,7 +326,7 @@ func (le *LeaderElector) tryAcquireOrRenew(ctx context.Context) bool {
 	if len(oldLeaderElectionRecord.HolderIdentity) > 0 &&
 		le.observedTime.Add(le.config.LeaseDuration).After(now.Time) &&
 		!le.IsLeader() {
-		klog.V(4).Infof("lock is held by %v and has not yet expired", oldLeaderElectionRecord.HolderIdentity)
+		log.Infof("Lock is held by %v and has not yet expired", oldLeaderElectionRecord.HolderIdentity)
 		return false
 	}
 
@@ -341,7 +341,7 @@ func (le *LeaderElector) tryAcquireOrRenew(ctx context.Context) bool {
 
 	// update the lock itself
 	if err = le.config.Lock.Update(ctx, leaderElectionRecord); err != nil {
-		klog.Errorf("Failed to update lock: %v", err)
+		log.Errorf("Failed to update lock: %v", err)
 		return false
 	}
 
