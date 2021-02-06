@@ -17,7 +17,7 @@ import (
 	"github.com/segmentio/stats/v4/datadog"
 	log "github.com/sirupsen/logrus"
 	prefixed "github.com/x-cray/logrus-prefixed-formatter"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 func init() {

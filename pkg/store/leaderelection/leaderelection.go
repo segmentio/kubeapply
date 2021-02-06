@@ -1,12 +1,9 @@
 /*
 Copyright 2015 The Kubernetes Authors.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -64,12 +61,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	rl "k8s.io/client-go/tools/leaderelection/resourcelock"
-
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 const (
-	// JitterFactor is a multiplier used to add jitter to leader renewal times.
 	JitterFactor = 1.2
 )
 
@@ -107,8 +102,6 @@ func NewLeaderElector(lec LeaderElectionConfig) (*LeaderElector, error) {
 	return &le, nil
 }
 
-// LeaderElectionConfig contains the settings associated with a leader
-// election process.
 type LeaderElectionConfig struct {
 	// Lock is the resource that will be used for locking
 	Lock rl.Interface
@@ -183,17 +176,17 @@ type LeaderElector struct {
 
 	// clock is wrapper around time to allow for less flaky testing
 	clock clock.Clock
-
-	// name is the name of the resource lock for debugging
-	name string
 }
 
-// Run starts the leader election loop
+// Run starts the leader election loop. Run will not return
+// before leader election loop is stopped by ctx or it has
+// stopped holding the leader lease
 func (le *LeaderElector) Run(ctx context.Context) {
+	defer runtime.HandleCrash()
 	defer func() {
-		runtime.HandleCrash()
 		le.config.Callbacks.OnStoppedLeading()
 	}()
+
 	if !le.acquire(ctx) {
 		return // ctx signalled done
 	}
@@ -204,7 +197,8 @@ func (le *LeaderElector) Run(ctx context.Context) {
 }
 
 // RunOrDie starts a client with the provided config or panics if the config
-// fails to validate.
+// fails to validate. RunOrDie blocks until leader election loop is
+// stopped by ctx or it has stopped holding the leader lease
 func RunOrDie(ctx context.Context, lec LeaderElectionConfig) {
 	le, err := NewLeaderElector(lec)
 	if err != nil {
@@ -231,7 +225,7 @@ func (le *LeaderElector) acquire(ctx context.Context) bool {
 	defer cancel()
 	succeeded := false
 	desc := le.config.Lock.Describe()
-	klog.Infof("attempting to acquire leader lease  %v...", desc)
+	klog.Infof("attempting to acquire leader lease %v...", desc)
 	wait.JitterUntil(func() {
 		succeeded = le.tryAcquireOrRenew(ctx)
 		le.maybeReportTransition()
@@ -254,18 +248,7 @@ func (le *LeaderElector) renew(ctx context.Context) {
 		timeoutCtx, timeoutCancel := context.WithTimeout(ctx, le.config.RenewDeadline)
 		defer timeoutCancel()
 		err := wait.PollImmediateUntil(le.config.RetryPeriod, func() (bool, error) {
-			done := make(chan bool, 1)
-			go func() {
-				defer close(done)
-				done <- le.tryAcquireOrRenew(ctx)
-			}()
-
-			select {
-			case <-timeoutCtx.Done():
-				return false, fmt.Errorf("failed to tryAcquireOrRenew %s", timeoutCtx.Err())
-			case result := <-done:
-				return result, nil
-			}
+			return le.tryAcquireOrRenew(timeoutCtx), nil
 		}, timeoutCtx.Done())
 
 		le.maybeReportTransition()
@@ -281,20 +264,23 @@ func (le *LeaderElector) renew(ctx context.Context) {
 
 	// if we hold the lease, give it up
 	if le.config.ReleaseOnCancel {
-		le.release(ctx)
+		le.release()
 	}
 }
 
 // release attempts to release the leader lease if we have acquired it.
-func (le *LeaderElector) release(ctx context.Context) bool {
+func (le *LeaderElector) release() bool {
 	if !le.IsLeader() {
 		return true
 	}
+	now := metav1.Now()
 	leaderElectionRecord := rl.LeaderElectionRecord{
 		LeaderTransitions:    le.observedRecord.LeaderTransitions,
-		LeaseDurationSeconds: int(le.config.LeaseDuration.Seconds()),
+		LeaseDurationSeconds: 1,
+		RenewTime:            now,
+		AcquireTime:          now,
 	}
-	if err := le.config.Lock.Update(ctx, leaderElectionRecord); err != nil {
+	if err := le.config.Lock.Update(context.TODO(), leaderElectionRecord); err != nil {
 		klog.Errorf("Failed to release lock: %v", err)
 		return false
 	}
