@@ -3,8 +3,8 @@ module github.com/segmentio/kubeapply
 go 1.15
 
 require (
-	github.com/Masterminds/semver/v3 v3.1.0
-	github.com/Masterminds/sprig/v3 v3.1.0
+	github.com/Masterminds/semver/v3 v3.1.1
+	github.com/Masterminds/sprig/v3 v3.2.1
 	github.com/aws/aws-lambda-go v1.15.0
 	github.com/aws/aws-sdk-go v1.29.16
 	github.com/briandowns/spinner v1.11.1
@@ -15,7 +15,6 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/google/go-github/v30 v30.0.0
 	github.com/gorilla/mux v1.7.4
-	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.11 // indirect
