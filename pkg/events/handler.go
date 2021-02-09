@@ -51,7 +51,15 @@ type WebhookHandlerSettings struct {
 
 	// StrictCheck indicates whether we should block applies on having an approval and all
 	// green statuses.
+	//
+	// Note: To be deprecated and replaced with CICheck and ReviewRequired below.
 	StrictCheck bool
+
+	// GreenCIRequired indicates whether CI must be green before allowing applies.
+	GreenCIRequired bool
+
+	// ReviewRequired indicates whether a review is required before allowing applies.
+	ReviewRequired bool
 
 	// UseLocks indicates whether we should use locking to prevent overlapping handler calls
 	// for a cluster.
@@ -381,14 +389,29 @@ func (whh *WebhookHandler) runApply(
 		Env:               whh.settings.Env,
 	}
 
-	if whh.settings.StrictCheck && !statusOK {
+	overrideReviewRequired := true
+
+	for _, clusterClient := range clusterClients {
+		if !clusterClient.Config().GithubReviewOptional {
+			overrideReviewRequired = false
+			break
+		}
+	}
+	if overrideReviewRequired {
+		log.Info(
+			"Overriding review required because all clusters in this change have review optional",
+		)
+	}
+
+	if (whh.settings.StrictCheck || whh.settings.GreenCIRequired) && !statusOK {
 		applyErr = multilineError(
-			"Cannot run apply because strict-check is set to true and commit status is not green.",
+			"Cannot run apply because green-ci-required is set to true and commit status is not green.",
 			"Please fix status and try again.",
 		)
-	} else if whh.settings.StrictCheck && !approved {
+	} else if (whh.settings.StrictCheck || whh.settings.ReviewRequired) &&
+		!approved && !overrideReviewRequired {
 		applyErr = multilineError(
-			"Cannot run apply because strict-check is set to true and request is not approved.",
+			"Cannot run apply because review-required is set to true and request is not approved.",
 			"Please get at least one approval and try again.",
 		)
 	} else if behindBy > 0 {

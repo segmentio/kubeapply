@@ -76,6 +76,12 @@ type ClusterConfig struct {
 	// Optional, defaults to false.
 	GithubIgnore bool `json:"ignore"`
 
+	// ReviewOptional indicates that reviews should not be required for changes in this
+	// cluster even if strict mode is on.
+	//
+	// Optional, and only applicable to webhooks mode.
+	GithubReviewOptional bool `json:"reviewOptional"`
+
 	// VersionConstraint is a string version constraint against with the kubeapply binary
 	// will be checked. See https://github.com/Masterminds/semver for details on the expected
 	// format.

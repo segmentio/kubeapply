@@ -32,6 +32,8 @@ func TestHandleWebhook(t *testing.T) {
 	type testCase struct {
 		description     string
 		strictCheck     bool
+		greenCIRequired bool
+		reviewRequired  bool
 		automerge       bool
 		kubectlErr      bool
 		input           *WebhookContext
@@ -69,7 +71,37 @@ func TestHandleWebhook(t *testing.T) {
 		},
 	}
 
+	testClusterConfigsReviewOptional := []*config.ClusterConfig{
+		{
+			Cluster:              "test-cluster4",
+			Region:               "test-region",
+			Env:                  "test-env",
+			ExpandedPath:         "expanded",
+			ProfilePath:          profileDir,
+			GithubReviewOptional: true,
+		},
+		{
+			Cluster:      "test-cluster5",
+			Region:       "test-region",
+			Env:          "test-env",
+			ExpandedPath: "expanded",
+			ProfilePath:  profileDir,
+		},
+	}
+
 	for _, clusterConfig := range testClusterConfigs {
+		require.Nil(
+			t,
+			clusterConfig.SetDefaults(
+				fmt.Sprintf(
+					"/git/repo/clusters/%s.yaml",
+					clusterConfig.Cluster,
+				),
+				"/git/repo",
+			),
+		)
+	}
+	for _, clusterConfig := range testClusterConfigsReviewOptional {
 		require.Nil(
 			t,
 			clusterConfig.SetDefaults(
@@ -698,6 +730,110 @@ func TestHandleWebhook(t *testing.T) {
 			},
 		},
 		{
+			description:    "kubeapply apply not approved (review required)",
+			reviewRequired: true,
+			input: &WebhookContext{
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     false,
+					Mergeable:       true,
+				},
+				commentType: commentTypeCommand,
+				issueCommentEvent: &github.IssueCommentEvent{
+					Action: aws.String("created"),
+					Comment: &github.IssueComment{
+						Body: aws.String("kubeapply apply test-env:test-region:test-cluster2"),
+					},
+				},
+			},
+			expRespStatus: 500,
+			expComments: []commentMatch{
+				{
+					contains: []string{
+						"Error comment: Cannot run apply",
+						"is not approved",
+					},
+				},
+			},
+			expRepoStatuses: []statusMatch{
+				{
+					context: "kubeapply/apply (test-env)",
+					state:   "failure",
+				},
+			},
+		},
+		{
+			description:    "kubeapply apply not approved (review required, partial override)",
+			reviewRequired: true,
+			input: &WebhookContext{
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigsReviewOptional,
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     false,
+					Mergeable:       true,
+				},
+				commentType: commentTypeCommand,
+				issueCommentEvent: &github.IssueCommentEvent{
+					Action: aws.String("created"),
+					Comment: &github.IssueComment{
+						Body: aws.String("kubeapply apply"),
+					},
+				},
+			},
+			expRespStatus: 500,
+			expComments: []commentMatch{
+				{
+					contains: []string{
+						"Error comment: Cannot run apply",
+						"is not approved",
+					},
+				},
+			},
+			expRepoStatuses: []statusMatch{
+				{
+					context: "kubeapply/apply (test-env)",
+					state:   "failure",
+				},
+			},
+		},
+		{
+			description: "kubeapply apply not approved (review required, full override)",
+			input: &WebhookContext{
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs:  testClusterConfigsReviewOptional[0:1],
+					RequestStatuses: []pullreq.PullRequestStatus{},
+					ApprovedVal:     false,
+					Mergeable:       true,
+				},
+				commentType: commentTypeCommand,
+				issueCommentEvent: &github.IssueCommentEvent{
+					Action: aws.String("created"),
+					Comment: &github.IssueComment{
+						Body: aws.String("kubeapply apply test-env:test-region:test-cluster4"),
+					},
+				},
+			},
+			expRespStatus: 200,
+			expComments: []commentMatch{
+				{
+					contains: []string{
+						"Kubeapply apply result (test-env)",
+						"apply result for test-cluster4",
+					},
+					doesNotContain: []string{
+						"test-cluster5",
+					},
+				},
+			},
+			expRepoStatuses: []statusMatch{
+				{
+					context: "kubeapply/apply (test-env)",
+					state:   "success",
+				},
+			},
+		},
+		{
 			description: "kubeapply bad status (not strict)",
 			input: &WebhookContext{
 				pullRequestClient: &pullreq.FakePullRequestClient{
@@ -746,6 +882,49 @@ func TestHandleWebhook(t *testing.T) {
 		{
 			description: "kubeapply bad status (strict)",
 			strictCheck: true,
+			input: &WebhookContext{
+				pullRequestClient: &pullreq.FakePullRequestClient{
+					ClusterConfigs: testClusterConfigs,
+					RequestStatuses: []pullreq.PullRequestStatus{
+						{
+							Context: "check",
+							State:   "failure",
+						},
+					},
+					ApprovedVal: true,
+					Mergeable:   true,
+				},
+				commentType: commentTypeCommand,
+				issueCommentEvent: &github.IssueCommentEvent{
+					Action: aws.String("created"),
+					Comment: &github.IssueComment{
+						Body: aws.String("kubeapply apply test-env:test-region:test-cluster2"),
+					},
+				},
+			},
+			expRespStatus: 500,
+			expComments: []commentMatch{
+				{
+					contains: []string{
+						"Error comment: Cannot run apply",
+						"status is not green",
+					},
+				},
+			},
+			expRepoStatuses: []statusMatch{
+				{
+					context: "check",
+					state:   "failure",
+				},
+				{
+					context: "kubeapply/apply (test-env)",
+					state:   "failure",
+				},
+			},
+		},
+		{
+			description:     "kubeapply bad status (green ci required)",
+			greenCIRequired: true,
 			input: &WebhookContext{
 				pullRequestClient: &pullreq.FakePullRequestClient{
 					ClusterConfigs: testClusterConfigs,
@@ -1056,12 +1235,14 @@ func TestHandleWebhook(t *testing.T) {
 			stats.NewFakeStatsClient(),
 			generator,
 			WebhookHandlerSettings{
-				LogsURL:     "test-url",
-				Env:         "test-env",
-				Version:     "1.2.3",
-				StrictCheck: testCase.strictCheck,
-				Automerge:   testCase.automerge,
-				Debug:       false,
+				LogsURL:         "test-url",
+				Env:             "test-env",
+				Version:         "1.2.3",
+				StrictCheck:     testCase.strictCheck,
+				GreenCIRequired: testCase.greenCIRequired,
+				ReviewRequired:  testCase.reviewRequired,
+				Automerge:       testCase.automerge,
+				Debug:           false,
 			},
 		)
 

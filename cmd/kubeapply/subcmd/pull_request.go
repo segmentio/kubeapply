@@ -56,8 +56,16 @@ type pullRequestFlags struct {
 	// Full name of the repo, in [owner]/[name] format
 	repo string
 
-	// Whether to be strict about checking for approvals and green github status
+	// Whether to be strict about checking for approvals and green github status.
+	//
+	// Deprecated, to be replaced by the values below.
 	strictCheck bool
+
+	// Whether green CI is required to apply
+	greenCIRequired bool
+
+	// Whether a review is required to apply
+	reviewRequired bool
 }
 
 var pullRequestFlagValues pullRequestFlags
@@ -111,6 +119,12 @@ func init() {
 		"",
 		"Installation ID for github app",
 	)
+	pullRequestCmd.Flags().BoolVar(
+		&pullRequestFlagValues.greenCIRequired,
+		"green-ci-required",
+		false,
+		"Whether a green CI is required to apply",
+	)
 	pullRequestCmd.Flags().IntVar(
 		&pullRequestFlagValues.pullRequestNum,
 		"pull-request",
@@ -122,6 +136,12 @@ func init() {
 		"repo",
 		"",
 		"Repo to post comment in, in format [owner]/[name]",
+	)
+	pullRequestCmd.Flags().BoolVar(
+		&pullRequestFlagValues.reviewRequired,
+		"review-required",
+		false,
+		"Whether a review is required to apply",
 	)
 	pullRequestCmd.Flags().BoolVar(
 		&pullRequestFlagValues.strictCheck,
@@ -265,6 +285,8 @@ func pullRequestRun(cmd *cobra.Command, args []string) error {
 			ApplyConsistencyCheck: false,
 			Automerge:             pullRequestFlagValues.automerge,
 			StrictCheck:           pullRequestFlagValues.strictCheck,
+			GreenCIRequired:       pullRequestFlagValues.greenCIRequired,
+			ReviewRequired:        pullRequestFlagValues.reviewRequired,
 			Debug:                 debug,
 		},
 	)
