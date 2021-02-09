@@ -1,6 +1,8 @@
 package store
 
 import (
+	"context"
+
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -13,10 +15,10 @@ import (
 // Store is an interface for structs that can get and set key/value pairs.
 type Store interface {
 	// Get gets the value of the argument key.
-	Get(key string) (string, error)
+	Get(ctx context.Context, key string) (string, error)
 
 	// Set sets the provided key/value pair.
-	Set(key string, value string) error
+	Set(ctx context.Context, key string, value string) error
 }
 
 var _ Store = (*InMemoryStore)(nil)
@@ -36,12 +38,12 @@ func NewInMemoryStore() *InMemoryStore {
 }
 
 // Get returns the value of the argument key.
-func (s *InMemoryStore) Get(key string) (string, error) {
+func (s *InMemoryStore) Get(ctx context.Context, key string) (string, error) {
 	return s.valuesMap[key], nil
 }
 
 // Set sets the argument key to the argument value.
-func (s *InMemoryStore) Set(key string, value string) error {
+func (s *InMemoryStore) Set(ctx context.Context, key string, value string) error {
 	s.valuesMap[key] = value
 	return nil
 }
@@ -78,8 +80,8 @@ func NewKubeStore(
 }
 
 // Get returns the value of the argument key.
-func (k *KubeStore) Get(key string) (string, error) {
-	configMap, err := k.configMapClient.Get(k.name, metav1.GetOptions{})
+func (k *KubeStore) Get(ctx context.Context, key string) (string, error) {
+	configMap, err := k.configMapClient.Get(ctx, k.name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
 		log.Infof(
 			"Could not find configmap %s in namespace %s",
@@ -100,8 +102,8 @@ func (k *KubeStore) Get(key string) (string, error) {
 
 // Set sets the argument key to the argument value. The key/value pair is stored
 // in a ConfigMap.
-func (k *KubeStore) Set(key string, value string) error {
-	configMap, err := k.configMapClient.Get(k.name, metav1.GetOptions{})
+func (k *KubeStore) Set(ctx context.Context, key string, value string) error {
+	configMap, err := k.configMapClient.Get(ctx, k.name, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
 		log.Infof(
 			"Could not find configmap %s in namespace %s; creating",
@@ -110,12 +112,14 @@ func (k *KubeStore) Set(key string, value string) error {
 		)
 
 		configMap, err = k.configMapClient.Create(
+			ctx,
 			&corev1.ConfigMap{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      k.name,
 					Namespace: k.namespace,
 				},
 			},
+			metav1.CreateOptions{},
 		)
 		if err != nil {
 			return err
@@ -130,6 +134,6 @@ func (k *KubeStore) Set(key string, value string) error {
 
 	configMap.Data[key] = value
 
-	_, err = k.configMapClient.Update(configMap)
+	_, err = k.configMapClient.Update(ctx, configMap, metav1.UpdateOptions{})
 	return err
 }

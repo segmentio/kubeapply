@@ -123,12 +123,12 @@ func (cc *FakeClusterClient) Summary(ctx context.Context) (string, error) {
 }
 
 // GetStoreValue gets the value of the argument key.
-func (cc *FakeClusterClient) GetStoreValue(key string) (string, error) {
+func (cc *FakeClusterClient) GetStoreValue(ctx context.Context, key string) (string, error) {
 	return cc.store[key], nil
 }
 
 // SetStoreValue sets the argument key to the argument value.
-func (cc *FakeClusterClient) SetStoreValue(key string, value string) error {
+func (cc *FakeClusterClient) SetStoreValue(ctx context.Context, key string, value string) error {
 	cc.store[key] = value
 	return nil
 }
@@ -139,7 +139,10 @@ func (cc *FakeClusterClient) Config() *config.ClusterConfig {
 }
 
 // GetNamespaceUID returns the kubernetes identifier for a given namespace in this cluster.
-func (cc *FakeClusterClient) GetNamespaceUID(ctx context.Context, namespace string) (string, error) {
+func (cc *FakeClusterClient) GetNamespaceUID(
+	ctx context.Context,
+	namespace string,
+) (string, error) {
 	return fmt.Sprintf("ns-%s", namespace), cc.kubectlErr
 }
 

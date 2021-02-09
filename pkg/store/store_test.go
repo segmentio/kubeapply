@@ -28,14 +28,14 @@ func TestKubeStore(t *testing.T) {
 	)
 	require.Nil(t, err)
 
-	err = store.Set("test-key", "test-value")
+	err = store.Set(ctx, "test-key", "test-value")
 	require.Nil(t, err)
 
-	result, err := store.Get("test-key")
+	result, err := store.Get(ctx, "test-key")
 	require.Nil(t, err)
 	assert.Equal(t, "test-value", result)
 
-	result, err = store.Get("non-existent-key")
+	result, err = store.Get(ctx, "non-existent-key")
 	require.Nil(t, err)
 	assert.Equal(t, "", result)
 }

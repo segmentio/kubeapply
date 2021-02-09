@@ -251,13 +251,13 @@ func (cc *KubeClusterClient) Summary(ctx context.Context) (string, error) {
 }
 
 // GetStoreValue gets the value of the argument key.
-func (cc *KubeClusterClient) GetStoreValue(key string) (string, error) {
-	return cc.kubeStore.Get(key)
+func (cc *KubeClusterClient) GetStoreValue(ctx context.Context, key string) (string, error) {
+	return cc.kubeStore.Get(ctx, key)
 }
 
 // SetStoreValue sets the value of the argument key to the argument value.
-func (cc *KubeClusterClient) SetStoreValue(key string, value string) error {
-	return cc.kubeStore.Set(key, value)
+func (cc *KubeClusterClient) SetStoreValue(ctx context.Context, key string, value string) error {
+	return cc.kubeStore.Set(ctx, key, value)
 }
 
 // Config returns this client's cluster config.
@@ -311,7 +311,7 @@ func (cc *KubeClusterClient) execApply(
 
 	if cc.checkApplyConsistency {
 		log.Infof("Fetching diff event for key %s", cc.clusterKey)
-		storeValue, err := cc.GetStoreValue(cc.clusterKey)
+		storeValue, err := cc.GetStoreValue(ctx, cc.clusterKey)
 		if err != nil {
 			return nil, err
 		}
@@ -388,5 +388,5 @@ func (cc *KubeClusterClient) execDiff(
 	diffEventStr := string(diffEventBytes)
 
 	log.Infof("Setting store key value: %s, %s", cc.clusterKey, diffEventStr)
-	return diffResult, cc.kubeStore.Set(cc.clusterKey, diffEventStr)
+	return diffResult, cc.kubeStore.Set(ctx, cc.clusterKey, diffEventStr)
 }
