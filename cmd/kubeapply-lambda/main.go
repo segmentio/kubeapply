@@ -22,9 +22,11 @@ var (
 	sess        *session.Session
 	statsClient stats.StatsClient
 
-	automerge   bool
-	debug       bool
-	strictCheck bool
+	automerge       bool
+	debug           bool
+	strictCheck     bool
+	greenCIRequired bool
+	reviewRequired  bool
 
 	logsURL = getLogsURL()
 )
@@ -74,6 +76,15 @@ var (
 	//
 	// Optional, defaults to false.
 	strictCheckStr = os.Getenv("KUBEAPPLY_STRICT_CHECK")
+
+	// Whether a green CI is required to apply. Ideally, should be set to "true",
+	// but based on how long the CI takes, might be easier to have it be "false" in
+	// non-production environments.
+	greenCIRequiredStr = os.Getenv("KUBEAPPLY_GREEN_CI_REQUIRED")
+
+	// Whether a review is required to apply. Generally "true" in production and
+	// otherwise "false".
+	reviewRequiredStr = os.Getenv("KUBEAPPLY_REVIEW_REQUIRED")
 
 	// SSM parameter used for fetching webhook secret.
 	webhookSecretSSMParam = os.Getenv("KUBEAPPLY_WEBHOOK_SECRET_SSM_PARAM")
@@ -154,6 +165,14 @@ func init() {
 		strictCheck = true
 	}
 
+	if strings.ToLower(greenCIRequiredStr) == "true" {
+		greenCIRequired = true
+	}
+
+	if strings.ToLower(reviewRequiredStr) == "true" {
+		reviewRequired = true
+	}
+
 	if strings.ToLower(automergeStr) == "true" {
 		automerge = true
 	}
@@ -223,6 +242,8 @@ func handleRequest(
 			Env:                   env,
 			Version:               version.Version,
 			StrictCheck:           strictCheck,
+			GreenCIRequired:       greenCIRequired,
+			ReviewRequired:        reviewRequired,
 			Automerge:             automerge,
 			UseLocks:              true,
 			ApplyConsistencyCheck: false,

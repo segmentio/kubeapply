@@ -41,8 +41,12 @@ type Config struct {
 	Env           string `conf:"env"            help:"only consider changes for this environment"`
 	GithubToken   string `conf:"github-token"   help:"token for Github API access"`
 	LogsURL       string `conf:"logs-url"       help:"url for logs; used as link for status checks"`
-	StrictCheck   bool   `conf:"strict-check"   help:"ensure green status and approval before apply"`
 	WebhookSecret string `conf:"webhook-secret" help:"shared secret set in Github webhooks"`
+
+	// TODO: Deprecate StrictCheck since it's covered by the parameters below that.
+	StrictCheck     bool `conf:"strict-check"      help:"ensure green status and approval before apply"`
+	GreenCIRequired bool `conf:"green-ci-required" help:"require green CI before applying"`
+	ReviewRequired  bool `conf:"review-required"   help:"require review before applying:"`
 }
 
 var config = Config{
@@ -121,6 +125,8 @@ func webhookHTTPHandler(
 			ApplyConsistencyCheck: false,
 			Automerge:             config.Automerge,
 			StrictCheck:           config.StrictCheck,
+			GreenCIRequired:       config.GreenCIRequired,
+			ReviewRequired:        config.ReviewRequired,
 			Debug:                 config.Debug,
 		},
 	)
