@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -236,6 +237,13 @@ func (cc *KubeClusterClient) DiffStructured(
 			err,
 			string(rawResults),
 		)
+	}
+
+	// Strip everything before the initial "{"; kubectl can insert arbitrary warnings, etc.
+	// that can cause the result to not be valid JSON.
+	jsonStart := bytes.Index(rawResults, []byte("{"))
+	if jsonStart > 0 {
+		rawResults = rawResults[jsonStart:]
 	}
 
 	results := diff.Results{}
