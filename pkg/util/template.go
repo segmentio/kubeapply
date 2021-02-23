@@ -226,6 +226,7 @@ func lookup(path string, input interface{}) interface{} {
 	obj := reflect.ValueOf(input)
 
 	components := strings.Split(path, ".")
+
 	for i := 0; i < len(components); {
 		component := components[i]
 
@@ -240,8 +241,8 @@ func lookup(path string, input interface{}) interface{} {
 			// Get the thing being pointed to or interfaced, don't advance index
 			obj = obj.Elem()
 		default:
-			obj = zeroValue
-			break
+			// Got an unexpected type
+			return nil
 		}
 	}
 

@@ -169,6 +169,7 @@ func TestLookup(t *testing.T) {
 	assert.Equal(t, "value0", lookup("Key", s))
 	assert.Equal(t, nil, lookup("bad-key", s))
 	assert.Equal(t, nil, lookup("", s))
+	assert.Equal(t, nil, lookup("key", "not a map"))
 	assert.Equal(t, "value1", lookup("Inner.Map.key1", s))
 	assert.Equal(t, "value1", lookup("Inner.Map.key1", &s))
 	assert.Equal(t, "value4", lookup("Inner.Map.key2.key3.key4", s))
