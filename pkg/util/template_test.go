@@ -136,3 +136,44 @@ func fileContents(t *testing.T, path string) string {
 
 	return string(contents)
 }
+
+type TestStruct struct {
+	Key    string
+	Inner  TestStructInner
+	Inner2 *TestStructInner
+}
+type TestStructInner struct {
+	Map map[string]interface{}
+}
+
+func TestLookup(t *testing.T) {
+	s := TestStruct{
+		Key: "value0",
+		Inner: TestStructInner{
+			Map: map[string]interface{}{
+				"key1": "value1",
+				"key2": map[string]interface{}{
+					"key3": map[string]interface{}{
+						"key4": "value4",
+					},
+					"key5": 1234,
+				},
+			},
+		},
+		Inner2: &TestStructInner{
+			Map: map[string]interface{}{
+				"key6": "value6",
+			},
+		},
+	}
+	assert.Equal(t, "value0", lookup("Key", s))
+	assert.Equal(t, nil, lookup("bad-key", s))
+	assert.Equal(t, nil, lookup("", s))
+	assert.Equal(t, "value1", lookup("Inner.Map.key1", s))
+	assert.Equal(t, "value1", lookup("Inner.Map.key1", &s))
+	assert.Equal(t, "value4", lookup("Inner.Map.key2.key3.key4", s))
+	assert.Equal(t, 1234, lookup("Inner.Map.key2.key5", s))
+	assert.Equal(t, nil, lookup("Inner.Map.non-existent-key", s))
+	assert.Equal(t, nil, lookup("Inner.Map.key2.non-existent-key", s))
+	assert.Equal(t, "value6", lookup("Inner2.Map.key6", s))
+}

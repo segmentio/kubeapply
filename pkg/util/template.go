@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"text/template"
 
@@ -15,10 +16,15 @@ import (
 	"github.com/ghodss/yaml"
 )
 
-var extraTemplateFuncs = template.FuncMap{
-	"urlEncode": url.QueryEscape,
-	"toYaml":    toYaml,
-}
+var (
+	extraTemplateFuncs = template.FuncMap{
+		"lookup":    lookup,
+		"toYaml":    toYaml,
+		"urlEncode": url.QueryEscape,
+	}
+
+	zeroValue = reflect.Value{}
+)
 
 // ApplyTemplate runs golang templating on all files in the provided path,
 // replacing them in-place with their templated versions.
@@ -212,6 +218,37 @@ func configMapEntriesGenerator(
 
 		return strings.Join(outputLines, "\n"), nil
 	}
+}
+
+// lookup does a dot-separated path lookup on the input struct or map. If the input or any of
+// its children on the targeted path are not a map or struct, it returns nil.
+func lookup(path string, input interface{}) interface{} {
+	obj := reflect.ValueOf(input)
+
+	components := strings.Split(path, ".")
+	for i := 0; i < len(components); {
+		component := components[i]
+
+		switch obj.Kind() {
+		case reflect.Struct:
+			obj = obj.FieldByName(component)
+			i++
+		case reflect.Map:
+			obj = obj.MapIndex(reflect.ValueOf(component))
+			i++
+		case reflect.Ptr, reflect.Interface:
+			// Get the thing being pointed to or interfaced, don't advance index
+			obj = obj.Elem()
+		default:
+			obj = zeroValue
+			break
+		}
+	}
+
+	if obj == zeroValue {
+		return nil
+	}
+	return obj.Interface()
 }
 
 func toYaml(input interface{}) (string, error) {
