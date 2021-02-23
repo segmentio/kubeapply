@@ -18,12 +18,11 @@ import (
 
 var (
 	extraTemplateFuncs = template.FuncMap{
-		"lookup":    lookup,
-		"toYaml":    toYaml,
-		"urlEncode": url.QueryEscape,
+		"lookup":     lookup,
+		"pathLookup": pathLookup,
+		"toYaml":     toYaml,
+		"urlEncode":  url.QueryEscape,
 	}
-
-	zeroValue = reflect.Value{}
 )
 
 // ApplyTemplate runs golang templating on all files in the provided path,
@@ -220,36 +219,49 @@ func configMapEntriesGenerator(
 	}
 }
 
-// lookup does a dot-separated path lookup on the input struct or map. If the input or any of
-// its children on the targeted path are not a map or struct, it returns nil.
-func lookup(path string, input interface{}) interface{} {
+// lookup does a dot-separated path lookup on the input map. If a key on the path is
+// not found, it returns nil. If the input or any of its children on the lookup path is not
+// a map, it returns an error.
+func lookup(input interface{}, path string) (interface{}, error) {
 	obj := reflect.ValueOf(input)
-
 	components := strings.Split(path, ".")
 
 	for i := 0; i < len(components); {
-		component := components[i]
-
 		switch obj.Kind() {
-		case reflect.Struct:
-			obj = obj.FieldByName(component)
-			i++
 		case reflect.Map:
-			obj = obj.MapIndex(reflect.ValueOf(component))
+			obj = obj.MapIndex(reflect.ValueOf(components[i]))
 			i++
 		case reflect.Ptr, reflect.Interface:
+			if obj.IsNil() {
+				return nil, nil
+			}
+
 			// Get the thing being pointed to or interfaced, don't advance index
 			obj = obj.Elem()
 		default:
-			// Got an unexpected type
-			return nil
+			if obj.IsValid() {
+				// An object was found, but it's not a map. Return an error.
+				return nil, fmt.Errorf(
+					"Tried to traverse a value that's not a map (kind=%s)",
+					obj.Kind(),
+				)
+			}
+
+			// An intermediate key wasn't found
+			return nil, nil
 		}
 	}
 
-	if obj == zeroValue {
-		return nil
+	if !obj.IsValid() {
+		// The last key wasn't found
+		return nil, nil
 	}
-	return obj.Interface()
+	return obj.Interface(), nil
+}
+
+// pathLookup is the same as lookup, but with the arguments flipped.
+func pathLookup(path string, input interface{}) (interface{}, error) {
+	return lookup(input, path)
 }
 
 func toYaml(input interface{}) (string, error) {
