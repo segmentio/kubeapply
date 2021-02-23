@@ -136,3 +136,88 @@ func fileContents(t *testing.T, path string) string {
 
 	return string(contents)
 }
+
+func TestLookup(t *testing.T) {
+	m := map[string]interface{}{
+		"key1": "value1",
+		"key2": map[string]interface{}{
+			"key3": map[string]interface{}{
+				"key4": "value4",
+			},
+			"key5": 1234,
+		},
+		"key6": nil,
+	}
+
+	type testCase struct {
+		input          interface{}
+		path           string
+		expectedResult interface{}
+		expectErr      bool
+	}
+
+	testCases := []testCase{
+		{
+			input:          m,
+			path:           "bad-key",
+			expectedResult: nil,
+		},
+		{
+			input:          m,
+			path:           "",
+			expectedResult: nil,
+		},
+		{
+			input:          nil,
+			path:           "key1",
+			expectedResult: nil,
+		},
+		{
+			input:          "not a map",
+			path:           "key1",
+			expectedResult: nil,
+			expectErr:      true,
+		},
+		{
+			input:          m,
+			path:           "key1",
+			expectedResult: "value1",
+		},
+		{
+			input:          &m,
+			path:           "key1",
+			expectedResult: "value1",
+		},
+		{
+			input:          m,
+			path:           "key1.not-a-map",
+			expectedResult: nil,
+			expectErr:      true,
+		},
+		{
+			input:          m,
+			path:           "key2.key3.key4",
+			expectedResult: "value4",
+		},
+		{
+			input:          m,
+			path:           "key2.key5",
+			expectedResult: 1234,
+		},
+		{
+			input:          m,
+			path:           "key6.nil-key",
+			expectedResult: nil,
+		},
+	}
+
+	for index, tc := range testCases {
+		result, err := lookup(tc.input, tc.path)
+		assert.Equal(t, tc.expectedResult, result, "Unexpected result for case %d", index)
+		if tc.expectErr {
+			assert.Error(t, err, "Did not get expected error in case %d", index)
+		} else {
+			assert.NoError(t, err, "Got unexpected error in case %d", index)
+		}
+	}
+}
