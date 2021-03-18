@@ -37,4 +37,4 @@ COPY --from=builder \
     /usr/local/bin/kubeval \
     /usr/local/bin/kubectl \
     /usr/local/bin/kubeapply \
-    /usr/local/bin
+    /usr/local/bin/
