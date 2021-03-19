@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/gobwas/glob"
 	"github.com/google/go-github/v30/github"
 	"github.com/segmentio/kubeapply/pkg/config"
 	log "github.com/sirupsen/logrus"
@@ -25,7 +26,7 @@ import (
 //    subpaths.
 //
 // There are a few overrides that adjust this behavior:
-// 1. selectedClusterIDs: If set, then clusters in this slice are never dropped, even if they
+// 1. selectedClusterGlobStrs: If set, then clusters in this slice are never dropped, even if they
 //    don't have have any diffs in them.
 // 2. subpathOverride: If set, then this is used for the cluster subpaths instead of the procedure
 //    in step 6 above.
@@ -33,13 +34,18 @@ func GetCoveredClusters(
 	repoRoot string,
 	diffs []*github.CommitFile,
 	env string,
-	selectedClusterIDs []string,
+	selectedClusterGlobStrs []string,
 	subpathOverride string,
 	multiSubpaths bool,
 ) ([]*config.ClusterConfig, error) {
-	selectedClusterIDsMap := map[string]struct{}{}
-	for _, selectedClusterID := range selectedClusterIDs {
-		selectedClusterIDsMap[selectedClusterID] = struct{}{}
+	selectedClusterGlobs := []glob.Glob{}
+
+	for _, globStr := range selectedClusterGlobStrs {
+		globObj, err := glob.Compile(globStr)
+		if err != nil {
+			return nil, err
+		}
+		selectedClusterGlobs = append(selectedClusterGlobs, globObj)
 	}
 
 	changedClusterPaths := map[string][]string{}
@@ -80,8 +86,17 @@ func GetCoveredClusters(
 
 					log.Infof("Found cluster config: %s", path)
 
-					if len(selectedClusterIDsMap) > 0 {
-						if _, ok := selectedClusterIDsMap[configObj.DescriptiveName()]; !ok {
+					if len(selectedClusterGlobs) > 0 {
+						var matches bool
+
+						for _, globObj := range selectedClusterGlobs {
+							if globObj.Match(configObj.DescriptiveName()) {
+								matches = true
+								break
+							}
+						}
+
+						if !matches {
 							log.Infof(
 								"Ignoring cluster %s because selectedClusters is set and cluster is not in set",
 								configObj.DescriptiveName(),
@@ -118,7 +133,7 @@ func GetCoveredClusters(
 						return err
 					}
 
-					if len(selectedClusterIDsMap) > 0 {
+					if len(selectedClusterGlobs) > 0 {
 						changedClusterPaths[relPath] = []string{}
 					}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gobwas/glob"
 	"github.com/segmentio/kubeapply/pkg/config"
 )
 
@@ -31,19 +32,32 @@ func (prc *FakePullRequestClient) Init(ctx context.Context) error {
 // this pull request.
 func (prc *FakePullRequestClient) GetCoveredClusters(
 	env string,
-	selectedClusterIDs []string,
+	selectedClusterGlobStrs []string,
 	subpathOverride string,
 ) ([]*config.ClusterConfig, error) {
-	selectedClusterIDsMap := map[string]struct{}{}
-	for _, selectedClusterID := range selectedClusterIDs {
-		selectedClusterIDsMap[selectedClusterID] = struct{}{}
+	globObjs := []glob.Glob{}
+
+	for _, globStr := range selectedClusterGlobStrs {
+		globObj, err := glob.Compile(globStr)
+		if err != nil {
+			return nil, err
+		}
+		globObjs = append(globObjs, globObj)
 	}
 
 	coveredClusters := []*config.ClusterConfig{}
 
 	for _, clusterConfig := range prc.ClusterConfigs {
-		if len(selectedClusterIDsMap) > 0 {
-			if _, ok := selectedClusterIDsMap[clusterConfig.DescriptiveName()]; !ok {
+		if len(globObjs) > 0 {
+			var matches bool
+			for _, globObj := range globObjs {
+				if globObj.Match(clusterConfig.DescriptiveName()) {
+					matches = true
+					break
+				}
+			}
+
+			if !matches {
 				continue
 			}
 		}

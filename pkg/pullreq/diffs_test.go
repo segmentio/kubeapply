@@ -11,12 +11,12 @@ import (
 
 func TestGetCoveredClusters(t *testing.T) {
 	type clusterTestCase struct {
-		diffs               []*github.CommitFile
-		selectedClusterIDs  []string
-		subpathOverride     string
-		multiSubpaths       bool
-		expectedClustersIDs []string
-		expectedSubpaths    []string
+		diffs                   []*github.CommitFile
+		selectedClusterGlobStrs []string
+		subpathOverride         string
+		multiSubpaths           bool
+		expectedClustersIDs     []string
+		expectedSubpaths        []string
 	}
 
 	testCases := []clusterTestCase{
@@ -104,7 +104,7 @@ func TestGetCoveredClusters(t *testing.T) {
 					Filename: aws.String("clusters/clustertype/expanded/cluster2/file2.yaml"),
 				},
 			},
-			selectedClusterIDs: []string{
+			selectedClusterGlobStrs: []string{
 				"stage:us-west-2:cluster1",
 				"production:us-west-2:cluster2",
 				"stage:us-west-2:cluster3",
@@ -130,7 +130,29 @@ func TestGetCoveredClusters(t *testing.T) {
 					Filename: aws.String("clusters/clustertype/expanded/cluster2/file2.yaml"),
 				},
 			},
-			selectedClusterIDs: []string{
+			selectedClusterGlobStrs: []string{
+				"stage:*1",
+			},
+			expectedClustersIDs: []string{
+				"stage:us-west-2:cluster1",
+			},
+			expectedSubpaths: []string{
+				".",
+			},
+		},
+		{
+			diffs: []*github.CommitFile{
+				{
+					Filename: aws.String("clusters/clustertype/expanded/cluster1/file1.yaml"),
+				},
+				{
+					Filename: aws.String("clusters/clustertype/expanded/cluster1/subdir1/file3.yaml"),
+				},
+				{
+					Filename: aws.String("clusters/clustertype/expanded/cluster2/file2.yaml"),
+				},
+			},
+			selectedClusterGlobStrs: []string{
 				"stage:us-west-2:cluster3",
 			},
 			expectedClustersIDs: []string{
@@ -148,7 +170,7 @@ func TestGetCoveredClusters(t *testing.T) {
 			"testdata/repo",
 			testCase.diffs,
 			"stage",
-			testCase.selectedClusterIDs,
+			testCase.selectedClusterGlobStrs,
 			testCase.subpathOverride,
 			testCase.multiSubpaths,
 		)
