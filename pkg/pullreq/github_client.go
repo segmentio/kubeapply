@@ -232,14 +232,14 @@ func (prc *GHPullRequestClient) Init(ctx context.Context) error {
 // this pull request.
 func (prc *GHPullRequestClient) GetCoveredClusters(
 	env string,
-	selectedClusterIDs []string,
+	selectedClusterGlobStrs []string,
 	subpathOverride string,
 ) ([]*config.ClusterConfig, error) {
 	return GetCoveredClusters(
 		prc.clonePath,
 		prc.files,
 		env,
-		selectedClusterIDs,
+		selectedClusterGlobStrs,
 		subpathOverride,
 		true,
 	)

@@ -15,7 +15,7 @@ type PullRequestClient interface {
 	// GetCoveredClusters gets the configs for all clusters "covered" by a pull request.
 	GetCoveredClusters(
 		env string,
-		selectedClusterIDs []string,
+		selectedClusterGlobStrs []string,
 		subpathOverride string,
 	) ([]*config.ClusterConfig, error)
 

@@ -31,11 +31,14 @@ RUN yum install -y git
 RUN curl -O https://bootstrap.pypa.io/get-pip.py && python3 get-pip.py
 RUN pip3 install awscli
 
-COPY --from=builder /usr/local/bin/aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
-COPY --from=builder /usr/local/bin/helm /usr/local/bin/helm
-COPY --from=builder /usr/local/bin/kubeval /usr/local/bin/kubeval
-COPY --from=builder /usr/local/bin/kubectl /usr/local/bin/kubectl
-COPY --from=builder /usr/local/bin/kubeapply /usr/local/bin/kubeapply
+COPY --from=builder \
+    /usr/local/bin/aws-iam-authenticator \
+    /usr/local/bin/helm \
+    /usr/local/bin/kubeval \
+    /usr/local/bin/kubectl \
+    /usr/local/bin/kubeapply \
+    /usr/local/bin/
+
 COPY --from=builder /usr/local/bin/kubeapply-lambda /var/task/kubeapply-lambda
 
 CMD [ "kubeapply-lambda" ]

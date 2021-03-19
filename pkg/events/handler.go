@@ -319,14 +319,14 @@ func (whh *WebhookHandler) handleApplyResultCommentEvent(
 func (whh *WebhookHandler) getClusterClients(
 	ctx context.Context,
 	client pullreq.PullRequestClient,
-	clusterIDs []string,
+	selectedClusterGlobStrs []string,
 	flags map[string]string,
 ) ([]cluster.ClusterClient, error) {
 	clusterClients := []cluster.ClusterClient{}
 
 	coveredClusters, err := client.GetCoveredClusters(
 		whh.settings.Env,
-		clusterIDs,
+		selectedClusterGlobStrs,
 		flags["subpath"],
 	)
 	if err != nil {
