@@ -101,7 +101,13 @@ func TestKubeValidator(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, testCase := range testCases {
-		results, err := validator.RunSchemaValidation(ctx, testCase.path)
+		results, err := validator.RunValidation(ctx, testCase.path)
+
+		// Zero out indices so we don't need to check them
+		for i := 0; i < len(results); i++ {
+			results[i].index = 0
+		}
+
 		require.NoError(t, err)
 		assert.Equal(t, testCase.expected, results)
 	}

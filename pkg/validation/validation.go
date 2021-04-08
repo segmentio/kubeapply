@@ -3,10 +3,15 @@ package validation
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
+	"sort"
 	"strings"
 
+	_ "github.com/open-policy-agent/opa/rego"
+	"github.com/yannh/kubeconform/pkg/resource"
 	"github.com/yannh/kubeconform/pkg/validator"
 )
 
@@ -27,6 +32,12 @@ const (
 	StatusOther   Status = "other"
 )
 
+const (
+	numWorkers = 4
+)
+
+var sep = regexp.MustCompile("(?:^|\\s*\n)---\\s*")
+
 // ValidationResult stores the results of validating a single resource in a single file.
 type ValidationResult struct {
 	Filename  string `json:"filename"`
@@ -36,6 +47,8 @@ type ValidationResult struct {
 	Version   string `json:"version"`
 	Status    Status `json:"status"`
 	Message   string `json:"msg"`
+
+	index int
 }
 
 // PrettyName returns a pretty, compact name for the resource associated with a validation result.
@@ -69,13 +82,25 @@ func NewKubeValidator() (*KubeValidator, error) {
 	}, nil
 }
 
-// RunSchemaValidation runs kubeconform over all files in the provided path and returns the result.
-func (k *KubeValidator) RunSchemaValidation(
+type wrappedResource struct {
+	resource.Resource
+	index int
+}
+
+type wrappedResult struct {
+	validator.Result
+	index int
+}
+
+// RunValidation runs kubeconform over all files in the provided path and returns the result.
+func (k *KubeValidator) RunValidation(
 	ctx context.Context,
 	path string,
 ) ([]ValidationResult, error) {
-	results := []ValidationResult{}
+	resources := []wrappedResource{}
+	index := 0
 
+	// First, get all of the resources.
 	err := filepath.Walk(
 		path,
 		func(subPath string, info os.FileInfo, err error) error {
@@ -87,45 +112,92 @@ func (k *KubeValidator) RunSchemaValidation(
 				return nil
 			}
 
-			file, err := os.Open(subPath)
+			contents, err := ioutil.ReadFile(subPath)
 			if err != nil {
 				return err
 			}
 
-			for _, kResult := range k.validatorObj.ValidateWithContext(ctx, subPath, file) {
-				if kResult.Status == validator.Empty {
-					// Skip over empty results
-					continue
-				}
+			trimmedFile := strings.TrimSpace(string(contents))
+			manifestStrs := sep.Split(trimmedFile, -1)
 
-				result := ValidationResult{
-					Filename: kResult.Resource.Path,
-					Status:   kubeconformStatusToStatus(kResult.Status),
-				}
-
-				if kResult.Err != nil {
-					result.Message = kResult.Err.Error()
-				}
-
-				sig, err := kResult.Resource.Signature()
-				if err == nil && sig != nil {
-					result.Kind = sig.Kind
-					result.Name = sig.Name
-					result.Namespace = sig.Namespace
-					result.Version = sig.Version
-				}
-
-				results = append(results, result)
+			for _, manifestStr := range manifestStrs {
+				resources = append(
+					resources,
+					wrappedResource{
+						Resource: resource.Resource{
+							Path:  subPath,
+							Bytes: []byte(manifestStr),
+						},
+						index: index,
+					},
+				)
+				index++
 			}
 
 			return nil
 		},
 	)
 
-	return results, err
+	if err != nil {
+		return nil, err
+	}
+
+	resourcesChan := make(chan wrappedResource, len(resources))
+	for _, resource := range resources {
+		resourcesChan <- resource
+	}
+	defer close(resourcesChan)
+
+	kResultsChan := make(chan wrappedResult, len(resources))
+
+	for i := 0; i < numWorkers; i++ {
+		go func() {
+			for resource := range resourcesChan {
+				kResultsChan <- wrappedResult{
+					Result: k.validatorObj.ValidateResource(resource.Resource),
+					index:  resource.index,
+				}
+			}
+		}()
+	}
+
+	results := []ValidationResult{}
+	for i := 0; i < len(resources); i++ {
+		kResult := <-kResultsChan
+
+		if kResult.Status == validator.Empty {
+			// Skip over empty results
+			continue
+		}
+
+		result := ValidationResult{
+			Filename: kResult.Resource.Path,
+			Status:   kStatusToStatus(kResult.Status),
+			index:    kResult.index,
+		}
+
+		if kResult.Err != nil {
+			result.Message = kResult.Err.Error()
+		}
+
+		sig, err := kResult.Resource.Signature()
+		if err == nil && sig != nil {
+			result.Kind = sig.Kind
+			result.Name = sig.Name
+			result.Namespace = sig.Namespace
+			result.Version = sig.Version
+		}
+		results = append(results, result)
+	}
+
+	sort.Slice(results, func(a, b int) bool {
+		return results[a].index < results[b].index
+	})
+
+	return results, nil
 }
 
-func kubeconformStatusToStatus(kStatus validator.Status) Status {
+func kStatusToStatus(kStatus validator.Status) Status {
 	switch kStatus {
 	case validator.Valid:
 		return StatusValid
