@@ -88,41 +88,47 @@ func validateClusterPath(ctx context.Context, path string) error {
 func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) error {
 	log.Infof("Validating cluster %s", clusterConfig.DescriptiveName())
 
-	kubeValidator := validation.NewKubeValidator()
-
-	log.Infof(
-		"Checking that expanded configs for %s are valid YAML",
-		clusterConfig.DescriptiveName(),
-	)
-	err := kubeValidator.CheckYAML(clusterConfig.AbsSubpaths())
+	kubeValidator, err := validation.NewKubeValidator()
 	if err != nil {
 		return err
 	}
 
-	log.Infof("Running kubeval on configs in %+v", clusterConfig.AbsSubpaths())
-	results, err := kubeValidator.RunKubeval(ctx, clusterConfig.AbsSubpaths()[0])
+	log.Infof("Running kubeconform on configs in %+v", clusterConfig.AbsSubpaths())
+	results, err := kubeValidator.RunKubeconform(ctx, clusterConfig.AbsSubpaths()[0])
 	if err != nil {
 		return err
 	}
 
-	numInvalidFiles := 0
+	numInvalidResources := 0
 
 	for _, result := range results {
 		switch result.Status {
-		case "valid":
-			log.Infof("File %s OK", result.Filename)
-		case "skipped":
-			log.Debugf("File %s skipped", result.Filename)
-		case "invalid":
-			numInvalidFiles++
-			log.Errorf("File %s is invalid; errors: %+v", result.Filename, result.Errors)
+		case validation.StatusValid:
+			log.Infof("Resource %s in file %s OK", result.PrettyName(), result.Filename)
+		case validation.StatusSkipped:
+			log.Debugf("Resource %s in file %s was skipped", result.PrettyName(), result.Filename)
+		case validation.StatusError:
+			numInvalidResources++
+			log.Errorf("File %s could not be validated: %+v", result.Filename, result.Message)
+		case validation.StatusInvalid:
+			numInvalidResources++
+			log.Errorf(
+				"Resource %s in file %s is invalid: %s",
+				result.PrettyName(),
+				result.Filename,
+				result.Message,
+			)
+		case validation.StatusEmpty:
 		default:
 			log.Infof("Unrecognized result type: %+v", result)
 		}
 	}
 
-	if numInvalidFiles > 0 {
-		return fmt.Errorf("Validation failed for %d files", numInvalidFiles)
+	if numInvalidResources > 0 {
+		return fmt.Errorf(
+			"Validation failed for %d resources",
+			numInvalidResources,
+		)
 	}
 
 	log.Infof("Validation of cluster %s passed", clusterConfig.DescriptiveName())

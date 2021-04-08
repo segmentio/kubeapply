@@ -58,7 +58,6 @@ environments. We welcome feedback and collaboration to make `kubeapply` useful t
 
 - [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/): v1.16 or newer
 - [`helm`](https://helm.sh/docs/intro/install/): v3.5.0 or newer (only needed if using helm charts)
-- [`kubeval`](https://kubeval.instrumenta.dev/installation/): v0.15.0 or newer
 
 Make sure that they're installed locally and available in your path.
 
@@ -220,7 +219,7 @@ other source types use custom code in the `kubeapply` binary.
 
 `kubeapply validate [path to cluster config]`
 
-This validates all of the expanded configs for the cluster by wrapping `kubeval`.
+This validates all of the expanded configs for the cluster using `kubeconform`.
 
 #### Diff
 
