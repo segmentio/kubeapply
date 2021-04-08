@@ -39,7 +39,7 @@ require (
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1
-	gopkg.in/validator.v2 v2.0.0-20180514200540-135c24b11c19
+	gopkg.in/validator.v2 v2.0.0-20180514200540-135c24b11c19 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 	gopkg.in/yaml.v3 v3.0.0-20200601152816-913338de1bd2 // indirect
 	gopkg.in/zorkian/go-datadog-api.v2 v2.28.0

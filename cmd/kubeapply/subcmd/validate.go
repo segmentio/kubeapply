@@ -23,6 +23,9 @@ var validateCmd = &cobra.Command{
 type validateFlags struct {
 	// Expand before validating.
 	expand bool
+
+	// Expand before validating.
+	quiet bool
 }
 
 var validateFlagValues validateFlags
@@ -100,12 +103,16 @@ func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) er
 	}
 
 	numInvalidResources := 0
+	numValidResources := 0
+	numSkippedResources := 0
 
 	for _, result := range results {
 		switch result.Status {
 		case validation.StatusValid:
-			log.Infof("Resource %s in file %s OK", result.PrettyName(), result.Filename)
+			numValidResources++
+			log.Debugf("Resource %s in file %s OK", result.PrettyName(), result.Filename)
 		case validation.StatusSkipped:
+			numSkippedResources++
 			log.Debugf("Resource %s in file %s was skipped", result.PrettyName(), result.Filename)
 		case validation.StatusError:
 			numInvalidResources++
@@ -126,11 +133,19 @@ func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) er
 
 	if numInvalidResources > 0 {
 		return fmt.Errorf(
-			"Validation failed for %d resources",
+			"Validation failed for cluster %s; %d resources/files invalid, %d valid, %d skipped",
+			clusterConfig.DescriptiveName(),
 			numInvalidResources,
+			numValidResources,
+			numSkippedResources,
 		)
 	}
 
-	log.Infof("Validation of cluster %s passed", clusterConfig.DescriptiveName())
+	log.Infof(
+		"Validation of cluster %s passed; %d resources valid, %d skipped",
+		clusterConfig.DescriptiveName(),
+		numValidResources,
+		numSkippedResources,
+	)
 	return nil
 }

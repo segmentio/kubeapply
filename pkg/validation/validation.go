@@ -3,11 +3,14 @@ package validation
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
+	"sync"
 
+	"github.com/yannh/kubeconform/pkg/resource"
 	"github.com/yannh/kubeconform/pkg/validator"
+)
+
+const (
+	numWorkers = 6
 )
 
 // KubeValidator is a struct that validates the kube configs associated with a cluster.
@@ -74,58 +77,88 @@ func (k *KubeValidator) RunSchemaValidation(
 	ctx context.Context,
 	path string,
 ) ([]ValidationResult, error) {
+	kResults := []validator.Result{}
+	resourcesChan, errChan := resource.FromFiles(ctx, []string{path}, nil)
+	mut := sync.Mutex{}
+	wg := sync.WaitGroup{}
+
+	// Based on implementation in
+	// https://github.com/yannh/kubeconform/blob/master/cmd/kubeconform/main.go.
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go func() {
+			for res := range resourcesChan {
+				mut.Lock()
+				kResults = append(kResults, k.validatorObj.ValidateResource(res))
+				mut.Unlock()
+			}
+			wg.Done()
+		}()
+	}
+
+	wg.Add(1)
+	go func() {
+		// Process errors while discovering resources
+		for err := range errChan {
+			if err == nil {
+				continue
+			}
+
+			var kResult validator.Result
+
+			if err, ok := err.(resource.DiscoveryError); ok {
+				kResult = validator.Result{
+					Resource: resource.Resource{Path: err.Path},
+					Err:      err.Err,
+					Status:   validator.Error,
+				}
+			} else {
+				kResult = validator.Result{
+					Resource: resource.Resource{},
+					Err:      err,
+					Status:   validator.Error,
+				}
+			}
+			mut.Lock()
+			kResults = append(kResults, kResult)
+			mut.Unlock()
+		}
+		wg.Done()
+	}()
+	wg.Wait()
+
 	results := []ValidationResult{}
 
-	err := filepath.Walk(
-		path,
-		func(subPath string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
+	for _, kResult := range kResults {
+		if kResult.Status == validator.Empty {
+			// Skip over empty results
+			continue
+		}
 
-			if info.IsDir() || !strings.HasSuffix(subPath, ".yaml") {
-				return nil
-			}
+		result := ValidationResult{
+			Filename: kResult.Resource.Path,
+			Status:   kStatusToStatus(kResult.Status),
+		}
 
-			file, err := os.Open(subPath)
-			if err != nil {
-				return err
-			}
+		if kResult.Err != nil {
+			result.Message = kResult.Err.Error()
+		}
 
-			for _, kResult := range k.validatorObj.ValidateWithContext(ctx, subPath, file) {
-				if kResult.Status == validator.Empty {
-					// Skip over empty results
-					continue
-				}
+		sig, err := kResult.Resource.Signature()
+		if err == nil && sig != nil {
+			result.Kind = sig.Kind
+			result.Name = sig.Name
+			result.Namespace = sig.Namespace
+			result.Version = sig.Version
+		}
 
-				result := ValidationResult{
-					Filename: kResult.Resource.Path,
-					Status:   kubeconformStatusToStatus(kResult.Status),
-				}
+		results = append(results, result)
+	}
 
-				if kResult.Err != nil {
-					result.Message = kResult.Err.Error()
-				}
-
-				sig, err := kResult.Resource.Signature()
-				if err == nil && sig != nil {
-					result.Kind = sig.Kind
-					result.Name = sig.Name
-					result.Namespace = sig.Namespace
-					result.Version = sig.Version
-				}
-
-				results = append(results, result)
-			}
-
-			return nil
-		},
-	)
-
-	return results, err
+	return results, nil
 }
 
-func kubeconformStatusToStatus(kStatus validator.Status) Status {
+func kStatusToStatus(kStatus validator.Status) Status {
 	switch kStatus {
 	case validator.Valid:
 		return StatusValid
