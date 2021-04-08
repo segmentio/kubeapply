@@ -94,7 +94,7 @@ func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) er
 	}
 
 	log.Infof("Running kubeconform on configs in %+v", clusterConfig.AbsSubpaths())
-	results, err := kubeValidator.RunKubeconform(ctx, clusterConfig.AbsSubpaths()[0])
+	results, err := kubeValidator.RunSchemaValidation(ctx, clusterConfig.AbsSubpaths()[0])
 	if err != nil {
 		return err
 	}

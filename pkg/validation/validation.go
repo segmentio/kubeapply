@@ -10,7 +10,7 @@ import (
 	"github.com/yannh/kubeconform/pkg/validator"
 )
 
-// KubeValidator is a struct that validates the kube configs associated with a cell config.
+// KubeValidator is a struct that validates the kube configs associated with a cluster.
 type KubeValidator struct {
 	validatorObj validator.Validator
 }
@@ -69,8 +69,8 @@ func NewKubeValidator() (*KubeValidator, error) {
 	}, nil
 }
 
-// RunKubeconform runs kubeconform over all files in the provided path.
-func (k *KubeValidator) RunKubeconform(
+// RunSchemaValidation runs kubeconform over all files in the provided path and returns the result.
+func (k *KubeValidator) RunSchemaValidation(
 	ctx context.Context,
 	path string,
 ) ([]ValidationResult, error) {
@@ -92,7 +92,12 @@ func (k *KubeValidator) RunKubeconform(
 				return err
 			}
 
-			for _, kResult := range k.validatorObj.Validate(subPath, file) {
+			for _, kResult := range k.validatorObj.ValidateWithContext(ctx, subPath, file) {
+				if kResult.Status == validator.Empty {
+					// Skip over empty results
+					continue
+				}
+
 				result := ValidationResult{
 					Filename: kResult.Resource.Path,
 					Status:   kubeconformStatusToStatus(kResult.Status),
