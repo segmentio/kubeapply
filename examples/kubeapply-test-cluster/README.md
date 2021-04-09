@@ -52,7 +52,7 @@ config or profile files.
 
 ##### (3) `make validate`
 
-Runs `kubeval` over the expanded configs to validate that they are legitimate Kubernetes
+Runs `kubeconform` over the expanded configs to validate that they are legitimate Kubernetes
 configs before continuing.
 
 ##### (4) `make diff`

@@ -58,7 +58,6 @@ environments. We welcome feedback and collaboration to make `kubeapply` useful t
 
 - [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/): v1.16 or newer
 - [`helm`](https://helm.sh/docs/intro/install/): v3.5.0 or newer (only needed if using helm charts)
-- [`kubeval`](https://kubeval.instrumenta.dev/installation/): v0.15.0 or newer
 
 Make sure that they're installed locally and available in your path.
 
@@ -218,9 +217,14 @@ other source types use custom code in the `kubeapply` binary.
 
 #### Validate
 
-`kubeapply validate [path to cluster config]`
+`kubeapply validate [path to cluster config] --policy=[path to OPA policy in rego format]`
 
-This validates all of the expanded configs for the cluster by wrapping `kubeval`.
+This validates all of the expanded configs for the cluster using the
+[`kubeconform`](https://github.com/yannh/kubeconform) library. It also, optionally, supports
+validating configs using one or more [OPA](https://www.openpolicyagent.org/) policies in
+rego format. The latter allows checking that configs satisfy organization-specific standards,
+e.g. that resource labels are in the correct format, that images are only pulled from the
+expected registries, etc.
 
 #### Diff
 

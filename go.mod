@@ -8,7 +8,6 @@ require (
 	github.com/aws/aws-lambda-go v1.15.0
 	github.com/aws/aws-sdk-go v1.29.16
 	github.com/briandowns/spinner v1.11.1
-	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.7.0
 	github.com/ghodss/yaml v1.0.0
@@ -22,6 +21,7 @@ require (
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/olekukonko/tablewriter v0.0.4
+	github.com/open-policy-agent/opa v0.27.1
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/segmentio/conf v1.2.0
 	github.com/segmentio/encoding v0.2.7
@@ -32,6 +32,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/stripe/skycfg v0.0.0-20200303020846-4f599970a3e6
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
+	github.com/yannh/kubeconform v0.4.6
 	github.com/zorkian/go-datadog-api v2.28.0+incompatible // indirect
 	go.starlark.net v0.0.0-20201204201740-42d4f566359b
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d

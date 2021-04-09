@@ -34,7 +34,6 @@ $REPO_ROOT/scripts/pull-deps.sh
 
 zip -r9 $OUTPUT_ZIP helm
 zip -r9 $OUTPUT_ZIP aws-iam-authenticator
-zip -r9 $OUTPUT_ZIP kubeval
 zip -r9 $OUTPUT_ZIP kubectl
 
 echo "Created bundle ${OUTPUT_ZIP}"

@@ -1,130 +1,121 @@
 package validation
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"regexp"
+	"sort"
 	"strings"
 
-	"gopkg.in/yaml.v2"
+	_ "github.com/open-policy-agent/opa/rego"
+	"github.com/segmentio/kubeapply/pkg/util"
 )
 
-// KubeValidator is a struct that validates the kube configs associated with a cell config.
-type KubeValidator struct{}
+var sep = regexp.MustCompile("(?:^|\\s*\n)---\\s*")
 
-// ValidationResult stores the results of validating a single file.
-type ValidationResult struct {
-	Filename string   `json:"filename"`
-	Kind     string   `json:"kind"`
-	Status   string   `json:"status"`
-	Errors   []string `json:"errors"`
+// KubeValidator is a struct that validates the kube configs associated with a cluster.
+type KubeValidator struct {
+	config KubeValidatorConfig
+}
+
+// KubeValidatorConfig is the configuration used to construct a KubeValidator.
+type KubeValidatorConfig struct {
+	NumWorkers int
+	Checkers   []Checker
 }
 
 // NewKubeValidator returns a new KubeValidator instance.
-func NewKubeValidator() *KubeValidator {
-	return &KubeValidator{}
-}
-
-// CheckYAML checks that each file ending with ".yaml" is actually parseable YAML. This
-// is done separately from the kubeval checks because these errors cause the latter tool
-// to not output valid JSON.
-func (k *KubeValidator) CheckYAML(paths []string) error {
-	for _, path := range paths {
-		err := filepath.Walk(
-			path,
-			func(subPath string, info os.FileInfo, err error) error {
-				if err != nil {
-					return err
-				}
-				if info.IsDir() || !strings.HasSuffix(subPath, ".yaml") {
-					return nil
-				}
-
-				yamlBytes, err := ioutil.ReadFile(subPath)
-				if err != nil {
-					return err
-				}
-
-				reader := bytes.NewReader(yamlBytes)
-				decoder := yaml.NewDecoder(reader)
-
-				for {
-					err := decoder.Decode(&map[string]interface{}{})
-					if err == io.EOF {
-						return nil
-					} else if err != nil {
-						return fmt.Errorf(
-							"File %s does not contain a valid YAML map: %+v",
-							subPath,
-							err,
-						)
-					}
-				}
-			},
-		)
-		if err != nil {
-			return err
-		}
+func NewKubeValidator(config KubeValidatorConfig) *KubeValidator {
+	return &KubeValidator{
+		config: config,
 	}
-
-	return nil
 }
 
-// RunKubeval runs kubeval over all files in the provided path.
-func (k *KubeValidator) RunKubeval(
+// RunChecks runs all checks over all resources in the path and returns the results.
+func (k *KubeValidator) RunChecks(
 	ctx context.Context,
 	path string,
-) ([]ValidationResult, error) {
-	cmd := exec.CommandContext(
-		ctx,
-		"kubeval",
-		// Need this because otherwise manifests referring to CRDs fail. See
-		// https://github.com/instrumenta/kubeval/issues/47 for associated issue on the
-		// kubeval side.
-		"--ignore-missing-schemas",
-		"--strict",
-		"-d",
+) ([]Result, error) {
+	resources := []Resource{}
+	index := 0
+
+	// First, get all of the resources.
+	err := filepath.Walk(
 		path,
-		"-o",
-		"json",
-		"--quiet",
+		func(subPath string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if info.IsDir() || !strings.HasSuffix(subPath, ".yaml") {
+				return nil
+			}
+
+			contents, err := ioutil.ReadFile(subPath)
+			if err != nil {
+				return err
+			}
+			manifestStrs := sep.Split(string(contents), -1)
+
+			for _, manifestStr := range manifestStrs {
+				trimmedManifest := strings.TrimSpace(manifestStr)
+				if len(trimmedManifest) == 0 || trimmedManifest == util.HeaderCommentStr {
+					continue
+				}
+
+				resources = append(
+					resources,
+					MakeResource(subPath, []byte(trimmedManifest), index),
+				)
+				index++
+			}
+
+			return nil
+		},
 	)
-	cmd.Env = os.Environ()
 
-	// Ignore the error here unless we can't parse json in the output
-	bytes, runErr := cmd.CombinedOutput()
-
-	results := []ValidationResult{}
-
-	err := json.Unmarshal(bytes, &results)
 	if err != nil {
-		return nil, fmt.Errorf(
-			"Could not parse json from kubeval results; cmdErr: %v, jsonErr: %+v, output: %s",
-			err,
-			runErr,
-			string(bytes),
-		)
+		return nil, err
 	}
 
-	var currDir string
-
-	// Strip off leading path so that output is more readable
-	for r := 0; r < len(results); r++ {
-		if strings.HasPrefix(results[r].Filename, path) {
-			currPath := results[r].Filename[(len(path) + 1):]
-			results[r].Filename = currPath
-			currDir = filepath.Dir(currPath)
-		} else {
-			// If the path isn't absolute, it's relative to the last seen absolute dir
-			results[r].Filename = filepath.Join(currDir, results[r].Filename)
-		}
+	// Then, split out checks among workers
+	resourcesChan := make(chan Resource, len(resources))
+	for _, resource := range resources {
+		resourcesChan <- resource
 	}
+	defer close(resourcesChan)
+
+	resultsChan := make(chan Result, len(resources))
+
+	for i := 0; i < k.config.NumWorkers; i++ {
+		go func() {
+			for resource := range resourcesChan {
+				result := Result{
+					Resource: resource,
+				}
+				for _, checker := range k.config.Checkers {
+					result.CheckResults = append(
+						result.CheckResults,
+						checker.Check(ctx, resource),
+					)
+				}
+
+				resultsChan <- result
+			}
+		}()
+	}
+
+	results := []Result{}
+	for i := 0; i < len(resources); i++ {
+		results = append(results, <-resultsChan)
+	}
+
+	// Sort results by index so they're returned in a consistent order.
+	sort.Slice(results, func(a, b int) bool {
+		return results[a].Resource.index < results[b].Resource.index
+	})
 
 	return results, nil
 }
