@@ -26,10 +26,11 @@ var _ Checker = (*PolicyChecker)(nil)
 
 // PolicyModule contains information about a policy.
 type PolicyModule struct {
-	Name     string
-	Contents string
-	Package  string
-	Result   string
+	Name        string
+	Contents    string
+	Package     string
+	Result      string
+	ExtraFields map[string]interface{}
 }
 
 func NewPolicyChecker(ctx context.Context, module PolicyModule) (*PolicyChecker, error) {
@@ -53,8 +54,8 @@ func NewPolicyChecker(ctx context.Context, module PolicyModule) (*PolicyChecker,
 func DefaultPoliciesFromGlobs(
 	ctx context.Context,
 	globs []string,
-) ([]PolicyChecker, error) {
-	checkers := []PolicyChecker{}
+) ([]*PolicyChecker, error) {
+	checkers := []*PolicyChecker{}
 
 	for _, glob := range globs {
 		matches, err := filepath.Glob(glob)
@@ -79,7 +80,7 @@ func DefaultPoliciesFromGlobs(
 			if err != nil {
 				return nil, err
 			}
-			checkers = append(checkers, *checker)
+			checkers = append(checkers, checker)
 		}
 	}
 
@@ -97,6 +98,10 @@ func (p *PolicyChecker) Check(ctx context.Context, resource Resource) CheckResul
 		result.Status = StatusError
 		result.Message = fmt.Sprintf("Error unmarshalling yaml: %+v", err)
 		return result
+	}
+
+	for key, value := range p.Module.ExtraFields {
+		data[key] = value
 	}
 
 	results, err := p.Query.Eval(ctx, rego.EvalInput(data))

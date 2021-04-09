@@ -15,7 +15,7 @@ import (
 
 var validateCmd = &cobra.Command{
 	Use:   "validate [cluster configs]",
-	Short: "validate checks the cluster configs using kubeval",
+	Short: "validate checks the cluster configs using kubeconform and (optionally) opa policies",
 	Args:  cobra.MinimumNArgs(1),
 	RunE:  validateRun,
 }
@@ -23,6 +23,13 @@ var validateCmd = &cobra.Command{
 type validateFlags struct {
 	// Expand before validating.
 	expand bool
+
+	// Number of worker goroutines to use for validation.
+	numWorkers int
+
+	// Paths to OPA policy rego files that will be run against kube resources.
+	// See https://www.openpolicyagent.org/ for more details.
+	policies []string
 }
 
 var validateFlagValues validateFlags
@@ -33,6 +40,18 @@ func init() {
 		"expand",
 		false,
 		"Expand before validating",
+	)
+	validateCmd.Flags().IntVar(
+		&validateFlagValues.numWorkers,
+		"num-workers",
+		4,
+		"Number of workers to use for validation",
+	)
+	validateCmd.Flags().StringArrayVar(
+		&validateFlagValues.policies,
+		"policy",
+		[]string{},
+		"Paths to OPA policies",
 	)
 
 	RootCmd.AddCommand(validateCmd)
@@ -88,13 +107,30 @@ func validateClusterPath(ctx context.Context, path string) error {
 func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) error {
 	log.Infof("Validating cluster %s", clusterConfig.DescriptiveName())
 
-	kubeValidator, err := validation.NewKubeValidator()
+	kubeconformChecker, err := validation.NewKubeconformChecker()
 	if err != nil {
 		return err
 	}
 
+	policies, err := validation.DefaultPoliciesFromGlobs(ctx, validateFlagValues.policies)
+	if err != nil {
+		return err
+	}
+
+	checkers := []validation.Checker{kubeconformChecker}
+	for _, policy := range policies {
+		checkers = append(checkers, policy)
+	}
+
+	validator := validation.NewKubeValidator(
+		validation.KubeValidatorConfig{
+			NumWorkers: validateFlagValues.numWorkers,
+			Checkers:   checkers,
+		},
+	)
+
 	log.Infof("Running kubeconform on configs in %+v", clusterConfig.AbsSubpaths())
-	results, err := kubeValidator.RunValidation(ctx, clusterConfig.AbsSubpaths()[0])
+	results, err := validator.RunChecks(ctx, clusterConfig.AbsSubpaths()[0])
 	if err != nil {
 		return err
 	}
@@ -102,29 +138,44 @@ func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) er
 	numInvalidResources := 0
 
 	for _, result := range results {
-		switch result.SchemaStatus {
-		case validation.StatusValid:
-			log.Infof("Resource %s in file %s OK", result.PrettyName(), result.Filename)
-		case validation.StatusSkipped:
-			log.Debugf("Resource %s in file %s was skipped", result.PrettyName(), result.Filename)
-		case validation.StatusError:
-			numInvalidResources++
-			log.Errorf(
-				"File %s could not be validated: %+v",
-				result.Filename,
-				result.SchemaMessage,
-			)
-		case validation.StatusInvalid:
-			numInvalidResources++
-			log.Errorf(
-				"Resource %s in file %s is invalid: %s",
-				result.PrettyName(),
-				result.Filename,
-				result.SchemaMessage,
-			)
-		case validation.StatusEmpty:
-		default:
-			log.Infof("Unrecognized result type: %+v", result)
+		for _, checkResult := range result.CheckResults {
+			switch checkResult.Status {
+			case validation.StatusValid:
+				log.Debugf(
+					"Resource %s in file %s OK according to check %s",
+					result.Resource.PrettyName(),
+					result.Resource.Path,
+					checkResult.CheckName,
+				)
+			case validation.StatusSkipped:
+				log.Debugf(
+					"Resource %s in file %s was skipped by check %s",
+					result.Resource.PrettyName(),
+					result.Resource.Path,
+					checkResult.CheckName,
+				)
+			case validation.StatusError:
+				numInvalidResources++
+				log.Errorf(
+					"Resource %s in file %s could not be processed by check %s: %s",
+					result.Resource.PrettyName(),
+					result.Resource.Path,
+					checkResult.CheckName,
+					checkResult.Message,
+				)
+			case validation.StatusInvalid:
+				numInvalidResources++
+				log.Errorf(
+					"Resource %s in file %s is invalid according to check %s: %s",
+					result.Resource.PrettyName(),
+					result.Resource.Path,
+					checkResult.CheckName,
+					checkResult.Message,
+				)
+			case validation.StatusEmpty:
+			default:
+				log.Infof("Unrecognized result type: %+v", result)
+			}
 		}
 	}
 
