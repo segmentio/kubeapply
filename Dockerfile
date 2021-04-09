@@ -34,7 +34,6 @@ RUN pip3 install awscli
 
 COPY --from=builder \
     /usr/local/bin/helm \
-    /usr/local/bin/kubeval \
     /usr/local/bin/kubectl \
     /usr/local/bin/kubeapply \
     /usr/local/bin/

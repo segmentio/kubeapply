@@ -217,9 +217,14 @@ other source types use custom code in the `kubeapply` binary.
 
 #### Validate
 
-`kubeapply validate [path to cluster config]`
+`kubeapply validate [path to cluster config] --policy=[path to OPA policy in rego format]`
 
-This validates all of the expanded configs for the cluster using `kubeconform`.
+This validates all of the expanded configs for the cluster using the
+[`kubeconform`](https://github.com/yannh/kubeconform) library. It also, optionally, supports
+validating configs using one or more [OPA](https://www.openpolicyagent.org/) policies in
+rego format. The latter allows checking that configs satisfy organization-specific standards,
+e.g. that resource labels are in the correct format, that images are only pulled from the
+expected registries, etc.
 
 #### Diff
 

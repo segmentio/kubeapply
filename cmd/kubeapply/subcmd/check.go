@@ -30,9 +30,6 @@ func checkRun(cmd *cobra.Command, args []string) error {
 	if err := checkDep("kubectl", "version"); err != nil {
 		return err
 	}
-	if err := checkDep("kubeval", "--version"); err != nil {
-		return err
-	}
 
 	return nil
 }
