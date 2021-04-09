@@ -9,7 +9,6 @@ const (
 	StatusError   Status = "error"
 	StatusSkipped Status = "skipped"
 	StatusEmpty   Status = "empty"
-	StatusOther   Status = "other"
 )
 
 // CheckType represents the type of check that has been done.

@@ -3,6 +3,7 @@ package validation
 import (
 	"context"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/yannh/kubeconform/pkg/validator"
 )
 
@@ -62,6 +63,8 @@ func kStatusToStatus(kStatus validator.Status) Status {
 	case validator.Empty:
 		return StatusEmpty
 	default:
-		return StatusOther
+		// This shouldn't happen
+		log.Warnf("Got unexpected status from kubeconform: %+v", kStatus)
+		return StatusEmpty
 	}
 }
