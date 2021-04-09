@@ -102,21 +102,25 @@ func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) er
 	numInvalidResources := 0
 
 	for _, result := range results {
-		switch result.Status {
+		switch result.SchemaStatus {
 		case validation.StatusValid:
 			log.Infof("Resource %s in file %s OK", result.PrettyName(), result.Filename)
 		case validation.StatusSkipped:
 			log.Debugf("Resource %s in file %s was skipped", result.PrettyName(), result.Filename)
 		case validation.StatusError:
 			numInvalidResources++
-			log.Errorf("File %s could not be validated: %+v", result.Filename, result.Message)
+			log.Errorf(
+				"File %s could not be validated: %+v",
+				result.Filename,
+				result.SchemaMessage,
+			)
 		case validation.StatusInvalid:
 			numInvalidResources++
 			log.Errorf(
 				"Resource %s in file %s is invalid: %s",
 				result.PrettyName(),
 				result.Filename,
-				result.Message,
+				result.SchemaMessage,
 			)
 		case validation.StatusEmpty:
 		default:
