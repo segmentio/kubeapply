@@ -8,7 +8,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type FakeChecker struct {
+type FakeChecker struct{}
+
+func (f *FakeChecker) Check(_ context.Context, resource Resource) CheckResult {
+	return CheckResult{
+		CheckType: CheckTypeKubeconform,
+		Status:    StatusValid,
+		Message:   resource.PrettyName(),
+	}
 }
 
 func TestKubeValidator(t *testing.T) {
@@ -21,92 +28,75 @@ func TestKubeValidator(t *testing.T) {
 
 	testCases := []testCase{
 		{
-			path: "testdata/error",
+			path: "testdata/configs",
 			expected: []Result{
 				{
-					Filename:      "testdata/error/deployment.yaml",
-					Kind:          "",
-					Name:          "",
-					Namespace:     "",
-					Version:       "",
-					SchemaStatus:  "error",
-					SchemaMessage: "error unmarshalling resource: error unmarshaling JSON: while decoding JSON: json: cannot unmarshal string into Go value of type map[string]interface {}",
-				},
-			},
-		},
-		{
-			path: "testdata/invalid",
-			expected: []Result{
-				{
-					Filename:      "testdata/invalid/deployment.yaml",
-					Kind:          "Deployment",
-					Name:          "nginx-deployment",
-					Namespace:     "test1",
-					Version:       "apps/v1",
-					SchemaStatus:  "valid",
-					SchemaMessage: "",
+					Resource: Resource{
+						Path:      "testdata/configs/deployment.yaml",
+						Kind:      "Deployment",
+						Name:      "nginx-deployment",
+						Namespace: "test1",
+						Version:   "apps/v1",
+					},
+					CheckResults: []CheckResult{
+						{
+							CheckType: CheckTypeKubeconform,
+							Status:    StatusValid,
+							Message:   "Deployment.apps/v1.test1.nginx-deployment",
+						},
+					},
 				},
 				{
-					Filename:      "testdata/invalid/deployment.yaml",
-					Kind:          "Deployment",
-					Name:          "nginx-deployment2",
-					Namespace:     "test1",
-					Version:       "apps/v1",
-					SchemaStatus:  "invalid",
-					SchemaMessage: "For field spec: Additional property notAValidKey is not allowed",
+					Resource: Resource{
+						Path:      "testdata/configs/deployment.yaml",
+						Kind:      "Deployment",
+						Name:      "nginx-deployment2",
+						Namespace: "test1",
+						Version:   "apps/v1",
+					},
+					CheckResults: []CheckResult{
+						{
+							CheckType: CheckTypeKubeconform,
+							Status:    StatusValid,
+							Message:   "Deployment.apps/v1.test1.nginx-deployment2",
+						},
+					},
 				},
 				{
-					Filename:      "testdata/invalid/service.yaml",
-					Kind:          "Service",
-					Name:          "my-service",
-					Namespace:     "test1",
-					Version:       "v1",
-					SchemaStatus:  "valid",
-					SchemaMessage: "",
-				},
-			},
-		},
-		{
-			path: "testdata/valid",
-			expected: []Result{
-				{
-					Filename:      "testdata/valid/deployment.yaml",
-					Kind:          "Deployment",
-					Name:          "nginx-deployment",
-					Namespace:     "test1",
-					Version:       "apps/v1",
-					SchemaStatus:  "valid",
-					SchemaMessage: "",
-				},
-				{
-					Filename:      "testdata/valid/deployment.yaml",
-					Kind:          "Deployment",
-					Name:          "nginx-deployment2",
-					Namespace:     "test1",
-					Version:       "apps/v1",
-					SchemaStatus:  "valid",
-					SchemaMessage: "",
-				},
-				{
-					Filename:      "testdata/valid/service.yaml",
-					Kind:          "Service",
-					Name:          "my-service",
-					Namespace:     "test1",
-					Version:       "v1",
-					SchemaStatus:  "valid",
-					SchemaMessage: "",
+					Resource: Resource{
+						Path:      "testdata/configs/service.yaml",
+						Kind:      "Service",
+						Name:      "my-service",
+						Namespace: "test1",
+						Version:   "v1",
+					},
+					CheckResults: []CheckResult{
+						{
+							CheckType: CheckTypeKubeconform,
+							Status:    StatusValid,
+							Message:   "Service.v1.test1.my-service",
+						},
+					},
 				},
 			},
 		},
 	}
 
-	validator := NewKubeValidator(KubeValidatorConfig{NumWorkers: 1})
+	validator := NewKubeValidator(
+		KubeValidatorConfig{
+			NumWorkers: 1,
+			Checkers: []Checker{
+				&FakeChecker{},
+			},
+		},
+	)
 
 	for _, testCase := range testCases {
 		results, err := validator.RunChecks(ctx, testCase.path)
 
-		// Zero out indices so we don't need to check them
+		// Zero out contents and indices so we don't need to check them
 		for i := 0; i < len(results); i++ {
+			results[i].Resource.Contents = nil
 			results[i].Resource.index = 0
 		}
 
