@@ -18,21 +18,31 @@ const (
 
 // Policy wraps a policy module and a prepared query.
 type PolicyChecker struct {
-	Module PolicyModule
-	Query  rego.PreparedEvalQuery
+	Module      PolicyModule
+	Query       rego.PreparedEvalQuery
+	ExtraFields map[string]interface{}
 }
 
 var _ Checker = (*PolicyChecker)(nil)
 
 // PolicyModule contains information about a policy.
 type PolicyModule struct {
-	Name        string
-	Contents    string
-	Package     string
-	Result      string
+	Name string
+
+	// Contents is a string that stores the policy in rego format.
+	Contents string
+
+	// Package is the name of the package in the rego contents.
+	Package string
+
+	// Result is the variable that should be accessed to get the evaluation results.
+	Result string
+
+	// ExtraFields are added into the input and usable for policy evaluation.
 	ExtraFields map[string]interface{}
 }
 
+// NewPolicyChecker creates a new PolicyChecker from the given module.
 func NewPolicyChecker(ctx context.Context, module PolicyModule) (*PolicyChecker, error) {
 	query, err := rego.New(
 		rego.Query(
@@ -51,9 +61,12 @@ func NewPolicyChecker(ctx context.Context, module PolicyModule) (*PolicyChecker,
 	}, nil
 }
 
+// DefaultPoliciesFromGlobs creates policy checkers from one or more file policy globs, using
+// the default package and result values.
 func DefaultPoliciesFromGlobs(
 	ctx context.Context,
 	globs []string,
+	extraFields map[string]interface{},
 ) ([]*PolicyChecker, error) {
 	checkers := []*PolicyChecker{}
 
@@ -71,10 +84,11 @@ func DefaultPoliciesFromGlobs(
 			checker, err := NewPolicyChecker(
 				ctx,
 				PolicyModule{
-					Name:     filepath.Base(match),
-					Contents: string(contents),
-					Package:  defaultPackage,
-					Result:   defaultResult,
+					Name:        filepath.Base(match),
+					Contents:    string(contents),
+					Package:     defaultPackage,
+					Result:      defaultResult,
+					ExtraFields: extraFields,
 				},
 			)
 			if err != nil {
@@ -87,12 +101,22 @@ func DefaultPoliciesFromGlobs(
 	return checkers, nil
 }
 
+// Check runs a check against the argument resource using the current policy.
 func (p *PolicyChecker) Check(ctx context.Context, resource Resource) CheckResult {
-	data := map[string]interface{}{}
 	result := CheckResult{
 		CheckType: CheckTypeOPA,
 		CheckName: p.Module.Name,
 	}
+
+	if resource.Name == "" {
+		// Skip over resources that aren't likely to have any Kubernetes-related
+		// structure.
+		result.Status = StatusEmpty
+		result.Message = fmt.Sprintf("No resource content")
+		return result
+	}
+
+	data := map[string]interface{}{}
 
 	if err := yaml.Unmarshal(resource.Contents, &data); err != nil {
 		result.Status = StatusError

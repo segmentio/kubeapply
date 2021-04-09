@@ -55,6 +55,7 @@ func (r Resource) PrettyName() string {
 	}
 }
 
+// TokResource converts a Resource to a Kubeconform resource (useful for running the latter).
 func (r Resource) TokResource() kresource.Resource {
 	return kresource.Resource{
 		Path:  r.Path,

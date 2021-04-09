@@ -112,7 +112,16 @@ func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) er
 		return err
 	}
 
-	policies, err := validation.DefaultPoliciesFromGlobs(ctx, validateFlagValues.policies)
+	policies, err := validation.DefaultPoliciesFromGlobs(
+		ctx,
+		validateFlagValues.policies,
+		map[string]interface{}{
+			// TODO: Add more parameters here (or entire config)?
+			"cluster": clusterConfig.Cluster,
+			"region":  clusterConfig.Region,
+			"env":     clusterConfig.Env,
+		},
+	)
 	if err != nil {
 		return err
 	}
@@ -129,18 +138,21 @@ func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) er
 		},
 	)
 
-	log.Infof("Running kubeconform on configs in %+v", clusterConfig.AbsSubpaths())
+	log.Infof("Running validator on configs in %+v", clusterConfig.AbsSubpaths())
 	results, err := validator.RunChecks(ctx, clusterConfig.AbsSubpaths()[0])
 	if err != nil {
 		return err
 	}
 
-	numInvalidResources := 0
+	numInvalidResourceChecks := 0
+	numValidResourceChecks := 0
+	numSkippedResourceChecks := 0
 
 	for _, result := range results {
 		for _, checkResult := range result.CheckResults {
 			switch checkResult.Status {
 			case validation.StatusValid:
+				numValidResourceChecks++
 				log.Debugf(
 					"Resource %s in file %s OK according to check %s",
 					result.Resource.PrettyName(),
@@ -148,6 +160,7 @@ func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) er
 					checkResult.CheckName,
 				)
 			case validation.StatusSkipped:
+				numSkippedResourceChecks++
 				log.Debugf(
 					"Resource %s in file %s was skipped by check %s",
 					result.Resource.PrettyName(),
@@ -155,7 +168,7 @@ func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) er
 					checkResult.CheckName,
 				)
 			case validation.StatusError:
-				numInvalidResources++
+				numInvalidResourceChecks++
 				log.Errorf(
 					"Resource %s in file %s could not be processed by check %s: %s",
 					result.Resource.PrettyName(),
@@ -164,7 +177,7 @@ func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) er
 					checkResult.Message,
 				)
 			case validation.StatusInvalid:
-				numInvalidResources++
+				numInvalidResourceChecks++
 				log.Errorf(
 					"Resource %s in file %s is invalid according to check %s: %s",
 					result.Resource.PrettyName(),
@@ -179,13 +192,21 @@ func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) er
 		}
 	}
 
-	if numInvalidResources > 0 {
+	if numInvalidResourceChecks > 0 {
 		return fmt.Errorf(
-			"Validation failed for %d resources",
-			numInvalidResources,
+			"Validation failed for %d resources in cluster %s (%d checks valid, %d skipped)",
+			numInvalidResourceChecks,
+			clusterConfig.DescriptiveName(),
+			numValidResourceChecks,
+			numSkippedResourceChecks,
 		)
 	}
 
-	log.Infof("Validation of cluster %s passed", clusterConfig.DescriptiveName())
+	log.Infof(
+		"Validation of cluster %s passed (%d checks valid, %d skipped)",
+		clusterConfig.DescriptiveName(),
+		numValidResourceChecks,
+		numSkippedResourceChecks,
+	)
 	return nil
 }

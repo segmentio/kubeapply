@@ -10,10 +10,8 @@ import (
 	"strings"
 
 	_ "github.com/open-policy-agent/opa/rego"
+	"github.com/segmentio/kubeapply/pkg/util"
 )
-
-// numWorkers is the number of workers that we will use in parallel to run the validation process.
-const numWorkers = 4
 
 var sep = regexp.MustCompile("(?:^|\\s*\n)---\\s*")
 
@@ -22,6 +20,7 @@ type KubeValidator struct {
 	config KubeValidatorConfig
 }
 
+// KubeValidatorConfig is the configuration used to construct a KubeValidator.
 type KubeValidatorConfig struct {
 	NumWorkers int
 	Checkers   []Checker
@@ -62,7 +61,7 @@ func (k *KubeValidator) RunChecks(
 
 			for _, manifestStr := range manifestStrs {
 				trimmedManifest := strings.TrimSpace(manifestStr)
-				if len(trimmedManifest) == 0 {
+				if len(trimmedManifest) == 0 || trimmedManifest == util.HeaderCommentStr {
 					continue
 				}
 
@@ -81,6 +80,7 @@ func (k *KubeValidator) RunChecks(
 		return nil, err
 	}
 
+	// Then, split out checks among workers
 	resourcesChan := make(chan Resource, len(resources))
 	for _, resource := range resources {
 		resourcesChan <- resource
@@ -89,7 +89,7 @@ func (k *KubeValidator) RunChecks(
 
 	resultsChan := make(chan Result, len(resources))
 
-	for i := 0; i < numWorkers; i++ {
+	for i := 0; i < k.config.NumWorkers; i++ {
 		go func() {
 			for resource := range resourcesChan {
 				result := Result{
@@ -112,6 +112,7 @@ func (k *KubeValidator) RunChecks(
 		results = append(results, <-resultsChan)
 	}
 
+	// Sort results by index so they're returned in a consistent order.
 	sort.Slice(results, func(a, b int) bool {
 		return results[a].Resource.index < results[b].Resource.index
 	})

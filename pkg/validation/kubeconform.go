@@ -6,12 +6,15 @@ import (
 	"github.com/yannh/kubeconform/pkg/validator"
 )
 
+// KubeconformChecker is a Checker implementation that runs kubeconform over all Kubernetes
+// resources.
 type KubeconformChecker struct {
 	validatorObj validator.Validator
 }
 
 var _ Checker = (*KubeconformChecker)(nil)
 
+// NewKubeconformChecker creates a new KubeconformChecker instance.
 func NewKubeconformChecker() (*KubeconformChecker, error) {
 	validatorObj, err := validator.New(
 		nil,
@@ -29,6 +32,7 @@ func NewKubeconformChecker() (*KubeconformChecker, error) {
 	}, nil
 }
 
+// Check runs Kubeconform over the argument resource.
 func (k *KubeconformChecker) Check(_ context.Context, resource Resource) CheckResult {
 	kResult := k.validatorObj.ValidateResource(resource.TokResource())
 
