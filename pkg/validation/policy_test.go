@@ -10,7 +10,7 @@ import (
 
 const (
 	denyPolicyStr = `
-package example
+package com.segment.kubeapply
 
 deny[msg] {
 	input.apiVersion == "badVersion"
@@ -28,7 +28,7 @@ deny[msg] {
 }`
 
 	allowPolicyStr = `
-package example
+package com.segment.kubeapply
 
 default allow = true
 
@@ -63,7 +63,7 @@ func TestPolicyChecker(t *testing.T) {
 			policyModule: PolicyModule{
 				Name:     "testDenyPolicy",
 				Contents: denyPolicyStr,
-				Package:  "example",
+				Package:  "com.segment.kubeapply",
 				Result:   "deny",
 			},
 			resource: MakeResource("test/path", []byte(goodVersionResourceStr), 0),
@@ -78,7 +78,7 @@ func TestPolicyChecker(t *testing.T) {
 			policyModule: PolicyModule{
 				Name:     "testDenyPolicy",
 				Contents: denyPolicyStr,
-				Package:  "example",
+				Package:  "com.segment.kubeapply",
 				Result:   "deny",
 				ExtraFields: map[string]interface{}{
 					"extraKey": "goodValue",
@@ -99,7 +99,7 @@ func TestPolicyChecker(t *testing.T) {
 			policyModule: PolicyModule{
 				Name:     "testDenyPolicy",
 				Contents: denyPolicyStr,
-				Package:  "example",
+				Package:  "com.segment.kubeapply",
 				Result:   "deny",
 				ExtraFields: map[string]interface{}{
 					"extraKey2": "warnValue",
@@ -120,7 +120,7 @@ func TestPolicyChecker(t *testing.T) {
 			policyModule: PolicyModule{
 				Name:     "testDenyPolicy",
 				Contents: denyPolicyStr,
-				Package:  "example",
+				Package:  "com.segment.kubeapply",
 				Result:   "deny",
 				ExtraFields: map[string]interface{}{
 					"extraKey": "extraBadValue",
@@ -142,7 +142,7 @@ func TestPolicyChecker(t *testing.T) {
 			policyModule: PolicyModule{
 				Name:     "testDenyPolicy",
 				Contents: denyPolicyStr,
-				Package:  "example",
+				Package:  "com.segment.kubeapply",
 				Result:   "deny",
 				ExtraFields: map[string]interface{}{
 					"extraKey":  "extraBadValue",
@@ -166,7 +166,7 @@ func TestPolicyChecker(t *testing.T) {
 			policyModule: PolicyModule{
 				Name:     "testAllowPolicy",
 				Contents: allowPolicyStr,
-				Package:  "example",
+				Package:  "com.segment.kubeapply",
 				Result:   "allow",
 			},
 			resource: MakeResource("test/path", []byte(goodVersionResourceStr), 0),
@@ -181,7 +181,7 @@ func TestPolicyChecker(t *testing.T) {
 			policyModule: PolicyModule{
 				Name:     "testAllowPolicy",
 				Contents: allowPolicyStr,
-				Package:  "example",
+				Package:  "com.segment.kubeapply",
 				Result:   "allow",
 			},
 			resource: MakeResource("test/path", []byte(badVersionResourceStr), 0),
@@ -196,7 +196,7 @@ func TestPolicyChecker(t *testing.T) {
 			policyModule: PolicyModule{
 				Name:     "testAllowPolicy",
 				Contents: allowPolicyStr,
-				Package:  "example",
+				Package:  "com.segment.kubeapply",
 				Result:   "allow",
 			},
 			resource: MakeResource("test/path", []byte(""), 0),

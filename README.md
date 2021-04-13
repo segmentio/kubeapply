@@ -222,9 +222,7 @@ other source types use custom code in the `kubeapply` binary.
 This validates all of the expanded configs for the cluster using the
 [`kubeconform`](https://github.com/yannh/kubeconform) library. It also, optionally, supports
 validating configs using one or more [OPA](https://www.openpolicyagent.org/) policies in
-rego format. The latter allows checking that configs satisfy organization-specific standards,
-e.g. that resource labels are in the correct format, that images are only pulled from the
-expected registries, etc.
+rego format; see the "Experimental features" section below for more details.
 
 #### Diff
 
@@ -341,8 +339,20 @@ e.g. `file://path/to/my/file`. The outputs of each profile will be expanded into
 ### OPA policy checks
 
 The `kubeapply validate` subcommand now supports checking configs against policies in
-[Open Policy Agent (OPA)](https://www.openpolicyagent.org/) format.
+[Open Policy Agent (OPA)](https://www.openpolicyagent.org/) format. This can be helpful for
+enforcing organization-specific standards, e.g. that images need to be pulled from a particular
+private registry, that all labels are in a consistent format, etc.
 
+To use this, write up your policies as `.rego` files as described in the OPA documentation and run
+the former subcommand with one or more `--policy=[path to policy]` arguments. By default, policies
+should be in the `com.segment.kubeapply` package. Denial reasons, if any, are returned by
+setting a `deny` variable with a set of denial reason strings. If this set is empty,
+`kubeapply` will assume that the config has passed all checks in the policy file.
+
+If a denial reason begins with the string `warn:`, then that denial will be treated as a
+non-blocking warning as opposed to an error that causes validation to fail.
+
+See [this unit test](/pkg/validation/policy_test.go) for some examples.
 
 ## Testing
 
