@@ -338,7 +338,7 @@ e.g. `file://path/to/my/file`. The outputs of each profile will be expanded into
 
 ### OPA policy checks
 
-The `kubeapply validate` subcommand now supports checking configs against policies in
+The `kubeapply validate` subcommand now supports checking expanded configs against policies in
 [Open Policy Agent (OPA)](https://www.openpolicyagent.org/) format. This can be helpful for
 enforcing organization-specific standards, e.g. that images need to be pulled from a particular
 private registry, that all labels are in a consistent format, etc.
