@@ -240,7 +240,8 @@ func (le *LeaderElector) acquire(ctx context.Context) bool {
 	return succeeded
 }
 
-// renew loops calling tryAcquireOrRenew and returns immediately when tryAcquireOrRenew fails or ctx signals done.
+// renew loops calling tryAcquireOrRenew and returns immediately when tryAcquireOrRenew fails or
+// ctx signals done.
 func (le *LeaderElector) renew(ctx context.Context) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -332,7 +333,10 @@ func (le *LeaderElector) tryAcquireOrRenew(ctx context.Context) bool {
 		le.observedTime.Add(le.config.LeaseDuration).After(now.Time) &&
 		oldLeaderElectionRecord.RenewTime.Time.After(thresholdTime) &&
 		!le.IsLeader() {
-		log.Infof("Lock is held by %v and has not yet expired", oldLeaderElectionRecord.HolderIdentity)
+		log.Infof(
+			"Lock is held by %v and has not yet expired",
+			oldLeaderElectionRecord.HolderIdentity,
+		)
 		return false
 	}
 

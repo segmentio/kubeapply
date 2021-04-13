@@ -185,5 +185,8 @@ func (k *KubeLocker) Release(name string) error {
 	cancel()
 	delete(k.lockCancellations, name)
 
+	time.Sleep(10 * time.Second)
+	log.Infof("Sleep done")
+
 	return nil
 }
