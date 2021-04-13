@@ -338,6 +338,12 @@ where the `url`s are in the same format as those for Helm chart locations,
 e.g. `file://path/to/my/file`. The outputs of each profile will be expanded into
 `[expanded dir]/[profile name]/...`.
 
+### OPA policy checks
+
+The `kubeapply validate` subcommand now supports checking configs against policies in
+[Open Policy Agent (OPA)](https://www.openpolicyagent.org/) format.
+
+
 ## Testing
 
 ### Unit tests
