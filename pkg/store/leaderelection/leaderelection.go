@@ -265,7 +265,9 @@ func (le *LeaderElector) renew(ctx context.Context) {
 
 	// if we hold the lease, give it up
 	if le.config.ReleaseOnCancel {
-		le.release(ctx)
+		// Use the background context, not the one that was passed in originally. If
+		// the latter was cancelled, then we can't actually do the release.
+		le.release(context.Background())
 	}
 }
 
