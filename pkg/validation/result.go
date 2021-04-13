@@ -6,6 +6,7 @@ type Status string
 const (
 	StatusValid   Status = "valid"
 	StatusInvalid Status = "invalid"
+	StatusWarning Status = "warning"
 	StatusError   Status = "error"
 	StatusSkipped Status = "skipped"
 	StatusEmpty   Status = "empty"
@@ -31,4 +32,5 @@ type CheckResult struct {
 	CheckName string
 	Status    Status
 	Message   string
+	Reasons   []string
 }
