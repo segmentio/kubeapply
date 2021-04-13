@@ -65,7 +65,8 @@ import (
 )
 
 const (
-	JitterFactor = 1.2
+	JitterFactor   = 1.2
+	releaseTimeout = 15 * time.Second
 )
 
 // NewLeaderElector creates a LeaderElector from a LeaderElectionConfig
@@ -267,7 +268,12 @@ func (le *LeaderElector) renew(ctx context.Context) {
 	if le.config.ReleaseOnCancel {
 		// Use the background context, not the one that was passed in originally. If
 		// the latter was cancelled, then we can't actually do the release.
-		le.release(context.Background())
+		releaseCtx, releaseCancel := context.WithTimeout(
+			context.Background(),
+			releaseTimeout,
+		)
+		defer releaseCancel()
+		le.release(releaseCtx)
 	}
 }
 
