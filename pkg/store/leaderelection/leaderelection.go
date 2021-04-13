@@ -66,7 +66,7 @@ import (
 
 const (
 	JitterFactor   = 1.2
-	releaseTimeout = 15 * time.Second
+	releaseTimeout = 10 * time.Second
 )
 
 // NewLeaderElector creates a LeaderElector from a LeaderElectionConfig

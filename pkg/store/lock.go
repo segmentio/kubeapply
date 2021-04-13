@@ -19,6 +19,10 @@ import (
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 )
 
+const (
+	kubeLockerReleaseTimeout = 10 * time.Second
+)
+
 // Locker is an interface for structs that can acquire and release locks.
 type Locker interface {
 	// Acquire acquires the lock with the provided name.
@@ -192,7 +196,7 @@ func (k *KubeLocker) Release(name string) error {
 	log.Infof("Waiting for lock to be released")
 	releaseCtx, releaseCancel := context.WithTimeout(
 		context.Background(),
-		10*time.Second,
+		kubeLockerReleaseTimeout,
 	)
 	defer releaseCancel()
 
