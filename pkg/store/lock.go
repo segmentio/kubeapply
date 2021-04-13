@@ -79,6 +79,7 @@ type KubeLocker struct {
 	objLock            sync.Mutex
 	lockCancellations  map[string]context.CancelFunc
 	coordinationClient coordv1.CoordinationV1Interface
+	done               chan struct{}
 }
 
 // NewKubeLocker returns a Locker that is backed by a lock in Kubernetes.
@@ -97,12 +98,14 @@ func NewKubeLocker(
 	}
 
 	coordinationClient := client.CoordinationV1()
+	done := make(chan struct{}, 1)
 
 	return &KubeLocker{
 		id:                 id,
 		namespace:          namespace,
 		lockCancellations:  map[string]context.CancelFunc{},
 		coordinationClient: coordinationClient,
+		done:               done,
 	}, nil
 }
 
@@ -148,6 +151,7 @@ func (k *KubeLocker) Acquire(ctx context.Context, name string) error {
 				},
 				OnStoppedLeading: func() {
 					log.Warn("Lock lost")
+					k.done <- struct{}{}
 				},
 			},
 		},
@@ -185,8 +189,17 @@ func (k *KubeLocker) Release(name string) error {
 	cancel()
 	delete(k.lockCancellations, name)
 
-	time.Sleep(10 * time.Second)
-	log.Infof("Sleep done")
+	log.Infof("Waiting for lock to be released")
+	releaseCtx, releaseCancel := context.WithTimeout(
+		context.Background(),
+		10*time.Second,
+	)
+	defer releaseCancel()
 
-	return nil
+	select {
+	case <-k.done:
+		return nil
+	case <-releaseCtx.Done():
+		return releaseCtx.Err()
+	}
 }
