@@ -23,13 +23,13 @@ func TestKubeValidator(t *testing.T) {
 
 	type testCase struct {
 		path     string
-		expected []Result
+		expected []ResourceResult
 	}
 
 	testCases := []testCase{
 		{
 			path: "testdata/configs",
-			expected: []Result{
+			expected: []ResourceResult{
 				{
 					Resource: Resource{
 						Path:      "testdata/configs/deployment.yaml",

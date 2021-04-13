@@ -2,6 +2,7 @@ package subcmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 
@@ -144,69 +145,27 @@ func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) er
 		return err
 	}
 
-	numInvalidResourceChecks := 0
-	numValidResourceChecks := 0
-	numSkippedResourceChecks := 0
+	counts := validation.CountsByStatus(results)
+	resultsWithIssues := validation.ResultsWithIssues(results)
 
-	for _, result := range results {
-		for _, checkResult := range result.CheckResults {
-			switch checkResult.Status {
-			case validation.StatusValid:
-				numValidResourceChecks++
-				log.Debugf(
-					"Resource %s in file %s OK according to check %s",
-					result.Resource.PrettyName(),
-					result.Resource.Path,
-					checkResult.CheckName,
-				)
-			case validation.StatusSkipped:
-				numSkippedResourceChecks++
-				log.Debugf(
-					"Resource %s in file %s was skipped by check %s",
-					result.Resource.PrettyName(),
-					result.Resource.Path,
-					checkResult.CheckName,
-				)
-			case validation.StatusError:
-				numInvalidResourceChecks++
-				log.Errorf(
-					"Resource %s in file %s could not be processed by check %s: %s",
-					result.Resource.PrettyName(),
-					result.Resource.Path,
-					checkResult.CheckName,
-					checkResult.Message,
-				)
-			case validation.StatusInvalid:
-				numInvalidResourceChecks++
-				log.Errorf(
-					"Resource %s in file %s is invalid according to check %s: %s",
-					result.Resource.PrettyName(),
-					result.Resource.Path,
-					checkResult.CheckName,
-					checkResult.Message,
-				)
-			case validation.StatusEmpty:
-			default:
-				log.Infof("Unrecognized result type: %+v", result)
-			}
+	if len(resultsWithIssues) > 0 {
+		log.Warnf("Found %d resources with potential issues", len(resultsWithIssues))
+		for _, result := range resultsWithIssues {
+			fmt.Println(
+				validation.ResultTable(
+					result,
+					clusterConfig.DescriptiveName(),
+					clusterConfig.ExpandedPath,
+					debug,
+				),
+			)
 		}
 	}
 
-	if numInvalidResourceChecks > 0 {
-		return fmt.Errorf(
-			"Validation failed for %d resources in cluster %s (%d checks valid, %d skipped)",
-			numInvalidResourceChecks,
-			clusterConfig.DescriptiveName(),
-			numValidResourceChecks,
-			numSkippedResourceChecks,
-		)
+	if counts[validation.StatusError]+counts[validation.StatusInvalid] > 0 {
+		return errors.New("Validation failed")
 	}
 
-	log.Infof(
-		"Validation of cluster %s passed (%d checks valid, %d skipped)",
-		clusterConfig.DescriptiveName(),
-		numValidResourceChecks,
-		numSkippedResourceChecks,
-	)
+	log.Infof("Validation passed")
 	return nil
 }
