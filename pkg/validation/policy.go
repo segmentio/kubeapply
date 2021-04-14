@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"reflect"
+	"strings"
 
 	"github.com/ghodss/yaml"
 	"github.com/open-policy-agent/opa/rego"
@@ -14,6 +15,7 @@ import (
 const (
 	defaultPackage = "com.segment.kubeapply"
 	defaultResult  = "deny"
+	warnPrefix     = "warn:"
 )
 
 // Policy wraps a policy module and a prepared query.
@@ -155,12 +157,53 @@ func (p *PolicyChecker) Check(ctx context.Context, resource Resource) CheckResul
 			result.Status = StatusValid
 			result.Message = "Policy returned 0 deny reasons"
 		} else {
-			result.Status = StatusInvalid
-			result.Message = fmt.Sprintf(
-				"Policy returned %d deny reason(s): %+v",
-				len(value),
-				value,
-			)
+			invalidReasons := []string{}
+			warnReasons := []string{}
+
+			for _, subValue := range value {
+				subValueStr := fmt.Sprintf("%v", subValue)
+
+				if strings.HasPrefix(
+					strings.ToLower(subValueStr),
+					warnPrefix,
+				) {
+					// Treat this as a warning
+					warnReasons = append(
+						warnReasons,
+						subValueStr,
+					)
+				} else {
+					// Treat this as a denial
+					invalidReasons = append(
+						invalidReasons,
+						subValueStr,
+					)
+				}
+			}
+
+			if len(invalidReasons) == 0 {
+				result.Status = StatusWarning
+				result.Message = fmt.Sprintf(
+					"Policy returned %d warn reason(s)",
+					len(warnReasons),
+				)
+				result.Reasons = warnReasons
+			} else if len(warnReasons) == 0 {
+				result.Status = StatusInvalid
+				result.Message = fmt.Sprintf(
+					"Policy returned %d deny reason(s)",
+					len(invalidReasons),
+				)
+				result.Reasons = invalidReasons
+			} else {
+				result.Status = StatusInvalid
+				result.Message = fmt.Sprintf(
+					"Policy returned %d deny reason(s) and %d warn reason(s)",
+					len(invalidReasons),
+					len(warnReasons),
+				)
+				result.Reasons = append(invalidReasons, warnReasons...)
+			}
 		}
 	default:
 		result.Status = StatusError

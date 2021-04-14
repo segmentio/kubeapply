@@ -37,7 +37,7 @@ func NewKubeValidator(config KubeValidatorConfig) *KubeValidator {
 func (k *KubeValidator) RunChecks(
 	ctx context.Context,
 	path string,
-) ([]Result, error) {
+) ([]ResourceResult, error) {
 	resources := []Resource{}
 	index := 0
 
@@ -87,12 +87,12 @@ func (k *KubeValidator) RunChecks(
 	}
 	defer close(resourcesChan)
 
-	resultsChan := make(chan Result, len(resources))
+	resultsChan := make(chan ResourceResult, len(resources))
 
 	for i := 0; i < k.config.NumWorkers; i++ {
 		go func() {
 			for resource := range resourcesChan {
-				result := Result{
+				result := ResourceResult{
 					Resource: resource,
 				}
 				for _, checker := range k.config.Checkers {
@@ -107,7 +107,7 @@ func (k *KubeValidator) RunChecks(
 		}()
 	}
 
-	results := []Result{}
+	results := []ResourceResult{}
 	for i := 0; i < len(resources); i++ {
 		results = append(results, <-resultsChan)
 	}

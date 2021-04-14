@@ -19,6 +19,10 @@ import (
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 )
 
+const (
+	kubeLockerReleaseTimeout = 10 * time.Second
+)
+
 // Locker is an interface for structs that can acquire and release locks.
 type Locker interface {
 	// Acquire acquires the lock with the provided name.
@@ -78,6 +82,7 @@ type KubeLocker struct {
 	namespace          string
 	objLock            sync.Mutex
 	lockCancellations  map[string]context.CancelFunc
+	lockCompletions    map[string]chan struct{}
 	coordinationClient coordv1.CoordinationV1Interface
 }
 
@@ -102,6 +107,7 @@ func NewKubeLocker(
 		id:                 id,
 		namespace:          namespace,
 		lockCancellations:  map[string]context.CancelFunc{},
+		lockCompletions:    map[string]chan struct{}{},
 		coordinationClient: coordinationClient,
 	}, nil
 }
@@ -117,6 +123,7 @@ func (k *KubeLocker) Acquire(ctx context.Context, name string) error {
 	// Create a separate context for the lock itself
 	lockCtx, lockCancel := context.WithCancel(context.Background())
 	k.lockCancellations[name] = lockCancel
+	k.lockCompletions[name] = make(chan struct{}, 1)
 	k.objLock.Unlock()
 
 	leaseName := fmt.Sprintf("kubeapply-lock-%s", name)
@@ -147,7 +154,10 @@ func (k *KubeLocker) Acquire(ctx context.Context, name string) error {
 					acquired <- struct{}{}
 				},
 				OnStoppedLeading: func() {
+					k.objLock.Lock()
+					defer k.objLock.Unlock()
 					log.Warn("Lock lost")
+					k.lockCompletions[name] <- struct{}{}
 				},
 			},
 		},
@@ -172,6 +182,32 @@ func (k *KubeLocker) Acquire(ctx context.Context, name string) error {
 
 // Release releases the lock with the argument name.
 func (k *KubeLocker) Release(name string) error {
+	// Do this in a separate function to prevent deadlock on k.objLock.
+	if err := k.releaseHelper(name); err != nil {
+		return err
+	}
+
+	log.Infof("Waiting for lock to be released")
+	releaseCtx, releaseCancel := context.WithTimeout(
+		context.Background(),
+		kubeLockerReleaseTimeout,
+	)
+	defer releaseCancel()
+
+	k.objLock.Lock()
+	completionChan := k.lockCompletions[name]
+	k.objLock.Unlock()
+
+	select {
+	case <-completionChan:
+		delete(k.lockCompletions, name)
+		return nil
+	case <-releaseCtx.Done():
+		return releaseCtx.Err()
+	}
+}
+
+func (k *KubeLocker) releaseHelper(name string) error {
 	k.objLock.Lock()
 	defer k.objLock.Unlock()
 
@@ -184,6 +220,5 @@ func (k *KubeLocker) Release(name string) error {
 
 	cancel()
 	delete(k.lockCancellations, name)
-
 	return nil
 }

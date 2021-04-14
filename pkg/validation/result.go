@@ -6,6 +6,7 @@ type Status string
 const (
 	StatusValid   Status = "valid"
 	StatusInvalid Status = "invalid"
+	StatusWarning Status = "warning"
 	StatusError   Status = "error"
 	StatusSkipped Status = "skipped"
 	StatusEmpty   Status = "empty"
@@ -20,7 +21,7 @@ const (
 )
 
 // Result stores the results of validating a single resource in a single file, for all checks.
-type Result struct {
+type ResourceResult struct {
 	Resource     Resource
 	CheckResults []CheckResult
 }
@@ -31,4 +32,45 @@ type CheckResult struct {
 	CheckName string
 	Status    Status
 	Message   string
+	Reasons   []string
+}
+
+// HasIssues returns whether a ResourceResult has at least one check result with an
+// error or warning.
+func (r ResourceResult) HasIssues() bool {
+	for _, checkResult := range r.CheckResults {
+		if checkResult.Status == StatusError || checkResult.Status == StatusInvalid ||
+			checkResult.Status == StatusWarning {
+			return true
+		}
+	}
+
+	return false
+}
+
+// CountsByStatus returns the number of check results for each status type.
+func CountsByStatus(results []ResourceResult) map[Status]int {
+	counts := map[Status]int{}
+
+	for _, result := range results {
+		for _, checkResult := range result.CheckResults {
+			counts[checkResult.Status]++
+		}
+	}
+
+	return counts
+}
+
+// ResultsWithIssues filters the argument resource results to just those with potential
+// issues.
+func ResultsWithIssues(results []ResourceResult) []ResourceResult {
+	filteredResults := []ResourceResult{}
+
+	for _, result := range results {
+		if result.HasIssues() {
+			filteredResults = append(filteredResults, result)
+		}
+	}
+
+	return filteredResults
 }
