@@ -2,7 +2,9 @@ package validation
 
 import (
 	"bytes"
+	"encoding/csv"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -128,4 +130,55 @@ func ResultTable(
 
 	table.Render()
 	return string(bytes.TrimRight(buf.Bytes(), "\n"))
+}
+
+func WriteResultsCSV(
+	results []ResourceResult,
+	clusterName string,
+	baseDir string,
+	outputPath string,
+) error {
+	out, err := os.Create(outputPath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	csvWriter := csv.NewWriter(out)
+
+	err = csvWriter.Write(
+		[]string{
+			"cluster",
+			"path",
+			"resource",
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, result := range results {
+		var displayPath string
+
+		relPath, err := filepath.Rel(baseDir, result.Resource.Path)
+		if err != nil {
+			displayPath = result.Resource.Path
+		} else {
+			displayPath = relPath
+		}
+
+		err = csvWriter.Write(
+			[]string{
+				clusterName,
+				displayPath,
+				result.Resource.PrettyName(),
+			},
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	csvWriter.Flush()
+	return csvWriter.Error()
 }

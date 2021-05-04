@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/segmentio/kubeapply/pkg/config"
@@ -22,6 +23,9 @@ var validateCmd = &cobra.Command{
 }
 
 type validateFlags struct {
+	// Directory to write CSV summaries of OPA results to.
+	csvOutDir string
+
 	// Expand before validating.
 	expand bool
 
@@ -48,6 +52,18 @@ func init() {
 		4,
 		"Number of workers to use for validation",
 	)
+	validateCmd.Flags().StringVar(
+		&validateFlagValues.csvOutDir,
+		"csv-out-dir",
+		"",
+		"Directory to write CSV results to",
+	)
+	validateCmd.Flags().StringArrayVar(
+		&validateFlagValues.policies,
+		"policy",
+		[]string{},
+		"Paths to OPA policies",
+	)
 	validateCmd.Flags().StringArrayVar(
 		&validateFlagValues.policies,
 		"policy",
@@ -60,6 +76,12 @@ func init() {
 
 func validateRun(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
+
+	if validateFlagValues.csvOutDir != "" {
+		if err := os.MkdirAll(validateFlagValues.csvOutDir, 0755); err != nil {
+			log.Fatal(err)
+		}
+	}
 
 	for _, arg := range args {
 		paths, err := filepath.Glob(arg)
@@ -105,7 +127,10 @@ func validateClusterPath(ctx context.Context, path string) error {
 	return execValidation(ctx, clusterConfig)
 }
 
-func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) error {
+func execValidation(
+	ctx context.Context,
+	clusterConfig *config.ClusterConfig,
+) error {
 	log.Infof("Validating cluster %s", clusterConfig.DescriptiveName())
 
 	kubeconformChecker, err := validation.NewKubeconformChecker()
@@ -159,6 +184,24 @@ func execValidation(ctx context.Context, clusterConfig *config.ClusterConfig) er
 					debug,
 				),
 			)
+		}
+
+		if validateFlagValues.csvOutDir != "" {
+
+			outputPath := filepath.Join(
+				validateFlagValues.csvOutDir,
+				fmt.Sprintf("%s.csv", clusterConfig.DescriptiveName()),
+			)
+
+			err = validation.WriteResultsCSV(
+				resultsWithIssues,
+				clusterConfig.DescriptiveName(),
+				clusterConfig.ExpandedPath,
+				outputPath,
+			)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
