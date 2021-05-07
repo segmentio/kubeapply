@@ -40,6 +40,12 @@ type validateFlags struct {
 var validateFlagValues validateFlags
 
 func init() {
+	validateCmd.Flags().StringVar(
+		&validateFlagValues.csvOutDir,
+		"csv-out-dir",
+		"",
+		"Directory to write CSV results to",
+	)
 	validateCmd.Flags().BoolVar(
 		&validateFlagValues.expand,
 		"expand",
@@ -51,18 +57,6 @@ func init() {
 		"num-workers",
 		4,
 		"Number of workers to use for validation",
-	)
-	validateCmd.Flags().StringVar(
-		&validateFlagValues.csvOutDir,
-		"csv-out-dir",
-		"",
-		"Directory to write CSV results to",
-	)
-	validateCmd.Flags().StringArrayVar(
-		&validateFlagValues.policies,
-		"policy",
-		[]string{},
-		"Paths to OPA policies",
 	)
 	validateCmd.Flags().StringArrayVar(
 		&validateFlagValues.policies,
@@ -187,11 +181,11 @@ func execValidation(
 		}
 
 		if validateFlagValues.csvOutDir != "" {
-
 			outputPath := filepath.Join(
 				validateFlagValues.csvOutDir,
 				fmt.Sprintf("%s.csv", clusterConfig.DescriptiveName()),
 			)
+			log.Infof("Writing resource issues to %s", outputPath)
 
 			err = validation.WriteResultsCSV(
 				resultsWithIssues,
