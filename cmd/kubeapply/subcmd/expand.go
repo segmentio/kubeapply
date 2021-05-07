@@ -10,7 +10,6 @@ import (
 
 	"github.com/segmentio/kubeapply/pkg/config"
 	"github.com/segmentio/kubeapply/pkg/helm"
-	"github.com/segmentio/kubeapply/pkg/star/expand"
 	"github.com/segmentio/kubeapply/pkg/util"
 	"github.com/segmentio/kubeapply/pkg/version"
 	log "github.com/sirupsen/logrus"
@@ -242,19 +241,6 @@ func expandProfile(
 		if err != nil {
 			return err
 		}
-	}
-
-	log.Infof(
-		"Running starlark interpreter for star files in %s",
-		expandedPath,
-	)
-	err = expand.ExpandStar(
-		expandedPath,
-		filepath.Dir(clusterConfig.FullPath()),
-		clusterConfig.StarParams(),
-	)
-	if err != nil {
-		return err
 	}
 
 	log.Infof(

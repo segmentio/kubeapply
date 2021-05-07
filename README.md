@@ -14,8 +14,8 @@
 ## Overview
 
 `kubeapply` is a lightweight tool for git-based management of Kubernetes configs.
-It supports configuration in raw YAML, templated YAML,
-[Helm charts](https://helm.sh/docs/topics/charts/), and/or [skycfg](https://github.com/stripe/skycfg),
+It supports configuration in raw YAML, templated YAML, and/or
+[Helm charts](https://helm.sh/docs/topics/charts/),
 and facilitates the complete change workflow including config expansion, validation,
 diff generation, and applying.
 
@@ -40,7 +40,7 @@ consistent. The design choices made were motivated by the following goals:
 3. Wrap existing tooling (`kubectl`, `helm`, etc.) whenever possible as opposed to
   reimplementing their functionality
 4. Allow running on either the command-line or in Github
-5. Support Helm charts, simple templates, and skycfg
+5. Support Helm charts and simple templates
 
 See [this blog post](https://segment.com/blog/kubernetes-configuration/) for more details.
 
@@ -128,7 +128,7 @@ env: staging           # Environment/account in which the cluster is running
 # See the section below for the supported URL formats.
 charts: "file://../../charts"
 
-# Arbitrary parameters that can be used in templates, Helm charts, and skycfg modules.
+# Arbitrary parameters that can be used in templates and Helm charts
 #
 # These are typically used for things that will vary by cluster instance and/or will
 # frequently change, e.g. the number of replicas for deployments, container image URIs, etc.
@@ -184,20 +184,6 @@ Currently, the tool supports URLs of the form `file://`, `http://`, `https://`, 
 You can override the source for a specific chart by including a `# charts: [url]`
 comment at the top of the values file. This is helpful for testing out a new version
 for just one chart in the profile.
-
-#### (4) Skycfg/starlark modules
-
-Files ending in `.star` will be evaluated using the
-[skycfg framework](https://github.com/stripe/skycfg) to generate one or more Kubernetes protobufs.
-The latter are then converted to kubectl-compatible YAML and copied into the `expanded` directory.
-
-Skycfg uses the [Starlark](https://github.com/bazelbuild/starlark) language along with typed
-Kubernetes structs (from [Protocol Buffers](https://developers.google.com/protocol-buffers/)),
-so it can provide more structure and less repetition than YAML-based sources. See
-[this file](/examples/kubeapply-test-cluster/profile/apps/redis/deployment.star) for an example.
-
-The skycfg support in `kubeapply` should be considered experimental. We're using it for
-a few test services in Segment, but it has not been widely exercised internally.
 
 ### Expanded configs
 
@@ -308,11 +294,6 @@ In the "Event triggers" section, select "Issue comments" and "Pull requests" onl
 out by opening up a new pull request that modifies an expanded kubeapply config.
 
 ## Experimental features
-
-### `kubestar`
-
-This repo now contains an experimental tool, `kubestar`, for converting YAML to
-skycfg-compatible starlark. See [this README](/cmd/kubestar/README.md) for details.
 
 ### Multi-profile support
 
