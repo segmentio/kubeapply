@@ -196,7 +196,7 @@ func scriptsClusterSummary__init__Py() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "scripts/cluster-summary/__init__.py", size: 0, mode: os.FileMode(0644), modTime: time.Unix(1586803753, 0)}
+	info := bindataFileInfo{name: "scripts/cluster-summary/__init__.py", size: 0, mode: os.FileMode(0644), modTime: time.Unix(1620428515, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14, 0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f, 0xb9, 0x24, 0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c, 0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55}}
 	return a, nil
 }
@@ -216,7 +216,7 @@ func scriptsClusterSummaryCluster_summaryPy() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "scripts/cluster-summary/cluster_summary.py", size: 4488, mode: os.FileMode(0755), modTime: time.Unix(1593205176, 0)}
+	info := bindataFileInfo{name: "scripts/cluster-summary/cluster_summary.py", size: 4488, mode: os.FileMode(0755), modTime: time.Unix(1620428515, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xb2, 0xfd, 0xc1, 0xd0, 0x9d, 0x3e, 0x14, 0x51, 0x1a, 0x84, 0x85, 0x49, 0x4a, 0x63, 0x5c, 0x4d, 0x3a, 0x6c, 0x28, 0x48, 0x9, 0xd0, 0x64, 0x2f, 0x7b, 0x5b, 0xa8, 0xe8, 0x1, 0xa, 0xa9, 0x99}}
 	return a, nil
 }
@@ -236,7 +236,7 @@ func scriptsClusterSummaryTabulatePy() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "scripts/cluster-summary/tabulate.py", size: 57091, mode: os.FileMode(0644), modTime: time.Unix(1586803753, 0)}
+	info := bindataFileInfo{name: "scripts/cluster-summary/tabulate.py", size: 57091, mode: os.FileMode(0644), modTime: time.Unix(1620428515, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xe9, 0x68, 0x8, 0x2c, 0x92, 0x99, 0x98, 0x23, 0x29, 0xba, 0x60, 0xc3, 0xa4, 0x16, 0x4, 0xe3, 0x2, 0xdd, 0x43, 0xdd, 0x2d, 0x2d, 0x51, 0x1e, 0xa9, 0x2, 0xe9, 0x71, 0x54, 0xef, 0x3c, 0x1c}}
 	return a, nil
 }
