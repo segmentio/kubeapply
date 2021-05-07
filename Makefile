@@ -18,6 +18,11 @@ kubeapply: data
 install: data
 	go install $(LDFLAGS) ./cmd/kubeapply
 
+# Provider targets
+.PHONY: kubeapply-provider
+kubeapply-provider: data
+	go build -o build/kubeapply-provider $(LDFLAGS) ./cmd/kubeapply-provider
+
 # Lambda and server-related targets
 .PHONY: kubeapply-lambda
 kubeapply-lambda: data
