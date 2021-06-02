@@ -19,9 +19,9 @@ install: data
 	go install $(LDFLAGS) ./cmd/kubeapply
 
 # Provider targets
-.PHONY: kubeapply-provider
-kubeapply-provider: data
-	go build -o build/kubeapply-provider $(LDFLAGS) ./cmd/kubeapply-provider
+.PHONY: terraform-provider-kubeapply
+terraform-provider-kubeapply: data
+	go build -o build/terraform-provider-kubeapply $(LDFLAGS) ./cmd/terraform-provider-kubeapply
 
 # Lambda and server-related targets
 .PHONY: kubeapply-lambda
