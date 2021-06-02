@@ -66,6 +66,7 @@ func resourceProfileCreate(
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	defer providerCtx.cleanExpanded(expandResult)
 
 	results, err := providerCtx.apply(ctx, expandResult.expandedDir)
 	log.Infof("Apply results (err=%+v): %s", err, string(results))
@@ -121,6 +122,7 @@ func resourceProfileCustomDiff(
 	if err != nil {
 		return err
 	}
+	defer providerCtx.cleanExpanded(expandResult)
 
 	log.Infof(
 		"Found %d manifests with overall hash of %s",
@@ -199,6 +201,7 @@ func resourceProfileUpdate(
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	defer providerCtx.cleanExpanded(expandResult)
 
 	results, err := providerCtx.apply(ctx, expandResult.expandedDir)
 	log.Infof("Apply results (err=%+v): %s", err, string(results))

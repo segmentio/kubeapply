@@ -36,8 +36,9 @@ var (
 
 type providerContext struct {
 	autoCreateNamespaces bool
-	config               config.ClusterConfig
 	clusterClient        cluster.ClusterClient
+	config               config.ClusterConfig
+	keepExpanded         bool
 	rawClient            kubernetes.Interface
 	tempDir              string
 }
@@ -312,4 +313,13 @@ func (p *providerContext) manifestsHash(
 	}
 
 	return fmt.Sprintf("%x", hash.Sum(nil))
+}
+
+func (p *providerContext) cleanExpanded(
+	result *expandResult,
+) error {
+	if p.keepExpanded {
+		return nil
+	}
+	return os.RemoveAll(result.expandedDir)
 }

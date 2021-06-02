@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -37,8 +38,9 @@ func TestResourceProfile(t *testing.T) {
 	require.NoError(t, err)
 
 	providerCtx := &providerContext{
-		config:        config,
 		clusterClient: clusterClient,
+		config:        config,
+		keepExpanded:  true,
 		tempDir:       tempDir,
 	}
 
@@ -69,8 +71,7 @@ resource "kubeapply_profile" "main_profile" {
     value1 = "Value1"
 	value2 = "Value2"
   }
-}
-				`,
+}`,
 					Check: func(state *terraform.State) error {
 						require.Equal(t, 1, len(state.Modules))
 						module := state.Modules[0]
@@ -120,6 +121,46 @@ resource "kubeapply_profile" "main_profile" {
 	value2 = "UpdatedValue2"
   }
 }`,
+				},
+				// Test some error cases
+				{
+					Config: `
+provider "kubeapply" {
+  host = "testHost"
+  cluster_ca_certificate = "testCACertificate"
+  token = "testToken"
+}
+
+resource "kubeapply_profile" "main_profile" {
+  path = "testdata"
+
+  parameters = {
+    value1 = "UpdatedValue1"
+	value2 = "UpdatedValue2"
+  }
+}`,
+					ExpectError: regexp.MustCompile("is required, but no definition was found"),
+				},
+				{
+					Config: `
+provider "kubeapply" {
+  cluster_name = "testCluster"
+  region = "testRegion"
+  account_name = "testAccountName"
+  host = "testHost"
+  cluster_ca_certificate = "testCACertificate"
+  token = "testToken"
+}
+
+resource "kubeapply_profile" "main_profile" {
+  path = "bad dir"
+
+  parameters = {
+    value1 = "UpdatedValue1"
+	value2 = "UpdatedValue2"
+  }
+}`,
+					ExpectError: regexp.MustCompile("stat bad dir: no such file or directory"),
 				},
 			},
 		},
