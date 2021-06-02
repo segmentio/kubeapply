@@ -19,6 +19,10 @@ import (
 	"github.com/segmentio/kubeapply/pkg/config"
 	"github.com/segmentio/kubeapply/pkg/util"
 	log "github.com/sirupsen/logrus"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 var (
@@ -34,6 +38,7 @@ type providerContext struct {
 	autoCreateNamespaces bool
 	config               config.ClusterConfig
 	clusterClient        cluster.ClusterClient
+	rawClient            kubernetes.Interface
 	tempDir              string
 }
 
@@ -136,7 +141,7 @@ func providerConfigure(
 	log.Infof("Setting provider kubeconfig path to %s", kubeConfigPath)
 	config.KubeConfigPath = kubeConfigPath
 
-	log.Infof("Creating cluster client")
+	log.Info("Creating cluster client")
 	clusterClient, err := cluster.NewKubeClusterClient(
 		ctx,
 		&cluster.ClusterClientConfig{
@@ -147,10 +152,22 @@ func providerConfigure(
 		return nil, diag.FromErr(err)
 	}
 
+	log.Info("Creating raw kube client")
+	kubeClientConfig, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
+
+	rawClient, err := kubernetes.NewForConfig(kubeClientConfig)
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
+
 	providerCtx := providerContext{
 		autoCreateNamespaces: d.Get("auto_create_namespaces").(bool),
 		config:               config,
 		clusterClient:        clusterClient,
+		rawClient:            rawClient,
 		tempDir:              tempDir,
 	}
 
@@ -220,6 +237,54 @@ func (p *providerContext) apply(
 	path string,
 ) ([]byte, error) {
 	return p.clusterClient.Apply(ctx, []string{path}, false)
+}
+
+func (p *providerContext) createNamespaces(
+	ctx context.Context,
+	manifests []kube.Manifest,
+) error {
+	if !p.autoCreateNamespaces {
+		log.Info("Not auto-creating namespaces since auto_create_namespaces is false")
+		return nil
+	}
+
+	manifestNamespacesMap := map[string]struct{}{}
+
+	for _, manifest := range manifests {
+		if manifest.Head.Metadata.Namespace != "" {
+			manifestNamespacesMap[manifest.Head.Metadata.Namespace] = struct{}{}
+		}
+	}
+
+	apiNamespaces, err := p.rawClient.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	apiNamespacesMap := map[string]struct{}{}
+	for _, namespace := range apiNamespaces.Items {
+		apiNamespacesMap[namespace.Name] = struct{}{}
+	}
+
+	for namespace := range manifestNamespacesMap {
+		if _, ok := apiNamespacesMap[namespace]; !ok {
+			log.Infof("Namespace %s is in manifest but not API, creating", namespace)
+			_, err = p.rawClient.CoreV1().Namespaces().Create(
+				ctx,
+				&corev1.Namespace{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: namespace,
+					},
+				},
+				metav1.CreateOptions{},
+			)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (p *providerContext) manifestsHash(

@@ -130,6 +130,11 @@ func resourceProfileCustomDiff(
 		results := cache.get(expandResult.totalHash)
 		if results == nil {
 			log.Info("No cache hit, recomputing diffs")
+
+			if err := providerCtx.createNamespaces(ctx, expandResult.manifests); err != nil {
+				return err
+			}
+
 			diffs, err := providerCtx.diff(ctx, expandResult.expandedDir)
 			if err != nil {
 				return err
