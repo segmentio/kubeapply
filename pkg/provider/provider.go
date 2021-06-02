@@ -43,9 +43,20 @@ type providerContext struct {
 }
 
 // Provider is the entrypoint for creating a new kubeapply terraform provider instance.
-func Provider() *schema.Provider {
+func Provider(providerCtx *providerContext) *schema.Provider {
 	return &schema.Provider{
-		ConfigureContextFunc: providerConfigure,
+		ConfigureContextFunc: func(
+			ctx context.Context,
+			d *schema.ResourceData,
+		) (interface{}, diag.Diagnostics) {
+			// Use a provider context that's injected in for testing
+			// purposes.
+			if providerCtx != nil {
+				return providerCtx, diag.Diagnostics{}
+			}
+
+			return providerConfigure(ctx, d)
+		},
 		Schema: map[string]*schema.Schema{
 			// Basic info about the cluster
 			"cluster_name": {

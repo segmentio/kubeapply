@@ -14,7 +14,7 @@ func main() {
 
 	opts := &plugin.ServeOpts{
 		ProviderFunc: func() *schema.Provider {
-			return provider.Provider()
+			return provider.Provider(nil)
 		},
 	}
 
