@@ -1,6 +1,8 @@
 package kube
 
 import (
+	"crypto/md5"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -62,6 +64,8 @@ type Manifest struct {
 	Path     string
 	Head     SimpleHeader
 	Contents string
+	Hash     string
+	ID       string
 }
 
 // SimpleHeader is a simplified header used to getting basic metadata from
@@ -105,9 +109,10 @@ func GetManifests(paths []string) ([]Manifest, error) {
 					if isEmpty(manifestStr) {
 						continue
 					}
+					manifestBytes := []byte(manifestStr)
 
 					head := SimpleHeader{}
-					err := yaml.Unmarshal([]byte(manifestStr), &head)
+					err := yaml.Unmarshal(manifestBytes, &head)
 					if err != nil {
 						log.Warnf("Could not parse head from %s; skipping file", subPath)
 						continue
@@ -128,6 +133,14 @@ func GetManifests(paths []string) ([]Manifest, error) {
 							Path:     subPath,
 							Contents: manifestStr,
 							Head:     head,
+							Hash:     fmt.Sprintf("%x", md5.Sum(manifestBytes)),
+							ID: fmt.Sprintf(
+								"%s.%s.%s.%s",
+								head.Version,
+								head.Kind,
+								head.Metadata.Namespace,
+								head.Metadata.Name,
+							),
 						},
 					)
 				}

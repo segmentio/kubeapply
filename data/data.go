@@ -5,6 +5,7 @@
 // pkg/pullreq/templates/error_comment.gotpl (172B)
 // pkg/pullreq/templates/help_comment.gotpl (1.025kB)
 // pkg/pullreq/templates/status_comment.gotpl (355B)
+// pkg/provider/templates/kubeconfig.yaml (354B)
 // scripts/cluster-summary/__init__.py (0)
 // scripts/cluster-summary/cluster_summary.py (4.488kB)
 // scripts/cluster-summary/tabulate.py (57.091kB)
@@ -178,6 +179,26 @@ func pkgPullreqTemplatesStatus_commentGotpl() (*asset, error) {
 
 	info := bindataFileInfo{name: "pkg/pullreq/templates/status_comment.gotpl", size: 355, mode: os.FileMode(0644), modTime: time.Unix(1591836439, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x2c, 0xf0, 0xcb, 0x4, 0x35, 0xaa, 0xf4, 0xf7, 0x74, 0x5d, 0xee, 0xae, 0x74, 0xe2, 0xec, 0xd7, 0x59, 0x9, 0x86, 0xca, 0x60, 0x36, 0x29, 0x25, 0xfb, 0x74, 0x50, 0x8d, 0xbd, 0xe8, 0x9c, 0x70}}
+	return a, nil
+}
+
+var _pkgProviderTemplatesKubeconfigYaml = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x6c\x8f\x4d\x6a\xc5\x30\x0c\x84\xf7\x3e\x85\x2e\xe0\x42\xb7\xde\x95\xf4\x06\x2d\xdd\xab\x8e\xdc\x9a\x24\x76\x90\xe5\xd0\x10\x72\xf7\xe2\x1f\xc2\xe3\xbd\xb7\x1b\xf3\x8d\x67\x46\xb8\xfa\x2f\xe2\xe4\x63\x30\xb0\xbd\xaa\xc9\x87\xd1\xc0\x10\x83\xf3\x3f\xca\xce\x39\x09\x71\x32\x4a\x43\xd7\x46\x01\x00\x58\x62\xf1\xce\x5b\x14\xd2\x98\xe5\x37\xb2\x97\x5d\x8f\x28\x68\xe0\x38\xe0\x65\x78\x7b\x47\x41\x38\xcf\xea\x4e\xc4\x1b\x71\x23\x1f\x55\x37\x12\x70\x21\x03\x53\xfe\x26\x5c\xd7\x79\xd7\xbd\x42\xd9\x18\x84\xfe\xa4\xd5\x36\x6d\x2e\xfb\x48\x0e\xf3\x2c\xba\x03\x05\xb7\x16\xb8\x66\x3e\x89\x2d\x38\xa7\xc2\x84\x98\xd1\x45\x5e\x74\x79\x2b\x9b\x99\x29\x5c\x91\x8f\x1d\xc5\x55\xd7\xb4\x09\x77\xdf\x7b\x6a\xcd\x97\x38\x51\x68\x97\x7e\x16\x59\x0e\xfd\x0f\x00\x00\xff\xff\x88\x44\x7d\x88\x62\x01\x00\x00")
+
+func pkgProviderTemplatesKubeconfigYamlBytes() ([]byte, error) {
+	return bindataRead(
+		_pkgProviderTemplatesKubeconfigYaml,
+		"pkg/provider/templates/kubeconfig.yaml",
+	)
+}
+
+func pkgProviderTemplatesKubeconfigYaml() (*asset, error) {
+	bytes, err := pkgProviderTemplatesKubeconfigYamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "pkg/provider/templates/kubeconfig.yaml", size: 354, mode: os.FileMode(0644), modTime: time.Unix(1622597855, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xf5, 0x84, 0xb3, 0xdd, 0xc0, 0x40, 0x3b, 0x2e, 0xa9, 0x49, 0x38, 0x29, 0x7e, 0x9f, 0x2b, 0x44, 0xab, 0xdb, 0xf7, 0x86, 0xec, 0x21, 0xa8, 0x1e, 0x60, 0xa5, 0x47, 0xf4, 0xfc, 0x1, 0xc, 0xbe}}
 	return a, nil
 }
 
@@ -442,6 +463,8 @@ var _bindata = map[string]func() (*asset, error){
 
 	"pkg/pullreq/templates/status_comment.gotpl": pkgPullreqTemplatesStatus_commentGotpl,
 
+	"pkg/provider/templates/kubeconfig.yaml": pkgProviderTemplatesKubeconfigYaml,
+
 	"scripts/cluster-summary/__init__.py": scriptsClusterSummary__init__Py,
 
 	"scripts/cluster-summary/cluster_summary.py": scriptsClusterSummaryCluster_summaryPy,
@@ -501,6 +524,11 @@ type bintree struct {
 
 var _bintree = &bintree{nil, map[string]*bintree{
 	"pkg": &bintree{nil, map[string]*bintree{
+		"provider": &bintree{nil, map[string]*bintree{
+			"templates": &bintree{nil, map[string]*bintree{
+				"kubeconfig.yaml": &bintree{pkgProviderTemplatesKubeconfigYaml, map[string]*bintree{}},
+			}},
+		}},
 		"pullreq": &bintree{nil, map[string]*bintree{
 			"templates": &bintree{nil, map[string]*bintree{
 				"apply_comment.gotpl":  &bintree{pkgPullreqTemplatesApply_commentGotpl, map[string]*bintree{}},

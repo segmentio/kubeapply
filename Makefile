@@ -61,6 +61,7 @@ data: go-bindata
 		-ignore=.*\.pyc \
 		-ignore=.*__pycache__.* \
 		./pkg/pullreq/templates/... \
+		./pkg/provider/templates/... \
 		./scripts/...
 
 .PHONY: fmtgo
