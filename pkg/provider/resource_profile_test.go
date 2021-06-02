@@ -16,6 +16,9 @@ import (
 	"github.com/segmentio/kubeapply/pkg/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
 )
 
 func TestResourceProfile(t *testing.T) {
@@ -37,11 +40,21 @@ func TestResourceProfile(t *testing.T) {
 	)
 	require.NoError(t, err)
 
+	rawClient := fake.NewSimpleClientset(
+		&corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "testNamespace",
+			},
+		},
+	)
+
 	providerCtx := &providerContext{
-		clusterClient: clusterClient,
-		config:        config,
-		keepExpanded:  true,
-		tempDir:       tempDir,
+		autoCreateNamespaces: true,
+		clusterClient:        clusterClient,
+		config:               config,
+		keepExpanded:         true,
+		rawClient:            rawClient,
+		tempDir:              tempDir,
 	}
 
 	resource.Test(
@@ -177,7 +190,6 @@ resource "kubeapply_profile" "main_profile" {
 		subDirs[len(subDirs)-1].Name(),
 	)
 	lastSubDirContents := util.GetContents(t, lastSubDir)
-
 	assert.Equal(
 		t,
 		map[string][]string{
@@ -198,7 +210,7 @@ resource "kubeapply_profile" "main_profile" {
 				"    key2: UpdatedValue2",
 				"    env: testEnv",
 				"  name: testName",
-				"  namespace: testNamespace",
+				"  namespace: testNamespace2",
 				"",
 			},
 		},
@@ -210,7 +222,6 @@ resource "kubeapply_profile" "main_profile" {
 	for _, call := range calls {
 		callTypes = append(callTypes, call.CallType)
 	}
-
 	assert.Equal(
 		t,
 		[]string{
@@ -222,5 +233,21 @@ resource "kubeapply_profile" "main_profile" {
 			"Apply",
 		},
 		callTypes,
+	)
+
+	namespaces, err := rawClient.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
+	require.NoError(t, err)
+	namespaceNames := []string{}
+	for _, namespace := range namespaces.Items {
+		namespaceNames = append(namespaceNames, namespace.Name)
+	}
+	assert.ElementsMatch(
+		t,
+		[]string{
+			"testNamespace",
+			// Extra namespace was created
+			"testNamespace2",
+		},
+		namespaceNames,
 	)
 }

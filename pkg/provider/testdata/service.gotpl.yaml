@@ -5,4 +5,4 @@ metadata:
     key2: {{.Parameters.value2}}
     env: {{.Env}}
   name: testName
-  namespace: testNamespace
+  namespace: testNamespace2

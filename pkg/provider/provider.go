@@ -28,7 +28,7 @@ import (
 var (
 	kubeConfigTemplate = template.Must(
 		template.New("kubeconfig").Parse(
-			data.MustAssetString("pkg/provider/templates/kubeconfig.yaml"),
+			string(data.MustAsset("pkg/provider/templates/kubeconfig.yaml")),
 		),
 	)
 	cache = newDiffCache()
