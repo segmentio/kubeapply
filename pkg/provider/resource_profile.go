@@ -67,6 +67,18 @@ func resourceProfileCreate(
 		return diag.FromErr(err)
 	}
 
+	results, err := providerCtx.apply(ctx, expandResult.expandedDir)
+	log.Infof("Apply results (err=%+v): %s", err, string(results))
+	if err != nil {
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  err.Error(),
+				Detail:   string(results),
+			},
+		}
+	}
+
 	err = d.Set(
 		"resources", expandResult.resources,
 	)

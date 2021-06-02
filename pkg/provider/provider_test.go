@@ -1,9 +1,12 @@
 package provider
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
 
 func TestProvider(t *testing.T) {
-	if err := Provider(nil).InternalValidate(); err != nil {
-		t.Fatalf("err: %s", err)
-	}
+	err := Provider(nil).InternalValidate()
+	require.NoError(t, err)
 }

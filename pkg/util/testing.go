@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io/ioutil"
@@ -56,6 +57,52 @@ func WriteFiles(t *testing.T, baseDir string, files map[string]string) {
 			assert.FailNow(t, "Error creating file: %+v", err)
 		}
 	}
+}
+
+// GetContents returns the contents of a directory as a map from
+// file name to string content lines.
+func GetContents(t *testing.T, root string) map[string][]string {
+	contentsMap := map[string][]string{}
+
+	// Process as a directory
+	err := filepath.Walk(
+		root,
+		func(subPath string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				return nil
+			}
+			contents, err := ioutil.ReadFile(subPath)
+			if err != nil {
+				return err
+			}
+
+			relPath, err := filepath.Rel(root, subPath)
+			if err != nil {
+				return err
+			}
+
+			lines := []string{}
+			for _, line := range bytes.Split(contents, []byte("\n")) {
+				lines = append(lines, string(line))
+			}
+
+			contentsMap[relPath] = lines
+			return nil
+		},
+	)
+	require.Nil(t, err)
+
+	return contentsMap
+}
+
+// GetFileContents gets the string contents of a single file.
+func GetFileContents(t *testing.T, path string) string {
+	contents, err := ioutil.ReadFile(path)
+	require.NoError(t, err)
+	return string(contents)
 }
 
 // KindEnabled returns whether testing with kind is enabled. This is generally true locally

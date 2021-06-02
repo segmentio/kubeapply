@@ -1,1 +1,8 @@
-Deployment content
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    key1: {{.Parameters.value1}}
+    cluster: {{.Cluster}}
+  name: testName
+  namespace: testNamespace

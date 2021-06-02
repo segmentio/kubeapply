@@ -18,6 +18,13 @@ type FakeClusterClient struct {
 	subpathOverride string
 	store           map[string]string
 	kubectlErr      error
+
+	Calls []FakeClusterClientCall
+}
+
+type FakeClusterClientCall struct {
+	CallType string
+	Paths    []string
 }
 
 // NewFakeClusterClient returns a FakeClusterClient that works without errors.
@@ -50,6 +57,13 @@ func (cc *FakeClusterClient) Apply(
 	paths []string,
 	serverSide bool,
 ) ([]byte, error) {
+	cc.Calls = append(
+		cc.Calls,
+		FakeClusterClientCall{
+			CallType: "Apply",
+			Paths:    paths,
+		},
+	)
 	return []byte(
 			fmt.Sprintf(
 				"apply result for %s with paths %+v",
@@ -67,6 +81,13 @@ func (cc *FakeClusterClient) ApplyStructured(
 	paths []string,
 	serverSide bool,
 ) ([]apply.Result, error) {
+	cc.Calls = append(
+		cc.Calls,
+		FakeClusterClientCall{
+			CallType: "ApplyStructured",
+			Paths:    paths,
+		},
+	)
 	return []apply.Result{
 		{
 			Kind: "Deployment",
@@ -88,6 +109,13 @@ func (cc *FakeClusterClient) Diff(
 	paths []string,
 	serverSide bool,
 ) ([]byte, error) {
+	cc.Calls = append(
+		cc.Calls,
+		FakeClusterClientCall{
+			CallType: "Diff",
+			Paths:    paths,
+		},
+	)
 	return []byte(
 			fmt.Sprintf(
 				"diff result for %s with paths %+v",
@@ -104,6 +132,13 @@ func (cc *FakeClusterClient) DiffStructured(
 	paths []string,
 	serverSide bool,
 ) ([]diff.Result, error) {
+	cc.Calls = append(
+		cc.Calls,
+		FakeClusterClientCall{
+			CallType: "DiffStructured",
+			Paths:    paths,
+		},
+	)
 	return []diff.Result{
 			{
 				Name: "result",
@@ -119,22 +154,46 @@ func (cc *FakeClusterClient) DiffStructured(
 
 // Summary creates a fake summary output of the current cluster state.
 func (cc *FakeClusterClient) Summary(ctx context.Context) (string, error) {
+	cc.Calls = append(
+		cc.Calls,
+		FakeClusterClientCall{
+			CallType: "Summary",
+		},
+	)
 	return fmt.Sprintf("summary %s", cc.clusterConfig.Cluster), cc.kubectlErr
 }
 
 // GetStoreValue gets the value of the argument key.
 func (cc *FakeClusterClient) GetStoreValue(ctx context.Context, key string) (string, error) {
+	cc.Calls = append(
+		cc.Calls,
+		FakeClusterClientCall{
+			CallType: "GetStoreValue",
+		},
+	)
 	return cc.store[key], nil
 }
 
 // SetStoreValue sets the argument key to the argument value.
 func (cc *FakeClusterClient) SetStoreValue(ctx context.Context, key string, value string) error {
+	cc.Calls = append(
+		cc.Calls,
+		FakeClusterClientCall{
+			CallType: "SetStoreValue",
+		},
+	)
 	cc.store[key] = value
 	return nil
 }
 
 // Config returns this client's cluster config.
 func (cc *FakeClusterClient) Config() *config.ClusterConfig {
+	cc.Calls = append(
+		cc.Calls,
+		FakeClusterClientCall{
+			CallType: "Config",
+		},
+	)
 	return cc.clusterConfig
 }
 
@@ -143,10 +202,22 @@ func (cc *FakeClusterClient) GetNamespaceUID(
 	ctx context.Context,
 	namespace string,
 ) (string, error) {
+	cc.Calls = append(
+		cc.Calls,
+		FakeClusterClientCall{
+			CallType: "GetNamespaceUID",
+		},
+	)
 	return fmt.Sprintf("ns-%s", namespace), cc.kubectlErr
 }
 
 // Close closes the client.
 func (cc *FakeClusterClient) Close() error {
+	cc.Calls = append(
+		cc.Calls,
+		FakeClusterClientCall{
+			CallType: "Close",
+		},
+	)
 	return nil
 }
