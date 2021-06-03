@@ -78,7 +78,7 @@ provider "kubeapply" {
 }
 
 resource "kubeapply_profile" "main_profile" {
-  path = "testdata"
+  source = "testdata"
 
   parameters = {
     value1 = "Value1"
@@ -110,7 +110,7 @@ provider "kubeapply" {
 }
 
 resource "kubeapply_profile" "main_profile" {
-  path = "testdata"
+  source = "testdata"
 
   parameters = {
     value1 = "UpdatedValue1"
@@ -135,7 +135,7 @@ provider "kubeapply" {
 }
 
 resource "kubeapply_profile" "main_profile" {
-  path = "testdata"
+  source = "testdata"
 
   parameters = {
     value1 = "UpdatedValue1"
@@ -157,7 +157,7 @@ provider "kubeapply" {
 }
 
 resource "kubeapply_profile" "main_profile" {
-  path = "testdata"
+  source = "testdata"
 
   parameters = {
     value1 = "UpdatedValue1"
@@ -182,7 +182,7 @@ provider "kubeapply" {
 }
 
 resource "kubeapply_profile" "main_profile" {
-  path = "bad dir"
+  source = "bad dir"
 
   parameters = {
     value1 = "UpdatedValue1"

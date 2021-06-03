@@ -20,9 +20,9 @@ func profileResource() *schema.Resource {
 		DeleteContext: resourceProfileDelete,
 		CustomizeDiff: resourceProfileCustomDiff,
 		Schema: map[string]*schema.Schema{
-			"path": {
+			"source": {
 				Type:        schema.TypeString,
-				Description: "Path to profile manifest files",
+				Description: "Source for profile manifest files in local file system or remote git repo",
 				Required:    true,
 			},
 			"parameters": {
@@ -68,25 +68,20 @@ func profileResource() *schema.Resource {
 
 func resourceProfileCreate(
 	ctx context.Context,
-	d *schema.ResourceData,
-	m interface{},
+	data *schema.ResourceData,
+	provider interface{},
 ) diag.Diagnostics {
 	log.Infof("Running create")
-	providerCtx := m.(*providerContext)
+	providerCtx := provider.(*providerContext)
 	var diags diag.Diagnostics
 
-	expandResult, err := providerCtx.expand(
-		ctx,
-		d.Get("path").(string),
-		d.Get("parameters").(map[string]interface{}),
-		d.Get("set").(*schema.Set).List(),
-	)
+	expandResult, err := providerCtx.expand(ctx, data)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	defer providerCtx.cleanExpanded(expandResult)
 
-	results, err := providerCtx.apply(ctx, expandResult.expandedDir)
+	results, err := providerCtx.apply(ctx, expandResult.expandedRoot)
 	log.Infof("Apply results (err=%+v): %s", err, string(results))
 	if err != nil {
 		return diag.Diagnostics{
@@ -98,7 +93,7 @@ func resourceProfileCreate(
 		}
 	}
 
-	err = d.Set(
+	err = data.Set(
 		"resources", expandResult.resources,
 	)
 	if err != nil {
@@ -106,7 +101,7 @@ func resourceProfileCreate(
 	}
 
 	// Just make up an id from the timestamp
-	d.SetId(fmt.Sprintf("%d", time.Now().UnixNano()))
+	data.SetId(fmt.Sprintf("%d", time.Now().UnixNano()))
 
 	log.Info("Create successful")
 	return diags
@@ -114,8 +109,8 @@ func resourceProfileCreate(
 
 func resourceProfileRead(
 	ctx context.Context,
-	d *schema.ResourceData,
-	m interface{},
+	data *schema.ResourceData,
+	provider interface{},
 ) diag.Diagnostics {
 	log.Infof("Running read")
 	var diags diag.Diagnostics
@@ -127,17 +122,12 @@ func resourceProfileRead(
 
 func resourceProfileCustomDiff(
 	ctx context.Context,
-	d *schema.ResourceDiff,
-	m interface{},
+	data *schema.ResourceDiff,
+	provider interface{},
 ) error {
 	log.Infof("Running custom diff")
-	providerCtx := m.(*providerContext)
-	expandResult, err := providerCtx.expand(
-		ctx,
-		d.Get("path").(string),
-		d.Get("parameters").(map[string]interface{}),
-		d.Get("set").(*schema.Set).List(),
-	)
+	providerCtx := provider.(*providerContext)
+	expandResult, err := providerCtx.expand(ctx, data)
 	if err != nil {
 		return err
 	}
@@ -150,18 +140,18 @@ func resourceProfileCustomDiff(
 	)
 
 	// Set resources
-	if err := d.SetNew(
+	if err := data.SetNew(
 		"resources",
 		expandResult.resources,
 	); err != nil {
 		return err
 	}
 
-	if d.HasChange("resources") || d.Get("force_diff").(bool) {
+	if data.HasChange("resources") || data.Get("force_diff").(bool) {
 		log.Info("Resources have changed")
 		var results map[string]interface{}
 
-		if !d.Get("force_diff").(bool) {
+		if !data.Get("force_diff").(bool) {
 			// Only use cache in normal, "non-force" case
 			results = cache.get(expandResult.totalHash)
 		}
@@ -190,7 +180,7 @@ func resourceProfileCustomDiff(
 		}
 
 		if len(results) > 0 {
-			if err := d.SetNew(
+			if err := data.SetNew(
 				"diff",
 				results,
 			); err != nil {
@@ -208,23 +198,18 @@ func resourceProfileCustomDiff(
 
 func resourceProfileUpdate(
 	ctx context.Context,
-	d *schema.ResourceData,
-	m interface{},
+	data *schema.ResourceData,
+	provider interface{},
 ) diag.Diagnostics {
 	log.Infof("Running update")
-	diffValue := d.Get("diff").(map[string]interface{})
+	diffValue := data.Get("diff").(map[string]interface{})
 
 	// Null out diff so it's not persisted and we get a clean diff for the next apply.
-	d.Set("diff", map[string]interface{}{})
+	data.Set("diff", map[string]interface{}{})
 
 	if len(diffValue) > 0 {
-		providerCtx := m.(*providerContext)
-		expandResult, err := providerCtx.expand(
-			ctx,
-			d.Get("path").(string),
-			d.Get("parameters").(map[string]interface{}),
-			d.Get("set").(*schema.Set).List(),
-		)
+		providerCtx := provider.(*providerContext)
+		expandResult, err := providerCtx.expand(ctx, data)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -247,13 +232,13 @@ func resourceProfileUpdate(
 		log.Info("Diff is empty, so not running apply")
 	}
 
-	return resourceProfileRead(ctx, d, m)
+	return resourceProfileRead(ctx, data, provider)
 }
 
 func resourceProfileDelete(
 	ctx context.Context,
-	d *schema.ResourceData,
-	m interface{},
+	data *schema.ResourceData,
+	provider interface{},
 ) diag.Diagnostics {
 	log.Infof("Running delete")
 

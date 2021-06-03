@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
 	"time"
 
@@ -49,7 +50,7 @@ func Provider(providerCtx *providerContext) *schema.Provider {
 	return &schema.Provider{
 		ConfigureContextFunc: func(
 			ctx context.Context,
-			d *schema.ResourceData,
+			data *schema.ResourceData,
 		) (interface{}, diag.Diagnostics) {
 			// Use a provider context that's injected in for testing
 			// purposes.
@@ -57,7 +58,7 @@ func Provider(providerCtx *providerContext) *schema.Provider {
 				return providerCtx, diag.Diagnostics{}
 			}
 
-			return providerConfigure(ctx, d)
+			return providerConfigure(ctx, data)
 		},
 		Schema: map[string]*schema.Schema{
 			// Basic info about the cluster
@@ -109,18 +110,22 @@ func Provider(providerCtx *providerContext) *schema.Provider {
 	}
 }
 
+type resourceGetter interface {
+	Get(key string) interface{}
+}
+
 func providerConfigure(
 	ctx context.Context,
-	d *schema.ResourceData,
+	data resourceGetter,
 ) (interface{}, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	log.Info("Creating provider")
 
 	config := config.ClusterConfig{
-		Cluster: d.Get("cluster_name").(string),
-		Region:  d.Get("region").(string),
-		Env:     d.Get("account_name").(string),
+		Cluster: data.Get("cluster_name").(string),
+		Region:  data.Get("region").(string),
+		Env:     data.Get("account_name").(string),
 	}
 
 	tempDir, err := ioutil.TempDir("", "kubeconfig")
@@ -142,9 +147,9 @@ func providerConfigure(
 			CAData string
 			Token  string
 		}{
-			Server: d.Get("host").(string),
-			CAData: d.Get("cluster_ca_certificate").(string),
-			Token:  d.Get("token").(string),
+			Server: data.Get("host").(string),
+			CAData: data.Get("cluster_ca_certificate").(string),
+			Token:  data.Get("token").(string),
 		},
 	)
 	if err != nil {
@@ -177,7 +182,7 @@ func providerConfigure(
 	}
 
 	providerCtx := providerContext{
-		autoCreateNamespaces: d.Get("auto_create_namespaces").(bool),
+		autoCreateNamespaces: data.Get("auto_create_namespaces").(bool),
 		config:               config,
 		clusterClient:        clusterClient,
 		rawClient:            rawClient,
@@ -188,18 +193,21 @@ func providerConfigure(
 }
 
 type expandResult struct {
-	expandedDir string
-	manifests   []kube.Manifest
-	resources   map[string]string
-	totalHash   string
+	expandedDir  string
+	expandedRoot string
+	manifests    []kube.Manifest
+	resources    map[string]string
+	totalHash    string
 }
 
 func (p *providerContext) expand(
 	ctx context.Context,
-	path string,
-	strParams map[string]interface{},
-	setParams []interface{},
+	data resourceGetter,
 ) (*expandResult, error) {
+	source := data.Get("source").(string)
+	strParams := data.Get("parameters").(map[string]interface{})
+	setParams := data.Get("set").(*schema.Set).List()
+
 	config := p.config
 	config.Parameters = map[string]interface{}{}
 
@@ -220,13 +228,23 @@ func (p *providerContext) expand(
 	}
 
 	timeStamp := time.Now().UnixNano()
-	expandedDir := filepath.Join(
+	expandedRoot := filepath.Join(
 		p.tempDir,
 		"expanded",
 		fmt.Sprintf("%d", timeStamp),
 	)
-	if err := util.RecursiveCopy(path, expandedDir); err != nil {
-		return nil, err
+
+	var expandedDir string
+	if strings.HasPrefix(source, "git@") {
+		if err := util.RestoreData(ctx, "", source, expandedRoot); err != nil {
+			return nil, err
+		}
+		expandedDir = expandedRoot
+	} else {
+		if err := util.RecursiveCopy(source, expandedRoot); err != nil {
+			return nil, err
+		}
+		expandedDir = expandedRoot
 	}
 
 	if err := util.ApplyTemplate(expandedDir, config, true, true); err != nil {
@@ -244,10 +262,11 @@ func (p *providerContext) expand(
 	}
 
 	return &expandResult{
-		expandedDir: expandedDir,
-		manifests:   manifests,
-		resources:   resources,
-		totalHash:   p.manifestsHash(manifests),
+		expandedDir:  expandedDir,
+		expandedRoot: expandedRoot,
+		manifests:    manifests,
+		resources:    resources,
+		totalHash:    p.manifestsHash(manifests),
 	}, nil
 }
 
@@ -335,5 +354,5 @@ func (p *providerContext) cleanExpanded(
 	if p.keepExpanded {
 		return nil
 	}
-	return os.RemoveAll(result.expandedDir)
+	return os.RemoveAll(result.expandedRoot)
 }
