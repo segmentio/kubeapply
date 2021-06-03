@@ -228,10 +228,12 @@ func resourceProfileUpdate(
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		defer cache.del(expandResult.totalHash)
 		defer providerCtx.cleanExpanded(expandResult)
 
 		results, err := providerCtx.apply(ctx, expandResult.expandedDir)
 		log.Infof("Apply results (err=%+v): %s", err, string(results))
+
 		if err != nil {
 			return diag.Diagnostics{
 				diag.Diagnostic{
