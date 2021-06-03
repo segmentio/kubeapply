@@ -140,8 +140,13 @@ func resourceProfileCustomDiff(
 
 	if d.HasChange("resources") || d.Get("force_diff").(bool) {
 		log.Info("Resources have changed")
+		var results map[string]interface{}
 
-		results := cache.get(expandResult.totalHash)
+		if !d.Get("force_diff").(bool) {
+			// Only use cache in normal, "non-force" case
+			results = cache.get(expandResult.totalHash)
+		}
+
 		if results == nil {
 			log.Info("No cache hit, recomputing diffs")
 
