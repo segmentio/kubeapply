@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"crypto/md5"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -196,13 +197,26 @@ type expandResult struct {
 func (p *providerContext) expand(
 	ctx context.Context,
 	path string,
-	params map[string]interface{},
+	strParams map[string]interface{},
+	setParams []interface{},
 ) (*expandResult, error) {
 	config := p.config
 	config.Parameters = map[string]interface{}{}
 
-	for key, value := range params {
+	for key, value := range strParams {
 		config.Parameters[key] = value
+	}
+
+	for _, setParam := range setParams {
+		rawMap := setParam.(map[string]interface{})
+		name := rawMap["name"].(string)
+		strValue := rawMap["value"].(string)
+
+		var value interface{}
+		if err := json.Unmarshal([]byte(strValue), &value); err != nil {
+			return nil, err
+		}
+		config.Parameters[name] = value
 	}
 
 	timeStamp := time.Now().UnixNano()

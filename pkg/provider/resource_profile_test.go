@@ -84,6 +84,10 @@ resource "kubeapply_profile" "main_profile" {
     value1 = "Value1"
 	value2 = "Value2"
   }
+  set {
+    name = "keys"
+	value = jsonencode(["a", "b"])
+  }
 }`,
 					Check: func(state *terraform.State) error {
 						require.Equal(t, 1, len(state.Modules))
@@ -112,6 +116,10 @@ resource "kubeapply_profile" "main_profile" {
     value1 = "UpdatedValue1"
 	value2 = "UpdatedValue2"
   }
+  set {
+    name = "keys"
+	value = jsonencode(["a", "b"])
+  }
 }`,
 				},
 				// Then, finally, update that doesn't make any changes
@@ -133,6 +141,10 @@ resource "kubeapply_profile" "main_profile" {
     value1 = "UpdatedValue1"
 	value2 = "UpdatedValue2"
   }
+  set {
+    name = "keys"
+	value = jsonencode(["a", "b"])
+  }
 }`,
 				},
 				// Test some error cases
@@ -150,6 +162,10 @@ resource "kubeapply_profile" "main_profile" {
   parameters = {
     value1 = "UpdatedValue1"
 	value2 = "UpdatedValue2"
+  }
+  set {
+    name = "keys"
+	value = jsonencode(["a", "b"])
   }
 }`,
 					ExpectError: regexp.MustCompile("is required, but no definition was found"),
@@ -199,6 +215,8 @@ resource "kubeapply_profile" "main_profile" {
 				"  labels:",
 				"    key1: UpdatedValue1",
 				"    cluster: testCluster",
+				"    keya: valuea",
+				"    keyb: valueb",
 				"  name: testName",
 				"  namespace: testNamespace",
 				"",

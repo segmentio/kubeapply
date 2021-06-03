@@ -4,5 +4,8 @@ metadata:
   labels:
     key1: {{.Parameters.value1}}
     cluster: {{.Cluster}}
+    {{- range .Parameters.keys }}
+    key{{.}}: value{{.}}
+    {{- end }}
   name: testName
   namespace: testNamespace

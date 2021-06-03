@@ -30,9 +30,26 @@ func profileResource() *schema.Resource {
 				Description: "Arbitrary parameters that will be used for profile expansion",
 				Optional:    true,
 			},
+			"set": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Custom, JSON-encoded parameters to be merged parameters above",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 			"force_diff": {
 				Type:        schema.TypeBool,
-				Description: "Force a full diff against all resources even if no inputs changed",
+				Description: "Force a full diff even if no inputs changed",
 				Optional:    true,
 			},
 			"diff": {
@@ -62,6 +79,7 @@ func resourceProfileCreate(
 		ctx,
 		d.Get("path").(string),
 		d.Get("parameters").(map[string]interface{}),
+		d.Get("set").(*schema.Set).List(),
 	)
 	if err != nil {
 		return diag.FromErr(err)
@@ -118,6 +136,7 @@ func resourceProfileCustomDiff(
 		ctx,
 		d.Get("path").(string),
 		d.Get("parameters").(map[string]interface{}),
+		d.Get("set").(*schema.Set).List(),
 	)
 	if err != nil {
 		return err
@@ -193,31 +212,37 @@ func resourceProfileUpdate(
 	m interface{},
 ) diag.Diagnostics {
 	log.Infof("Running update")
+	diffValue := d.Get("diff").(map[string]interface{})
 
 	// Null out diff so it's not persisted and we get a clean diff for the next apply.
 	d.Set("diff", map[string]interface{}{})
 
-	providerCtx := m.(*providerContext)
-	expandResult, err := providerCtx.expand(
-		ctx,
-		d.Get("path").(string),
-		d.Get("parameters").(map[string]interface{}),
-	)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	defer providerCtx.cleanExpanded(expandResult)
-
-	results, err := providerCtx.apply(ctx, expandResult.expandedDir)
-	log.Infof("Apply results (err=%+v): %s", err, string(results))
-	if err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  err.Error(),
-				Detail:   string(results),
-			},
+	if len(diffValue) > 0 {
+		providerCtx := m.(*providerContext)
+		expandResult, err := providerCtx.expand(
+			ctx,
+			d.Get("path").(string),
+			d.Get("parameters").(map[string]interface{}),
+			d.Get("set").(*schema.Set).List(),
+		)
+		if err != nil {
+			return diag.FromErr(err)
 		}
+		defer providerCtx.cleanExpanded(expandResult)
+
+		results, err := providerCtx.apply(ctx, expandResult.expandedDir)
+		log.Infof("Apply results (err=%+v): %s", err, string(results))
+		if err != nil {
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  err.Error(),
+					Detail:   string(results),
+				},
+			}
+		}
+	} else {
+		log.Info("Diff is empty, so not running apply")
 	}
 
 	return resourceProfileRead(ctx, d, m)
