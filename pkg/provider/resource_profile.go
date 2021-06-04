@@ -167,7 +167,7 @@ func resourceProfileCustomDiff(
 			if err != nil {
 				return err
 			}
-			log.Infof("Got structured diff output: %+v", len(diffs))
+			log.Infof("Got structured diff output with %d resources changed", len(diffs))
 
 			results = map[string]interface{}{}
 			for _, diff := range diffs {
