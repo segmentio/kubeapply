@@ -42,7 +42,7 @@ func TestSourceGet(t *testing.T) {
 	err = sourceFetcherObj.get(
 		ctx,
 		"git@github.com:segmentio/terracode-modules//profiles?ref=2021-05-01",
-		filepath.Join(tempDir, "dest2"),
+		filepath.Join(tempDir, "dest3"),
 	)
 	require.NoError(t, err)
 
@@ -54,6 +54,9 @@ func TestSourceGet(t *testing.T) {
 				"repoURL=git@github.com:segmentio/terracode-modules ref=2021-03-18",
 			},
 			"dest2/profile.txt": {
+				"repoURL=git@github.com:segmentio/terracode-modules ref=2021-03-18",
+			},
+			"dest3/profile.txt": {
 				"repoURL=git@github.com:segmentio/terracode-modules ref=2021-05-01",
 			},
 		},
