@@ -81,7 +81,7 @@ func resourceProfileCreate(
 	}
 	defer providerCtx.cleanExpanded(expandResult)
 
-	results, err := providerCtx.apply(ctx, expandResult.expandedRoot)
+	results, err := providerCtx.apply(ctx, expandResult.expandedDir)
 	log.Infof("Apply results (err=%+v): %s", err, string(results))
 	if err != nil {
 		return diag.Diagnostics{
@@ -153,7 +153,7 @@ func resourceProfileCustomDiff(
 
 		if !data.Get("force_diff").(bool) {
 			// Only use cache in normal, "non-force" case
-			results = cache.get(expandResult.totalHash)
+			results = diffCacheObj.get(expandResult.totalHash)
 		}
 
 		if results == nil {
@@ -174,7 +174,7 @@ func resourceProfileCustomDiff(
 				results[diff.Name] = diff.ClippedRawDiff(3000)
 			}
 
-			cache.set(expandResult.totalHash, results)
+			diffCacheObj.set(expandResult.totalHash, results)
 		} else {
 			log.Info("Cache hit, not recomputing diffs")
 		}
@@ -213,7 +213,7 @@ func resourceProfileUpdate(
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		defer cache.del(expandResult.totalHash)
+		defer diffCacheObj.del(expandResult.totalHash)
 		defer providerCtx.cleanExpanded(expandResult)
 
 		results, err := providerCtx.apply(ctx, expandResult.expandedDir)

@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"text/template"
 	"time"
 
@@ -33,8 +32,23 @@ var (
 			string(data.MustAsset("pkg/provider/templates/kubeconfig.yaml")),
 		),
 	)
-	cache = newDiffCache()
+
+	// Ideally, these would be integrated into the provider struct and not global singletons.
+	// However, Terraform seems to create and destroy provider instances a lot while running, so
+	// need some global state for these to be effective at caching.
+	diffCacheObj     *diffCache
+	sourceFetcherObj *sourceFetcher
 )
+
+func init() {
+	diffCacheObj = newDiffCache()
+
+	var err error
+	sourceFetcherObj, err = newSourceFetcher(&commandLineGitClient{})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 type providerContext struct {
 	autoCreateNamespaces bool
@@ -193,11 +207,10 @@ func providerConfigure(
 }
 
 type expandResult struct {
-	expandedDir  string
-	expandedRoot string
-	manifests    []kube.Manifest
-	resources    map[string]string
-	totalHash    string
+	expandedDir string
+	manifests   []kube.Manifest
+	resources   map[string]string
+	totalHash   string
 }
 
 func (p *providerContext) expand(
@@ -228,23 +241,15 @@ func (p *providerContext) expand(
 	}
 
 	timeStamp := time.Now().UnixNano()
-	expandedRoot := filepath.Join(
+	expandedDir := filepath.Join(
 		p.tempDir,
 		"expanded",
 		fmt.Sprintf("%d", timeStamp),
 	)
 
-	var expandedDir string
-	if strings.HasPrefix(source, "git@") {
-		if err := util.RestoreData(ctx, "", source, expandedRoot); err != nil {
-			return nil, err
-		}
-		expandedDir = expandedRoot
-	} else {
-		if err := util.RecursiveCopy(source, expandedRoot); err != nil {
-			return nil, err
-		}
-		expandedDir = expandedRoot
+	err := sourceFetcherObj.get(ctx, source, expandedDir)
+	if err != nil {
+		return nil, err
 	}
 
 	if err := util.ApplyTemplate(expandedDir, config, true, true); err != nil {
@@ -262,11 +267,10 @@ func (p *providerContext) expand(
 	}
 
 	return &expandResult{
-		expandedDir:  expandedDir,
-		expandedRoot: expandedRoot,
-		manifests:    manifests,
-		resources:    resources,
-		totalHash:    p.manifestsHash(manifests),
+		expandedDir: expandedDir,
+		manifests:   manifests,
+		resources:   resources,
+		totalHash:   p.manifestsHash(manifests),
 	}, nil
 }
 
@@ -354,5 +358,5 @@ func (p *providerContext) cleanExpanded(
 	if p.keepExpanded {
 		return nil
 	}
-	return os.RemoveAll(result.expandedRoot)
+	return os.RemoveAll(result.expandedDir)
 }
