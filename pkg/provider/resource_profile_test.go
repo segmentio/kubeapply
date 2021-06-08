@@ -245,8 +245,10 @@ resource "kubeapply_profile" "main_profile" {
 		[]string{
 			// Initial create
 			"DiffStructured",
+			"DiffStructured",
 			"Apply",
 			// Update
+			"DiffStructured",
 			"DiffStructured",
 			"Apply",
 		},

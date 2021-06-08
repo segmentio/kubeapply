@@ -3,12 +3,15 @@ package provider
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	log "github.com/sirupsen/logrus"
 )
+
+var sanitizationRegexp = regexp.MustCompile(`(\s+)(creationTimestamp|uid)[:]([^\n]+)`)
 
 // profileResource defines a new kubeapply_profile resource instance. The only required field
 // is a path to the manifests
@@ -151,32 +154,19 @@ func resourceProfileCustomDiff(
 		log.Info("Resources have changed")
 		var results map[string]interface{}
 
-		if !data.Get("force_diff").(bool) {
-			// Only use cache in normal, "non-force" case
-			results = diffCacheObj.get(expandResult.totalHash)
+		if err := providerCtx.createNamespaces(ctx, expandResult.manifests); err != nil {
+			return err
 		}
 
-		if results == nil {
-			log.Info("No cache hit, recomputing diffs")
+		diffs, err := providerCtx.diff(ctx, expandResult.expandedDir)
+		if err != nil {
+			return err
+		}
+		log.Infof("Got structured diff output with %d resources changed", len(diffs))
 
-			if err := providerCtx.createNamespaces(ctx, expandResult.manifests); err != nil {
-				return err
-			}
-
-			diffs, err := providerCtx.diff(ctx, expandResult.expandedDir)
-			if err != nil {
-				return err
-			}
-			log.Infof("Got structured diff output with %d resources changed", len(diffs))
-
-			results = map[string]interface{}{}
-			for _, diff := range diffs {
-				results[diff.Name] = diff.ClippedRawDiff(3000)
-			}
-
-			diffCacheObj.set(expandResult.totalHash, results)
-		} else {
-			log.Info("Cache hit, not recomputing diffs")
+		results = map[string]interface{}{}
+		for _, diff := range diffs {
+			results[diff.Name] = sanitizeDiff(diff.ClippedRawDiff(3000))
 		}
 
 		if len(results) > 0 {
@@ -213,7 +203,6 @@ func resourceProfileUpdate(
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		defer diffCacheObj.del(expandResult.totalHash)
 		defer providerCtx.cleanExpanded(expandResult)
 
 		results, err := providerCtx.apply(ctx, expandResult.expandedDir)
@@ -249,4 +238,8 @@ func resourceProfileDelete(
 			Summary:  "The kubeapply provider will not actually delete anthing; please delete manually if needed",
 		},
 	}
+}
+
+func sanitizeDiff(rawDiff string) string {
+	return sanitizationRegexp.ReplaceAllString(rawDiff, "${1}${2}: OMITTED")
 }

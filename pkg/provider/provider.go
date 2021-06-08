@@ -33,16 +33,13 @@ var (
 		),
 	)
 
-	// Ideally, these would be integrated into the provider struct and not global singletons.
+	// Ideally, this would be integrated into the provider struct and not a global singleton.
 	// However, Terraform seems to create and destroy provider instances a lot while running, so
-	// need some global state for these to be effective at caching.
-	diffCacheObj     *diffCache
+	// need some global state for effective caching.
 	sourceFetcherObj *sourceFetcher
 )
 
 func init() {
-	diffCacheObj = newDiffCache()
-
 	var err error
 	sourceFetcherObj, err = newSourceFetcher(&commandLineGitClient{})
 	if err != nil {
