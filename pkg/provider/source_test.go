@@ -67,6 +67,7 @@ func TestSourceGet(t *testing.T) {
 		t,
 		[]string{
 			"cloneRepo repoURL=git@github.com:segmentio/terracode-modules,ref=2021-03-18",
+			"cloneRepo repoURL=git@github.com:segmentio/terracode-modules,ref=2021-03-18",
 			"cloneRepo repoURL=git@github.com:segmentio/terracode-modules,ref=2021-05-01",
 		},
 		gitClientObj.calls,

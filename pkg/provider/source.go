@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"crypto/md5"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -20,18 +18,11 @@ var (
 )
 
 type sourceFetcher struct {
-	cacheDir     string
 	gitClientObj gitClient
 }
 
 func newSourceFetcher(gitClientObj gitClient) (*sourceFetcher, error) {
-	tempDir, err := ioutil.TempDir("", "kubeapply_sources")
-	if err != nil {
-		return nil, err
-	}
-
 	return &sourceFetcher{
-		cacheDir:     tempDir,
 		gitClientObj: gitClientObj,
 	}, nil
 }
@@ -44,29 +35,25 @@ func (s *sourceFetcher) get(ctx context.Context, source string, dest string) err
 		path := matches[2]
 		ref := matches[3]
 
-		hash := md5.New()
-		hash.Write([]byte(source))
-		hashSum := fmt.Sprintf("%x", hash.Sum(nil))
-		sourceRoot := filepath.Join(s.cacheDir, hashSum)
+		log.Infof("Cloning repo with source %s", source)
 
-		if ok, _ := util.DirExists(sourceRoot); !ok {
-			log.Infof("Cloning repo with source %s", source)
+		cloneDir, err := ioutil.TempDir("", "kubeapply_clone")
+		if err != nil {
+			return err
+		}
+		defer os.RemoveAll(cloneDir)
 
-			err := s.gitClientObj.cloneRepo(
-				ctx,
-				repoURL,
-				ref,
-				sourceRoot,
-			)
-			if err != nil {
-				return err
-			}
-		} else {
-			log.Infof("Found source %s (hash=%s) in cache", source, hashSum)
+		err = s.gitClientObj.cloneRepo(
+			ctx,
+			repoURL,
+			ref,
+			cloneDir,
+		)
+		if err != nil {
+			return err
 		}
 
-		sourcePath := filepath.Join(sourceRoot, path)
-
+		sourcePath := filepath.Join(cloneDir, path)
 		if err := util.RecursiveCopy(sourcePath, dest); err != nil {
 			return err
 		}
@@ -81,5 +68,5 @@ func (s *sourceFetcher) get(ctx context.Context, source string, dest string) err
 }
 
 func (s *sourceFetcher) cleanup() error {
-	return os.RemoveAll(s.cacheDir)
+	return nil
 }
