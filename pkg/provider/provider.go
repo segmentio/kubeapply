@@ -33,7 +33,7 @@ var (
 		),
 	)
 
-	// Ideally, this would be integrated into the provider struct and not a global singleton.
+	// Ideally, these would be integrated into the provider struct and not be global singletons.
 	// However, Terraform seems to create and destroy provider instances a lot while running, so
 	// need some global state for effective caching.
 	sourceFetcherObj *sourceFetcher
