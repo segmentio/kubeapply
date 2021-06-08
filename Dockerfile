@@ -15,7 +15,7 @@ RUN cd /usr/local/bin && /go/src/${SRC}/scripts/pull-deps.sh
 
 WORKDIR /go/src/${SRC}
 
-ENV CGO_ENABLED=1
+ENV CGO_ENABLED=0
 ENV GO111MODULE=on
 
 RUN make kubeapply VERSION_REF=${VERSION_REF} && \
