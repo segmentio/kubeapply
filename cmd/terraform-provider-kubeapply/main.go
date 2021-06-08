@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,7 +14,9 @@ import (
 )
 
 var (
-	debug bool
+	debug       bool
+	debugServer bool
+	debugLogs   bool
 
 	rootCmd = &cobra.Command{
 		Use:   "terraform-provider-kubeapply",
@@ -24,10 +27,22 @@ var (
 
 func init() {
 	rootCmd.Flags().BoolVar(
-		&debug,
+		&debugServer,
 		"debug",
-		false,
-		"Run in debug mode",
+		getEnvDefault("KUBEAPPLY_DEBUG"),
+		"Run both server and logs in debug mode; if set, debug-server and debug-logs flags are ignored",
+	)
+	rootCmd.Flags().BoolVar(
+		&debugServer,
+		"debug-server",
+		getEnvDefault("KUBEAPPLY_DEBUG_SERVER"),
+		"Run server in debug mode",
+	)
+	rootCmd.Flags().BoolVar(
+		&debugServer,
+		"debug-logs",
+		getEnvDefault("KUBEAPPLY_DEBUG_LOGS"),
+		"Log at debug level",
 	)
 
 	// Terraform requires a very simple log output format; see
@@ -38,7 +53,7 @@ func init() {
 }
 
 func runProvider(cmd *cobra.Command, args []string) error {
-	if debug {
+	if debug || debugLogs {
 		log.SetLevel(log.DebugLevel)
 	}
 
@@ -51,9 +66,9 @@ func runProvider(cmd *cobra.Command, args []string) error {
 		},
 	}
 
-	if debug {
-		log.Info("Running in debug mode")
-		return plugin.Debug(ctx, "segmentio/kubeapply/kubeapply", opts)
+	if debug || debugServer {
+		log.Info("Running server in debug mode")
+		return plugin.Debug(ctx, "segment.io/kubeapply/kubeapply", opts)
 	}
 
 	plugin.Serve(opts)
@@ -77,4 +92,9 @@ func (s *simpleFormatter) Format(entry *log.Entry) ([]byte, error) {
 			entry.Message,
 		),
 	), nil
+}
+
+func getEnvDefault(name string) bool {
+	envVal := os.Getenv(name)
+	return strings.ToUpper(envVal) == "TRUE"
 }
