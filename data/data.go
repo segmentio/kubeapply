@@ -197,7 +197,7 @@ func pkgProviderTemplatesKubeconfigYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "pkg/provider/templates/kubeconfig.yaml", size: 354, mode: os.FileMode(0644), modTime: time.Unix(1622597855, 0)}
+	info := bindataFileInfo{name: "pkg/provider/templates/kubeconfig.yaml", size: 354, mode: os.FileMode(0644), modTime: time.Unix(1622835025, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xf5, 0x84, 0xb3, 0xdd, 0xc0, 0x40, 0x3b, 0x2e, 0xa9, 0x49, 0x38, 0x29, 0x7e, 0x9f, 0x2b, 0x44, 0xab, 0xdb, 0xf7, 0x86, 0xec, 0x21, 0xa8, 0x1e, 0x60, 0xa5, 0x47, 0xf4, 0xfc, 0x1, 0xc, 0xbe}}
 	return a, nil
 }

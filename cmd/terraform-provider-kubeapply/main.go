@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/segmentio/kubeapply/pkg/provider"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 )
 
 var (
@@ -22,12 +23,17 @@ var (
 )
 
 func init() {
-	rootCmd.Flags().BoolVar(&debug, "debug", false, "Run in debug mode")
+	rootCmd.Flags().BoolVar(
+		&debug,
+		"debug",
+		false,
+		"Run in debug mode",
+	)
 
-	log.SetFormatter(&prefixed.TextFormatter{
-		TimestampFormat: "2006-01-02 15:04:05",
-		FullTimestamp:   true,
-	})
+	// Terraform requires a very simple log output format; see
+	// https://www.terraform.io/docs/extend/debugging.html#inserting-log-lines-into-a-provider
+	// for more details.
+	log.SetFormatter(&simpleFormatter{})
 	log.SetLevel(log.InfoLevel)
 }
 
@@ -58,4 +64,17 @@ func main() {
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+type simpleFormatter struct {
+}
+
+func (s *simpleFormatter) Format(entry *log.Entry) ([]byte, error) {
+	return []byte(
+		fmt.Sprintf(
+			"[%s] %s\n",
+			strings.ToUpper(entry.Level.String()),
+			entry.Message,
+		),
+	), nil
 }
