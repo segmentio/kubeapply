@@ -25,7 +25,7 @@ type sourceFetcher struct {
 }
 
 func newSourceFetcher(gitClientObj gitClient) (*sourceFetcher, error) {
-	tempDir, err := ioutil.TempDir("", "sources")
+	tempDir, err := ioutil.TempDir("", "kubeapply_sources")
 	if err != nil {
 		return nil, err
 	}

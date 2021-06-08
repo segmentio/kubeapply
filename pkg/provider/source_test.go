@@ -21,7 +21,7 @@ func TestSourceGet(t *testing.T) {
 	require.NoError(t, err)
 	defer sourceFetcherObj.cleanup()
 
-	tempDir, err := ioutil.TempDir("", "sources")
+	tempDir, err := ioutil.TempDir("", "kubeapply_sources")
 	require.NoError(t, err)
 	defer os.RemoveAll(tempDir)
 

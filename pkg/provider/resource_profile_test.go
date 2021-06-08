@@ -23,7 +23,7 @@ import (
 
 func TestResourceProfile(t *testing.T) {
 	ctx := context.Background()
-	tempDir, err := ioutil.TempDir("", "profile")
+	tempDir, err := ioutil.TempDir("", "kubeapply_profile")
 	require.NoError(t, err)
 	defer os.RemoveAll(tempDir)
 

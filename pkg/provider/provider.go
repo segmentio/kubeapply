@@ -134,7 +134,11 @@ func providerConfigure(
 ) (interface{}, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	log.Info("Creating provider")
+	log.Infof(
+		"Creating provider with cluster name %s and host %s",
+		data.Get("cluster_name").(string),
+		data.Get("host").(string),
+	)
 
 	config := config.ClusterConfig{
 		Cluster: data.Get("cluster_name").(string),
@@ -142,7 +146,7 @@ func providerConfigure(
 		Env:     data.Get("account_name").(string),
 	}
 
-	tempDir, err := ioutil.TempDir("", "kubeconfig")
+	tempDir, err := ioutil.TempDir("", "kubeapply_kubeconfig")
 	if err != nil {
 		return nil, diag.FromErr(err)
 	}
