@@ -43,13 +43,13 @@ kubeapply-server: data
 # Test and formatting targets
 .PHONY: test
 test: vet $(TEST_KUBECONFIG)
-	KIND_ENABLED=true go test -count=1 -cover ./...
+	KIND_ENABLED=true go test -count=1 -p 1 -cover ./...
 
 .PHONY: test-ci
 test-ci: vet
 	# Kind is not supported in CI yet.
 	# TODO: Get this working.
-	KIND_ENABLED=false go test -count=1 -cover ./...
+	KIND_ENABLED=false go test -count=1 -p 1 -cover ./...
 
 .PHONY: vet
 vet:
