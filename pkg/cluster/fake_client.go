@@ -143,9 +143,10 @@ func (cc *FakeClusterClient) DiffStructured(
 			{
 				Name: "result",
 				RawDiff: fmt.Sprintf(
-					"diff result for %s with paths %+v",
+					// Don't include paths since this can lead to terraform diff
+					// instability
+					"structured diff result for %s",
 					cc.clusterConfig.Cluster,
-					paths,
 				),
 			},
 		},

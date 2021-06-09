@@ -11,6 +11,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Terraform gets upset if the same diff run multiple times yields any differences. This
+// regexp helps to replace the variable parts with fixed placeholders.
 var sanitizationRegexp = regexp.MustCompile(`(\s+)(creationTimestamp|uid)[:]([^\n]+)`)
 
 // profileResource defines a new kubeapply_profile resource instance. The only required field
