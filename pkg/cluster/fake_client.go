@@ -66,8 +66,9 @@ func (cc *FakeClusterClient) Apply(
 	)
 	return []byte(
 			fmt.Sprintf(
-				"apply result for %s",
+				"apply result for %s with paths %+v",
 				cc.clusterConfig.Cluster,
+				paths,
 			),
 		),
 		cc.kubectlErr
@@ -91,8 +92,9 @@ func (cc *FakeClusterClient) ApplyStructured(
 		{
 			Kind: "Deployment",
 			Name: fmt.Sprintf(
-				"apply result for %s",
+				"apply result for %s with paths %+v",
 				cc.clusterConfig.Cluster,
+				paths,
 			),
 			Namespace:  "test-namespace",
 			OldVersion: "1234",
@@ -116,8 +118,9 @@ func (cc *FakeClusterClient) Diff(
 	)
 	return []byte(
 			fmt.Sprintf(
-				"diff result for %s",
+				"diff result for %s with paths %+v",
 				cc.clusterConfig.Cluster,
+				paths,
 			),
 		),
 		cc.kubectlErr
@@ -140,8 +143,9 @@ func (cc *FakeClusterClient) DiffStructured(
 			{
 				Name: "result",
 				RawDiff: fmt.Sprintf(
-					"diff result for %s",
+					"diff result for %s with paths %+v",
 					cc.clusterConfig.Cluster,
+					paths,
 				),
 			},
 		},
