@@ -25,6 +25,7 @@ func profileResource() *schema.Resource {
 		DeleteContext: resourceProfileDelete,
 		CustomizeDiff: resourceProfileCustomDiff,
 		Schema: map[string]*schema.Schema{
+			// Inputs
 			"source": {
 				Type:        schema.TypeString,
 				Description: "Source for profile manifest files in local file system or remote git repo",
@@ -57,6 +58,8 @@ func profileResource() *schema.Resource {
 				Description: "Force a full diff even if no inputs changed",
 				Optional:    true,
 			},
+
+			// Computed fields
 			"diff": {
 				Type:        schema.TypeMap,
 				Description: "Diff result from applying changed files",
