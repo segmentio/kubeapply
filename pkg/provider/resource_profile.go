@@ -105,6 +105,12 @@ func resourceProfileCreate(
 		return diag.FromErr(err)
 	}
 
+	// Null out diff so it's not persisted and we get a clean diff for the next apply.
+	err = data.Set("diff", map[string]interface{}{})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	// Just make up an id from the timestamp
 	data.SetId(fmt.Sprintf("%d", time.Now().UnixNano()))
 
