@@ -51,7 +51,9 @@ type providerContext struct {
 	autoCreateNamespaces bool
 	clusterClient        cluster.ClusterClient
 	config               config.ClusterConfig
+	createdAt            time.Time
 	keepExpanded         bool
+	pid                  int
 	rawClient            kubernetes.Interface
 	tempDir              string
 }
@@ -131,9 +133,12 @@ func providerConfigure(
 ) (interface{}, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	log.Infof(
-		"Creating provider with cluster name %s and host %s",
+	now := time.Now()
+	pid := os.Getpid()
+
+	log.Infof("Creating provider for cluster %s in region %s with host %s",
 		data.Get("cluster_name").(string),
+		data.Get("region").(string),
 		data.Get("host").(string),
 	)
 
@@ -195,11 +200,12 @@ func providerConfigure(
 	if err != nil {
 		return nil, diag.FromErr(err)
 	}
-
 	providerCtx := providerContext{
 		autoCreateNamespaces: data.Get("auto_create_namespaces").(bool),
 		config:               config,
 		clusterClient:        clusterClient,
+		createdAt:            now,
+		pid:                  pid,
 		rawClient:            rawClient,
 		tempDir:              tempDir,
 	}

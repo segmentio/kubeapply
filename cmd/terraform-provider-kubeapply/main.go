@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -110,13 +111,26 @@ type simpleFormatter struct {
 }
 
 func (s *simpleFormatter) Format(entry *log.Entry) ([]byte, error) {
-	return []byte(
-		fmt.Sprintf(
-			"[%s] %s\n",
-			strings.ToUpper(entry.Level.String()),
-			entry.Message,
-		),
-	), nil
+	if len(entry.Data) > 0 {
+		fieldsJSON, _ := json.Marshal(entry.Data)
+
+		return []byte(
+			fmt.Sprintf(
+				"[%s] %s (%+v)\n",
+				strings.ToUpper(entry.Level.String()),
+				entry.Message,
+				string(fieldsJSON),
+			),
+		), nil
+	} else {
+		return []byte(
+			fmt.Sprintf(
+				"[%s] %s\n",
+				strings.ToUpper(entry.Level.String()),
+				entry.Message,
+			),
+		), nil
+	}
 }
 
 func getEnvDefault(name string) bool {
