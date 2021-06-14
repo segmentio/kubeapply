@@ -25,10 +25,20 @@ type ClusterConfig struct {
 	// Required.
 	Region string `json:"region"`
 
-	// Env is the environment or account for this cluster, e.g. production.
+	// Env is the environment for this cluster, e.g. production.
 	//
 	// Required.
 	Env string `json:"env"`
+
+	// AccountName is the name of the account where this cluster is running.
+	//
+	// Required.
+	AccountName string `json:"accountName"`
+
+	// AccountID is the ID of the account where this cluster is running.
+	//
+	// Required.
+	AccountID string `json:"accountID"`
 
 	// UID is a unique identifier of this cluster. Specifically, it is the unique
 	// identifier of the kube-system namespace. If set, kubeapply will validate that

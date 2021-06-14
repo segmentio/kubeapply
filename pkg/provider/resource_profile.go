@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -79,10 +80,7 @@ func resourceProfileCreate(
 	data *schema.ResourceData,
 	provider interface{},
 ) diag.Diagnostics {
-	log.Infof(
-		"Running create for source %s",
-		data.Get("source").(string),
-	)
+	log.Infof("Running create for %s", moduleName(data))
 	providerCtx := provider.(*providerContext)
 	var diags diag.Diagnostics
 
@@ -94,8 +92,8 @@ func resourceProfileCreate(
 
 	results, err := providerCtx.apply(ctx, expandResult.expandedDir)
 	log.Infof(
-		"Apply results for source %s (err=%+v): %s",
-		data.Get("source").(string),
+		"Apply results for %s (err=%+v): %s",
+		moduleName(data),
 		err,
 		string(results),
 	)
@@ -125,10 +123,7 @@ func resourceProfileCreate(
 	// Just make up an id from the timestamp
 	data.SetId(fmt.Sprintf("%d", time.Now().UnixNano()))
 
-	log.Infof(
-		"Create successful for source %s",
-		data.Get("source").(string),
-	)
+	log.Infof("Create successful for %s", moduleName(data))
 	return diags
 }
 
@@ -137,10 +132,7 @@ func resourceProfileRead(
 	data *schema.ResourceData,
 	provider interface{},
 ) diag.Diagnostics {
-	log.Infof(
-		"Running read for source %s",
-		data.Get("source").(string),
-	)
+	log.Infof("Running read for %s", moduleName(data))
 	var diags diag.Diagnostics
 
 	// There's nothing to do here since we only read the remote kube state if we're doing a
@@ -153,10 +145,7 @@ func resourceProfileCustomDiff(
 	data *schema.ResourceDiff,
 	provider interface{},
 ) error {
-	log.Infof(
-		"Running custom diff for source %s",
-		data.Get("source").(string),
-	)
+	log.Infof("Running custom diff for %s", moduleName(data))
 	providerCtx := provider.(*providerContext)
 	expandResult, err := providerCtx.expand(ctx, data)
 	if err != nil {
@@ -165,10 +154,10 @@ func resourceProfileCustomDiff(
 	defer providerCtx.cleanExpanded(expandResult)
 
 	log.Infof(
-		"Found %d manifests with overall hash of %s for source %s",
+		"Found %d manifests with overall hash of %s for %s",
 		len(expandResult.manifests),
 		expandResult.totalHash,
-		data.Get("source").(string),
+		moduleName(data),
 	)
 
 	// Set resources
@@ -181,8 +170,8 @@ func resourceProfileCustomDiff(
 
 	if data.HasChange("resources") || data.Get("force_diff").(bool) {
 		log.Infof(
-			"Resources have changed for source %s",
-			data.Get("source").(string),
+			"Resources have changed for %s",
+			moduleName(data),
 		)
 		var results map[string]interface{}
 
@@ -195,8 +184,8 @@ func resourceProfileCustomDiff(
 			return err
 		}
 		log.Infof(
-			"Got structured diff output for source %s with %d resources changed",
-			data.Get("source").(string),
+			"Got structured diff output for %s with %d resources changed",
+			moduleName(data),
 			len(diffs),
 		)
 
@@ -214,14 +203,14 @@ func resourceProfileCustomDiff(
 			}
 		} else {
 			log.Infof(
-				"Not updating diff field for source %s since diffs are empty",
-				data.Get("source").(string),
+				"Not updating diff field for %s since diffs are empty",
+				moduleName(data),
 			)
 		}
 	} else {
 		log.Infof(
-			"Resources have not changed for source %s",
-			data.Get("source").(string),
+			"Resources have not changed for %s",
+			moduleName(data),
 		)
 	}
 
@@ -233,7 +222,7 @@ func resourceProfileUpdate(
 	data *schema.ResourceData,
 	provider interface{},
 ) diag.Diagnostics {
-	log.Infof("Running update for source %s", data.Get("source").(string))
+	log.Infof("Running update for %s", moduleName(data))
 	diffValue := data.Get("diff").(map[string]interface{})
 
 	// Null out diff so it's not persisted and we get a clean diff for the next apply.
@@ -249,8 +238,8 @@ func resourceProfileUpdate(
 
 		results, err := providerCtx.apply(ctx, expandResult.expandedDir)
 		log.Infof(
-			"Apply results for source %s (err=%+v): %s",
-			data.Get("source").(string),
+			"Apply results for %s (err=%+v): %s",
+			moduleName(data),
 			err,
 			string(results),
 		)
@@ -266,8 +255,8 @@ func resourceProfileUpdate(
 		}
 	} else {
 		log.Infof(
-			"Diff is empty for source %s, so not running apply",
-			data.Get("source").(string),
+			"Diff is empty for %s, so not running apply",
+			moduleName(data),
 		)
 	}
 
@@ -279,16 +268,28 @@ func resourceProfileDelete(
 	data *schema.ResourceData,
 	provider interface{},
 ) diag.Diagnostics {
-	log.Infof("Running no-op delete for source %s", data.Get("source").(string))
+	log.Infof("Running no-op delete for %s", moduleName(data))
 
 	// TODO: Support real deletes?
 	return diag.Diagnostics{
 		diag.Diagnostic{
 			Severity: diag.Warning,
-			Summary:  "The kubeapply provider will not actually delete anything; please delete manually if needed",
-			Detail:   fmt.Sprintf("Source: %s", data.Get("source").(string)),
+			Summary: fmt.Sprintf(
+				"The kubeapply provider will not actually delete anything in %s; please delete manually if needed",
+				moduleName(data),
+			),
 		},
 	}
+}
+
+func moduleName(data resourceGetter) string {
+	source := data.Get("source").(string)
+	components := strings.Split(source, "/")
+	if len(components) >= 3 && components[0] == ".terraform" && components[1] == "modules" {
+		return components[2]
+	}
+
+	return "module"
 }
 
 func sanitizeDiff(rawDiff string) string {

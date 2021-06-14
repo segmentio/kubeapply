@@ -85,10 +85,20 @@ func Provider(providerCtx *providerContext) *schema.Provider {
 				Required:    true,
 				Description: "Region",
 			},
+			"environment": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Account environment",
+			},
 			"account_name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Region",
+				Description: "Account name",
+			},
+			"account_id": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Account ID",
 			},
 
 			// Cluster API and auth information
