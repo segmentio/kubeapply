@@ -300,21 +300,25 @@ func merge(values ...interface{}) (interface{}, error) {
 func mergeMap(path string, l, r map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 
-	for k, v := range r {
-		rMap, ok := v.(map[string]interface{})
-		if !ok || l[k] == nil {
-			l[k] = v
+	for k, val := range r {
+		if l[k] == nil {
+			l[k] = val
 			continue
 		}
 
-		lMap, ok := l[k].(map[string]interface{})
-		if !ok {
-			return nil, fmt.Errorf("%s: Expected map[string]interface{}, got %s", joinPath(path, k), typeLabel(l[k]))
-		}
+		switch v := val.(type) {
+		case map[string]interface{}:
+			lMap, ok := l[k].(map[string]interface{})
+			if !ok {
+				return nil, fmt.Errorf("%s: Expected map[string]interface{}, got %s", joinPath(path, k), typeLabel(l[k]))
+			}
 
-		l[k], err = mergeMap(joinPath(path, k), lMap, rMap)
-		if err != nil {
-			return nil, err
+			l[k], err = mergeMap(joinPath(path, k), lMap, v)
+			if err != nil {
+				return nil, err
+			}
+		default:
+			l[k] = val
 		}
 	}
 
