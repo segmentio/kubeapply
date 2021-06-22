@@ -221,3 +221,156 @@ func TestLookup(t *testing.T) {
 		}
 	}
 }
+
+func TestMerge(t *testing.T) {
+	tests := []struct {
+		desc        string
+		values      []interface{}
+		expect      interface{}
+		expectError string
+	}{
+		{
+			desc:   "empty",
+			values: []interface{}{},
+			expect: map[string]interface{}{},
+		},
+		{
+			desc:   "nil",
+			values: []interface{}{nil, nil},
+			expect: map[string]interface{}{},
+		},
+		{
+			desc:   "single",
+			values: []interface{}{map[string]interface{}{"a": 1}},
+			expect: map[string]interface{}{"a": 1},
+		},
+		{
+			desc:        "invalid type",
+			values:      []interface{}{1},
+			expectError: "Argument 0: Expected map[string]interface{} or nil, got int",
+		},
+		{
+			desc: "simple",
+			values: []interface{}{
+				map[string]interface{}{"a": 1, "c": 3},
+				map[string]interface{}{"b": 2},
+			},
+			expect: map[string]interface{}{
+				"a": 1,
+				"b": 2,
+				"c": 3,
+			},
+		},
+		{
+			desc: "overwrite",
+			values: []interface{}{
+				map[string]interface{}{"a": 1, "c": 3},
+				map[string]interface{}{"a": 4, "b": 2},
+			},
+			expect: map[string]interface{}{
+				"a": 4,
+				"b": 2,
+				"c": 3,
+			},
+		},
+		{
+			desc: "nested",
+			values: []interface{}{
+				map[string]interface{}{
+					"a": map[string]interface{}{
+						"b": map[string]interface{}{
+							"c": 1,
+						},
+						"d": 2,
+					},
+				},
+				map[string]interface{}{
+					"a": map[string]interface{}{
+						"b": map[string]interface{}{
+							"c": 3,
+						},
+					},
+					"e": 4,
+				},
+			},
+			expect: map[string]interface{}{
+				"a": map[string]interface{}{
+					"b": map[string]interface{}{
+						"c": 3,
+					},
+					"d": 2,
+				},
+				"e": 4,
+			},
+		},
+		{
+			desc: "nested replace",
+			values: []interface{}{
+				map[string]interface{}{
+					"a": map[string]interface{}{
+						"b": map[string]interface{}{
+							"c": 1,
+						},
+						"d": 2,
+					},
+				},
+				map[string]interface{}{
+					"a": map[string]interface{}{
+						"b": 1,
+					},
+				},
+			},
+			expect: map[string]interface{}{
+				"a": map[string]interface{}{
+					"b": 1,
+					"d": 2,
+				},
+			},
+		},
+		{
+			desc: "type error",
+			values: []interface{}{
+				map[string]interface{}{
+					"a": 1,
+				},
+				map[string]interface{}{
+					"a": map[string]interface{}{
+						"b": 2,
+					},
+				},
+			},
+			expectError: "a: Expected map[string]interface{}, got int",
+		},
+		{
+			desc: "nested type error",
+			values: []interface{}{
+				map[string]interface{}{
+					"a": map[string]interface{}{
+						"b": 1,
+					},
+				},
+				map[string]interface{}{
+					"a": map[string]interface{}{
+						"b": map[string]interface{}{
+							"c": 2,
+						},
+					},
+				},
+			},
+			expectError: "a.b: Expected map[string]interface{}, got int",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.desc, func(t *testing.T) {
+			got, gotErr := merge(test.values...)
+			if test.expectError != "" {
+				require.Error(t, gotErr)
+				assert.Equal(t, test.expectError, gotErr.Error())
+			} else {
+				require.NoError(t, gotErr)
+				assert.Equal(t, test.expect, got)
+			}
+		})
+	}
+}

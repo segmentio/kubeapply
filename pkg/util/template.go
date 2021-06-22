@@ -22,6 +22,7 @@ var (
 		"pathLookup": pathLookup,
 		"toYaml":     toYaml,
 		"urlEncode":  url.QueryEscape,
+		"merge":      merge,
 	}
 )
 
@@ -270,4 +271,71 @@ func toYaml(input interface{}) (string, error) {
 		return "", err
 	}
 	return string(bytes), nil
+}
+
+// merge recursively merges one or more string-keyed maps into one map. It
+// always returns a map[string]interface{} or an error.
+func merge(values ...interface{}) (interface{}, error) {
+	merged := map[string]interface{}{}
+	var err error
+
+	for i, val := range values {
+		switch v := val.(type) {
+		case map[string]interface{}:
+			merged, err = mergeMap("", merged, v)
+		case nil:
+			continue
+		default:
+			err = fmt.Errorf("Argument %d: Expected map[string]interface{} or nil, got %s", i, typeLabel(val))
+		}
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return merged, nil
+}
+
+func mergeMap(path string, l, r map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+
+	for k, val := range r {
+		if l[k] == nil {
+			l[k] = val
+			continue
+		}
+
+		switch v := val.(type) {
+		case map[string]interface{}:
+			lMap, ok := l[k].(map[string]interface{})
+			if !ok {
+				return nil, fmt.Errorf("%s: Expected map[string]interface{}, got %s", joinPath(path, k), typeLabel(l[k]))
+			}
+
+			l[k], err = mergeMap(joinPath(path, k), lMap, v)
+			if err != nil {
+				return nil, err
+			}
+		default:
+			l[k] = val
+		}
+	}
+
+	return l, nil
+}
+
+func typeLabel(v interface{}) string {
+	typ := reflect.TypeOf(v)
+	if typ == nil {
+		return "nil"
+	}
+	return typ.String()
+}
+
+func joinPath(l, r string) string {
+	if l == "" {
+		return r
+	}
+	return l + "." + r
 }
