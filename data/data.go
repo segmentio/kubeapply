@@ -9,10 +9,8 @@
 // scripts/cluster-summary/cluster_summary.py (4.488kB)
 // scripts/cluster-summary/tabulate.py (57.091kB)
 // scripts/create-lambda-bundle.sh (791B)
-// scripts/kdiff-wrapper.sh (247B)
 // scripts/kindctl.sh (1.76kB)
 // scripts/pull-deps.sh (1.797kB)
-// scripts/raw-diff.sh (143B)
 
 package data
 
@@ -196,7 +194,7 @@ func scriptsClusterSummary__init__Py() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "scripts/cluster-summary/__init__.py", size: 0, mode: os.FileMode(0644), modTime: time.Unix(1586803753, 0)}
+	info := bindataFileInfo{name: "scripts/cluster-summary/__init__.py", size: 0, mode: os.FileMode(0644), modTime: time.Unix(1620428515, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14, 0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f, 0xb9, 0x24, 0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c, 0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55}}
 	return a, nil
 }
@@ -216,7 +214,7 @@ func scriptsClusterSummaryCluster_summaryPy() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "scripts/cluster-summary/cluster_summary.py", size: 4488, mode: os.FileMode(0755), modTime: time.Unix(1593205176, 0)}
+	info := bindataFileInfo{name: "scripts/cluster-summary/cluster_summary.py", size: 4488, mode: os.FileMode(0755), modTime: time.Unix(1620428515, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xb2, 0xfd, 0xc1, 0xd0, 0x9d, 0x3e, 0x14, 0x51, 0x1a, 0x84, 0x85, 0x49, 0x4a, 0x63, 0x5c, 0x4d, 0x3a, 0x6c, 0x28, 0x48, 0x9, 0xd0, 0x64, 0x2f, 0x7b, 0x5b, 0xa8, 0xe8, 0x1, 0xa, 0xa9, 0x99}}
 	return a, nil
 }
@@ -236,7 +234,7 @@ func scriptsClusterSummaryTabulatePy() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "scripts/cluster-summary/tabulate.py", size: 57091, mode: os.FileMode(0644), modTime: time.Unix(1586803753, 0)}
+	info := bindataFileInfo{name: "scripts/cluster-summary/tabulate.py", size: 57091, mode: os.FileMode(0644), modTime: time.Unix(1620428515, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xe9, 0x68, 0x8, 0x2c, 0x92, 0x99, 0x98, 0x23, 0x29, 0xba, 0x60, 0xc3, 0xa4, 0x16, 0x4, 0xe3, 0x2, 0xdd, 0x43, 0xdd, 0x2d, 0x2d, 0x51, 0x1e, 0xa9, 0x2, 0xe9, 0x71, 0x54, 0xef, 0x3c, 0x1c}}
 	return a, nil
 }
@@ -258,26 +256,6 @@ func scriptsCreateLambdaBundleSh() (*asset, error) {
 
 	info := bindataFileInfo{name: "scripts/create-lambda-bundle.sh", size: 791, mode: os.FileMode(0755), modTime: time.Unix(1618002872, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xc6, 0x84, 0xb9, 0x6d, 0xfb, 0x33, 0xdc, 0xa7, 0xa8, 0x67, 0x8f, 0x17, 0xde, 0x9, 0x83, 0x14, 0x89, 0x73, 0xea, 0x81, 0x18, 0xa4, 0x2b, 0x9d, 0x33, 0xe3, 0xfe, 0xc3, 0xd9, 0x64, 0x43, 0x3c}}
-	return a, nil
-}
-
-var _scriptsKdiffWrapperSh = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x5c\x8d\x31\x4e\xc4\x30\x10\x45\x7b\x9f\xe2\xa3\xac\xb4\xd0\xec\x0a\xce\x82\x44\x3d\xb6\x27\xc9\x28\xce\xd8\xf2\x8c\x15\x72\x7b\x14\x0a\x0a\xda\xaf\xff\xde\x9b\x5e\x9e\x51\xf4\x19\xc9\xd6\x10\x26\x7c\xae\x62\x10\xc3\x30\xce\x20\x83\xaf\x8c\x34\xcc\xeb\x8e\x2c\xf3\xcc\x1d\x73\xed\xd8\x46\xe4\xe4\xe5\x77\x7a\xe0\x8b\xa1\x7c\xdd\x71\x74\x6a\x8d\x3b\x2c\x75\x69\x0e\x51\x73\xa6\x1c\x26\xd4\x19\x89\x4a\x11\x5d\x70\xbf\x60\x6a\xad\x9c\xd8\x2e\xfe\x8e\x2c\xfd\xb2\x9d\x88\x9c\x68\x18\xff\xe9\x0f\x52\x37\x10\x4c\x74\x29\x0c\xfe\xe6\x34\x9c\x62\x61\xbc\x1e\xe2\x6b\x1d\x1e\x26\x90\x9e\xb0\x11\x53\xdd\x77\xd2\x6c\xa8\x1d\xd4\x97\xb1\xb3\xba\xbd\x3d\x42\xf8\x97\xc3\xed\x1d\xb7\x8f\xf0\x13\x00\x00\xff\xff\x1d\xf0\xaa\x59\xf7\x00\x00\x00")
-
-func scriptsKdiffWrapperShBytes() ([]byte, error) {
-	return bindataRead(
-		_scriptsKdiffWrapperSh,
-		"scripts/kdiff-wrapper.sh",
-	)
-}
-
-func scriptsKdiffWrapperSh() (*asset, error) {
-	bytes, err := scriptsKdiffWrapperShBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "scripts/kdiff-wrapper.sh", size: 247, mode: os.FileMode(0755), modTime: time.Unix(1611616180, 0)}
-	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x1c, 0x65, 0xd, 0x2, 0xe5, 0x67, 0x2e, 0xc4, 0x79, 0xc0, 0x40, 0x6, 0x5c, 0x67, 0x6b, 0xbf, 0x64, 0x8, 0x19, 0x33, 0x6c, 0xa0, 0x14, 0x2f, 0x62, 0x59, 0xfc, 0x7e, 0x5d, 0x1b, 0xc9, 0x27}}
 	return a, nil
 }
 
@@ -318,26 +296,6 @@ func scriptsPullDepsSh() (*asset, error) {
 
 	info := bindataFileInfo{name: "scripts/pull-deps.sh", size: 1797, mode: os.FileMode(0755), modTime: time.Unix(1618002872, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xc, 0x3a, 0x72, 0x9, 0x16, 0xea, 0x9e, 0xdc, 0xd4, 0x72, 0x53, 0xa8, 0x31, 0x29, 0x9b, 0xcc, 0x8a, 0xeb, 0x65, 0x26, 0x1b, 0x28, 0xbd, 0x4e, 0x3d, 0x14, 0x43, 0x3d, 0x5a, 0xc1, 0x48, 0x72}}
-	return a, nil
-}
-
-var _scriptsRawDiffSh = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x24\xcc\x31\x8a\xc3\x30\x10\x40\xd1\x7e\x4e\xf1\x17\xbb\x15\xc6\xdb\x6e\xb1\x55\xda\x5c\xc0\xb8\x90\xc9\x28\x12\x18\x09\x46\x63\x9c\xe4\xf4\x21\xa4\x7f\xbc\xe1\x67\xda\x4a\x9d\xb6\xd8\xb3\xc8\xad\xa4\x44\x38\x08\x57\xc6\x99\xf1\x57\x64\xe0\x52\xfb\x61\x8a\xe7\xe8\x9c\x4a\xab\xfb\x13\x7d\x14\xe7\x2c\x9e\xa9\xad\x86\x97\x5a\xa3\x7b\xf4\xa3\x53\x3a\x9e\xd5\x94\x33\x76\x22\xa6\x71\x47\xcd\x9a\x49\x49\x2c\x0b\xe3\x3f\xe1\xee\xcc\xac\xeb\xdf\x47\x56\x01\xbe\xdf\x2c\xa9\xc8\x3b\x00\x00\xff\xff\x66\x89\xc3\x1f\x8f\x00\x00\x00")
-
-func scriptsRawDiffShBytes() ([]byte, error) {
-	return bindataRead(
-		_scriptsRawDiffSh,
-		"scripts/raw-diff.sh",
-	)
-}
-
-func scriptsRawDiffSh() (*asset, error) {
-	bytes, err := scriptsRawDiffShBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "scripts/raw-diff.sh", size: 143, mode: os.FileMode(0644), modTime: time.Unix(1612551594, 0)}
-	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x9, 0x22, 0xae, 0xe8, 0xa3, 0x7b, 0xc9, 0xd1, 0x2a, 0x95, 0x3, 0x39, 0x38, 0x73, 0xa5, 0x4a, 0x8b, 0x2f, 0x10, 0x38, 0x1e, 0xc0, 0x41, 0x56, 0x9a, 0xde, 0x58, 0x2, 0xc9, 0x90, 0xa, 0x11}}
 	return a, nil
 }
 
@@ -450,13 +408,9 @@ var _bindata = map[string]func() (*asset, error){
 
 	"scripts/create-lambda-bundle.sh": scriptsCreateLambdaBundleSh,
 
-	"scripts/kdiff-wrapper.sh": scriptsKdiffWrapperSh,
-
 	"scripts/kindctl.sh": scriptsKindctlSh,
 
 	"scripts/pull-deps.sh": scriptsPullDepsSh,
-
-	"scripts/raw-diff.sh": scriptsRawDiffSh,
 }
 
 // AssetDir returns the file names below a certain
@@ -518,10 +472,8 @@ var _bintree = &bintree{nil, map[string]*bintree{
 			"tabulate.py":        &bintree{scriptsClusterSummaryTabulatePy, map[string]*bintree{}},
 		}},
 		"create-lambda-bundle.sh": &bintree{scriptsCreateLambdaBundleSh, map[string]*bintree{}},
-		"kdiff-wrapper.sh":        &bintree{scriptsKdiffWrapperSh, map[string]*bintree{}},
 		"kindctl.sh":              &bintree{scriptsKindctlSh, map[string]*bintree{}},
 		"pull-deps.sh":            &bintree{scriptsPullDepsSh, map[string]*bintree{}},
-		"raw-diff.sh":             &bintree{scriptsRawDiffSh, map[string]*bintree{}},
 	}},
 }}
 

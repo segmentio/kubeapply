@@ -211,7 +211,7 @@ func (cc *KubeClusterClient) Diff(
 	paths []string,
 	serverSide bool,
 ) ([]byte, error) {
-	rawResults, err := cc.execDiff(ctx, paths, false)
+	rawResults, err := cc.execDiff(ctx, paths, false, "")
 	if err != nil {
 		return nil, fmt.Errorf(
 			"Error running diff: %+v (output: %s)",
@@ -229,8 +229,9 @@ func (cc *KubeClusterClient) DiffStructured(
 	ctx context.Context,
 	paths []string,
 	serverSide bool,
+	diffCommand string,
 ) ([]diff.Result, error) {
-	rawResults, err := cc.execDiff(ctx, paths, true)
+	rawResults, err := cc.execDiff(ctx, paths, true, diffCommand)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"Error running diff: %+v (output: %s)",
@@ -351,6 +352,7 @@ func (cc *KubeClusterClient) execDiff(
 	ctx context.Context,
 	paths []string,
 	structured bool,
+	diffCommand string,
 ) ([]byte, error) {
 	if cc.useLocks {
 		acquireCtx, cancel := context.WithTimeout(ctx, lockAcquistionTimeout)
@@ -378,6 +380,7 @@ func (cc *KubeClusterClient) execDiff(
 		ctx,
 		paths,
 		structured,
+		diffCommand,
 		cc.spinnerObj,
 	)
 	if err != nil || !cc.checkApplyConsistency {
