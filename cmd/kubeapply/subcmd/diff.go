@@ -223,6 +223,7 @@ func execDiff(
 		ctx,
 		clusterConfig.AbsSubpaths(),
 		clusterConfig.ServerSideApply,
+		"",
 	)
 	return results, "", err
 }

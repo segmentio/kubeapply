@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/briandowns/spinner"
 	"github.com/segmentio/kubeapply/data"
@@ -18,8 +19,22 @@ import (
 )
 
 const (
-	structuredDiffScript = "kdiff-wrapper.sh"
-	rawDiffScript        = "raw-diff.sh"
+	rawDiffScript = `#!/bin/bash
+
+diff -u -N $1 $2
+
+# Ensure that we only exit with non-zero status is there was a real error
+if [[ $? -gt 1 ]]; then
+    exit 1
+fi`
+
+	structuredDiffScript = `#!/bin/bash
+
+# This is used as the custom differ for kubectl diff. We need a wrapper script instead
+# of calling 'kubeapply kdiff' directly because kubectl wants a single executable (without
+# any subcommands or arguments).
+
+kubeapply kdiff $1 $2`
 )
 
 // TODO: Switch to a YAML library that supports doing this splitting for us.
@@ -149,10 +164,9 @@ func (k *OrderedClient) Diff(
 	ctx context.Context,
 	configPaths []string,
 	structured bool,
+	diffCommand string,
 	spinner *spinner.Spinner,
 ) ([]byte, error) {
-	var diffCmd string
-
 	tempDir, err := ioutil.TempDir("", "diff")
 	if err != nil {
 		return nil, err
@@ -184,18 +198,36 @@ func (k *OrderedClient) Diff(
 	}
 
 	envVars := []string{}
-	var diffScript string
+	var diffScriptBody string
 
 	if structured {
-		diffScript = structuredDiffScript
+		if diffCommand == "" {
+			diffScriptBody = structuredDiffScript
+		} else {
+			diffScriptBody = strings.Replace(
+				structuredDiffScript,
+				"kubeapply kdiff",
+				diffCommand,
+				-1,
+			)
+		}
 	} else {
-		diffScript = rawDiffScript
+		if diffCommand == "" {
+			diffScriptBody = rawDiffScript
+		} else {
+			diffScriptBody = strings.Replace(
+				rawDiffScript,
+				"diff",
+				diffCommand,
+				-1,
+			)
+		}
 	}
 
-	diffCmd = filepath.Join(tempDir, diffScript)
+	kubectlDiffCmd := filepath.Join(tempDir, "diff.sh")
 	err = ioutil.WriteFile(
-		diffCmd,
-		data.MustAsset(fmt.Sprintf("scripts/%s", diffScript)),
+		kubectlDiffCmd,
+		[]byte(diffScriptBody),
 		0755,
 	)
 	if err != nil {
@@ -204,7 +236,7 @@ func (k *OrderedClient) Diff(
 
 	envVars = append(
 		envVars,
-		fmt.Sprintf("KUBECTL_EXTERNAL_DIFF=%s", diffCmd),
+		fmt.Sprintf("KUBECTL_EXTERNAL_DIFF=%s", kubectlDiffCmd),
 	)
 
 	return runKubectlOutput(

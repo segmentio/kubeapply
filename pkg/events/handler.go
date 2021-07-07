@@ -578,6 +578,7 @@ func (whh *WebhookHandler) runDiffs(
 			diffCtx,
 			clusterClient.Config().AbsSubpaths(),
 			clusterClient.Config().ServerSideApply,
+			"",
 		)
 		if err != nil {
 			diffErr = fmt.Errorf(

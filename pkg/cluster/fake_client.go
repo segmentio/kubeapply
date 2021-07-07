@@ -103,6 +103,7 @@ func (cc *FakeClusterClient) DiffStructured(
 	ctx context.Context,
 	paths []string,
 	serverSide bool,
+	diffCommand string,
 ) ([]diff.Result, error) {
 	return []diff.Result{
 			{
