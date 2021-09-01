@@ -3,7 +3,7 @@ jobs:
   test:
     working_directory: /go/src/github.com/segmentio/kubeapply
     docker:
-      - image: circleci/golang:1.14
+      - image: circleci/golang:1.16
         environment:
           GO111MODULE: "on"
 
@@ -39,7 +39,7 @@ jobs:
   publish:
     working_directory: /go/src/github.com/segmentio/kubeapply
     docker:
-      - image: circleci/golang:1.14
+      - image: circleci/golang:1.16
 
     steps:
       - checkout
