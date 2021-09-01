@@ -175,6 +175,26 @@ func GetCoveredClusters(
 		}
 	}
 
+	// In case where someone has used a wildcard, prune clusters that have no changes
+	// to avoid unexpected applies.
+	hasWildcards := false
+
+	for _, globStr := range selectedClusterGlobStrs {
+		if strings.Contains(globStr, "*") {
+			hasWildcards = true
+			break
+		}
+	}
+
+	if hasWildcards {
+		for cluster, paths := range changedClusterPaths {
+			if len(paths) == 0 {
+				log.Infof("Removing cluster %s because it has no changes", cluster)
+				delete(changedClusterPaths, cluster)
+			}
+		}
+	}
+
 	log.Infof("Changed cluster paths: %+v", changedClusterPaths)
 
 	changedClusters := []*config.ClusterConfig{}

@@ -143,6 +143,45 @@ func TestGetCoveredClusters(t *testing.T) {
 		{
 			diffs: []*github.CommitFile{
 				{
+					Filename: aws.String("clusters/clustertype/expanded/cluster1/subdir1/file3.yaml"),
+				},
+				{
+					Filename: aws.String("clusters/clustertype/expanded/cluster3/file1.yaml"),
+				},
+			},
+			selectedClusterGlobStrs: []string{
+				"stage:*",
+			},
+			expectedClustersIDs: []string{
+				"stage:us-west-2:cluster1",
+				"stage:us-west-2:cluster3",
+			},
+			expectedSubpaths: []string{
+				"subdir1",
+				".",
+			},
+		},
+		{
+			diffs: []*github.CommitFile{
+				{
+					Filename: aws.String("clusters/clustertype/expanded/cluster1/subdir1/file3.yaml"),
+				},
+			},
+			selectedClusterGlobStrs: []string{
+				"stage:*",
+			},
+			// Cluster 3 is pruned from selection list because it doesn't have any files in the
+			// git diff.
+			expectedClustersIDs: []string{
+				"stage:us-west-2:cluster1",
+			},
+			expectedSubpaths: []string{
+				"subdir1",
+			},
+		},
+		{
+			diffs: []*github.CommitFile{
+				{
 					Filename: aws.String("clusters/clustertype/expanded/cluster1/file1.yaml"),
 				},
 				{
