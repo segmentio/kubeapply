@@ -170,6 +170,8 @@ func TestGetCoveredClusters(t *testing.T) {
 			selectedClusterGlobStrs: []string{
 				"stage:*",
 			},
+			// Cluster 3 is pruned from selection list because it doesn't have any files in the
+			// git diff.
 			expectedClustersIDs: []string{
 				"stage:us-west-2:cluster1",
 			},
