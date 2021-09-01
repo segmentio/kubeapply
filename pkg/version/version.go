@@ -1,4 +1,4 @@
 package version
 
 // Version stores the current kubeapply version.
-const Version = "0.0.32"
+const Version = "0.0.33"
