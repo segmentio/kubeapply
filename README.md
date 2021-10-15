@@ -50,6 +50,16 @@ The tool is designed for our Kubernetes-related workflows at [Segment](https://s
 While we hope it can work for others, not all features might be directly applicable to other
 environments. We welcome feedback and collaboration to make `kubeapply` useful to more people!
 
+## 🆕 Terraform version of `kubeapply`
+
+We recently open-sourced a Terraform-provider-based version of this tool; see the
+[repository](https://github.com/segmentio/terraform-provider-kubeapply) and
+[documentation in the Terraform registry](https://registry.terraform.io/providers/segmentio/kubeapply/latest/docs) for more details.
+
+Note that the Terraform version has slightly different interfaces and assumptions (e.g., no
+support for Helm charts), so it's not a drop-in replacement for the tooling here, but it follows
+the same general flow and configuration philosophy.
+
 ## Getting started
 
 ### Prerequisites
