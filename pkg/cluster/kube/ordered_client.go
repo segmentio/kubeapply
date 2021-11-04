@@ -34,7 +34,7 @@ fi`
 # of calling 'kubeapply kdiff' directly because kubectl wants a single executable (without
 # any subcommands or arguments).
 
-kubeapply kdiff $1 $2 $3`
+kubeapply kdiff $1 $2`
 )
 
 // TODO: Switch to a YAML library that supports doing this splitting for us.

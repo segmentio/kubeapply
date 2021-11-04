@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/segmentio/encoding/json"
@@ -34,13 +33,14 @@ func kdiffRun(cmd *cobra.Command, args []string) error {
 	}
 
 	var shortDiff bool
-	var err error
-	if len(args) == 3 {
-		shortDiff, err = strconv.ParseBool(args[2])
-		if err != nil {
-			return err
-		}
-	}
+	// var err error
+	// if len(args) == 3 {
+	// 	shortDiff, err = strconv.ParseBool(args[2])
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+	shortDiff = true
 
 	results, err := diff.DiffKube(args[0], args[1], shortDiff)
 	if err != nil {
