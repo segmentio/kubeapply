@@ -32,15 +32,7 @@ func kdiffRun(cmd *cobra.Command, args []string) error {
 		return errors.New("Expected exactly two arguments")
 	}
 
-	var shortDiff bool
-	// var err error
-	// if len(args) == 3 {
-	// 	shortDiff, err = strconv.ParseBool(args[2])
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-	shortDiff = true
+	shortDiff := false
 
 	results, err := diff.DiffKube(args[0], args[1], shortDiff)
 	if err != nil {
