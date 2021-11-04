@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -22,7 +23,7 @@ const (
 
 // DiffKube processes the results of a kubectl diff call in place of the default 'diff'
 // command.
-func DiffKube(oldRoot string, newRoot string) ([]Result, error) {
+func DiffKube(oldRoot string, newRoot string, shortDiff bool) ([]Result, error) {
 	oldNames, err := walkPaths(oldRoot)
 	if err != nil {
 		return nil, err
@@ -65,6 +66,7 @@ func DiffKube(oldRoot string, newRoot string) ([]Result, error) {
 				name,
 				newRoot,
 				name,
+				shortDiff,
 			)
 		} else if oldOk {
 			diffResult, err = evalDiffs(
@@ -73,6 +75,7 @@ func DiffKube(oldRoot string, newRoot string) ([]Result, error) {
 				name,
 				newRoot,
 				"",
+				shortDiff,
 			)
 		} else {
 			diffResult, err = evalDiffs(
@@ -81,6 +84,7 @@ func DiffKube(oldRoot string, newRoot string) ([]Result, error) {
 				"",
 				newRoot,
 				name,
+				shortDiff,
 			)
 		}
 
@@ -132,6 +136,7 @@ func evalDiffs(
 	oldName string,
 	newRoot string,
 	newName string,
+	shortDiff bool,
 ) (*Result, error) {
 	var oldLines []string
 	var newLines []string
@@ -142,7 +147,7 @@ func evalDiffs(
 
 	if oldName != "" {
 		oldPath := filepath.Join(oldRoot, oldName)
-		oldLines, oldHash, err = getFileLines(oldPath)
+		oldLines, oldHash, err = getFileLines(oldPath, shortDiff)
 		if err != nil {
 			return nil, err
 		}
@@ -154,7 +159,7 @@ func evalDiffs(
 
 	if newName != "" {
 		newPath := filepath.Join(newRoot, newName)
-		newLines, newHash, err = getFileLines(newPath)
+		newLines, newHash, err = getFileLines(newPath, shortDiff)
 		if err != nil {
 			return nil, err
 		}
@@ -198,7 +203,7 @@ func evalDiffs(
 	}, nil
 }
 
-func getFileLines(path string) ([]string, string, error) {
+func getFileLines(path string, shortDiff bool) ([]string, string, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, "", err
@@ -215,10 +220,12 @@ func getFileLines(path string) ([]string, string, error) {
 	scanner.Buffer(buf, 1024*1024)
 
 	insideManagedFields := false
-
+	insideAnnotation := false
+	insideLabels := false
 	for scanner.Scan() {
 		keep := true
 		line := scanner.Text()
+		log.Debug("line: ", line)
 
 		// Skip over managedFields chunk in metadata since it's constantly
 		// changing and causing spurious diffs.
@@ -229,6 +236,49 @@ func getFileLines(path string) ([]string, string, error) {
 			if !(strings.HasPrefix(line, "  -") || strings.HasPrefix(line, "   ")) {
 				insideManagedFields = false
 			} else {
+				keep = false
+			}
+		}
+
+		if shortDiff && keep {
+			trimedLine := strings.TrimLeft(line, " ")
+
+			// Skip over k2 annotations chunk in metadata since it's constantly
+			// changing and causing users to miss important changes.
+			if strings.HasPrefix(trimedLine, "annotations:") {
+				insideAnnotation = true
+				keep = false
+			} else if insideAnnotation {
+				log.Debug("leading spaces: ", strconv.Itoa(countLeadingSpaces(line)))
+				if countLeadingSpaces(line) == 2 {
+					log.Debug("outside annotations: ", line)
+					insideAnnotation = false
+				} else {
+					if strings.HasPrefix(trimedLine, "k2.segment.com") {
+						keep = false
+					}
+				}
+			}
+
+			// Skip over k2 labels chunk in metadata since it's constantly
+			// changing and causing users to miss important changes.
+			if strings.HasPrefix(trimedLine, "labels") {
+				insideLabels = true
+				keep = true
+			} else if insideLabels {
+				if countLeadingSpaces(line) == 2 {
+					log.Debug("outside labels: ", line)
+					insideLabels = false
+				} else {
+					if strings.HasPrefix(trimedLine, "k2.segment.com") || strings.HasPrefix(trimedLine, "app.kubernetes.io/instance:") || strings.HasPrefix(trimedLine, "version: ") {
+						keep = false
+					}
+				}
+			}
+
+			// Skip over generation in metadata since it's constantly
+			// changing and causing users to miss important changes.
+			if strings.HasPrefix(trimedLine, "generation") {
 				keep = false
 			}
 		}
@@ -249,6 +299,10 @@ func getFileLines(path string) ([]string, string, error) {
 	}
 
 	return lines, fmt.Sprintf("%x", h.Sum(nil)), scanner.Err()
+}
+
+func countLeadingSpaces(line string) int {
+	return len(line) - len(strings.TrimLeft(line, " "))
 }
 
 func getFileObj(path string) (*apply.TypedKubeObj, error) {

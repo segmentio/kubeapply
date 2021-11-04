@@ -1,6 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  generation: 1
+  annotations:
+    k2.segment.com/context: "old"
+  labels:
+    app: echoserver
+    app.kubernetes.io/instance: argocd-label
+    k2.segment.com/app: echoserver
+    k2.segment.com/argo-cd: echoserver
+    k2.segment.com/build: master-008c1d0
+    k2.segment.com/deploy: cd123456
+    k2.segment.com/repo: test
+    enabled: false
   name: echoserver
   namespace: apps
 spec:

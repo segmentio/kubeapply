@@ -71,13 +71,19 @@ func TestGetCoveredClusters(t *testing.T) {
 		{
 			diffs: []*github.CommitFile{
 				{
-					Filename: aws.String("clusters/clustertype/expanded/cluster1/subdir1/file3.yaml"),
+					Filename: aws.String(
+						"clusters/clustertype/expanded/cluster1/subdir1/file3.yaml",
+					),
 				},
 				{
-					Filename: aws.String("clusters/clustertype/expanded/cluster1/subdir1/subdir3/file6.yaml"),
+					Filename: aws.String(
+						"clusters/clustertype/expanded/cluster1/subdir1/subdir3/file6.yaml",
+					),
 				},
 				{
-					Filename: aws.String("clusters/clustertype/expanded/cluster1/subdir2/file4.yaml"),
+					Filename: aws.String(
+						"clusters/clustertype/expanded/cluster1/subdir2/file4.yaml",
+					),
 				},
 				{
 					Filename: aws.String("clusters/clustertype/expanded/cluster2/file2.yaml"),
@@ -98,7 +104,9 @@ func TestGetCoveredClusters(t *testing.T) {
 					Filename: aws.String("clusters/clustertype/expanded/cluster1/file1.yaml"),
 				},
 				{
-					Filename: aws.String("clusters/clustertype/expanded/cluster1/subdir1/file3.yaml"),
+					Filename: aws.String(
+						"clusters/clustertype/expanded/cluster1/subdir1/file3.yaml",
+					),
 				},
 				{
 					Filename: aws.String("clusters/clustertype/expanded/cluster2/file2.yaml"),
@@ -124,7 +132,9 @@ func TestGetCoveredClusters(t *testing.T) {
 					Filename: aws.String("clusters/clustertype/expanded/cluster1/file1.yaml"),
 				},
 				{
-					Filename: aws.String("clusters/clustertype/expanded/cluster1/subdir1/file3.yaml"),
+					Filename: aws.String(
+						"clusters/clustertype/expanded/cluster1/subdir1/file3.yaml",
+					),
 				},
 				{
 					Filename: aws.String("clusters/clustertype/expanded/cluster2/file2.yaml"),
@@ -143,7 +153,9 @@ func TestGetCoveredClusters(t *testing.T) {
 		{
 			diffs: []*github.CommitFile{
 				{
-					Filename: aws.String("clusters/clustertype/expanded/cluster1/subdir1/file3.yaml"),
+					Filename: aws.String(
+						"clusters/clustertype/expanded/cluster1/subdir1/file3.yaml",
+					),
 				},
 				{
 					Filename: aws.String("clusters/clustertype/expanded/cluster3/file1.yaml"),
@@ -164,7 +176,9 @@ func TestGetCoveredClusters(t *testing.T) {
 		{
 			diffs: []*github.CommitFile{
 				{
-					Filename: aws.String("clusters/clustertype/expanded/cluster1/subdir1/file3.yaml"),
+					Filename: aws.String(
+						"clusters/clustertype/expanded/cluster1/subdir1/file3.yaml",
+					),
 				},
 			},
 			selectedClusterGlobStrs: []string{
@@ -185,7 +199,9 @@ func TestGetCoveredClusters(t *testing.T) {
 					Filename: aws.String("clusters/clustertype/expanded/cluster1/file1.yaml"),
 				},
 				{
-					Filename: aws.String("clusters/clustertype/expanded/cluster1/subdir1/file3.yaml"),
+					Filename: aws.String(
+						"clusters/clustertype/expanded/cluster1/subdir1/file3.yaml",
+					),
 				},
 				{
 					Filename: aws.String("clusters/clustertype/expanded/cluster2/file2.yaml"),

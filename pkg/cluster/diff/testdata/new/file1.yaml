@@ -1,6 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  generation: 2
+  annotations:
+    k2.segment.com/context: "new"
+  labels:
+    app: echoserver
+    k2.segment.com/app: echoserver
+    k2.segment.com/argo-cd: echoserver
+    k2.segment.com/build: master-008c1d0
+    k2.segment.com/deploy: 7c123456
+    k2.segment.com/repo: kubeapply_test
+    enabled: true
   name: echoserver
   namespace: apps
 spec:
