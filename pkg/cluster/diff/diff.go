@@ -254,9 +254,9 @@ func getFileLines(path string, shortDiff bool) ([]string, string, error) {
 					log.Debug("outside annotations: ", line)
 					insideAnnotation = false
 				} else {
-					if strings.HasPrefix(trimedLine, "k2.segment.com") {
-						keep = false
-					}
+
+					keep = false
+
 				}
 			}
 
