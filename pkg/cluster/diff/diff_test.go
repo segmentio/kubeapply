@@ -31,7 +31,7 @@ func TestDiffKube(t *testing.T) {
 		t,
 		`--- Server:file1.yaml
 +++ Local:file1.yaml
-@@ -1,22 +1,21 @@
+@@ -1,33 +1,32 @@
  apiVersion: apps/v1
  kind: Deployment
  metadata:
@@ -60,11 +60,16 @@ func TestDiffKube(t *testing.T) {
    selector:
      matchLabels:
        app: echoserver
-@@ -24,7 +23,7 @@
+   template:
      metadata:
+       annotations:
+-        k2.segment.com/context: "old"
++        k2.segment.com/context: "new"
        labels:
          app: echoserver
+-        enabled: false
 -        version: "1.0"
++        enabled: true
 +        version: "1.2"
          value: "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789... (71 chars omitted)
      spec:
@@ -74,12 +79,12 @@ func TestDiffKube(t *testing.T) {
 	)
 	assert.Equal(
 		t,
-		7,
+		9,
 		results[0].NumAdded,
 	)
 	assert.Equal(
 		t,
-		8,
+		10,
 		results[0].NumRemoved,
 	)
 	assert.Equal(
@@ -133,17 +138,26 @@ func TestDiffKubeWithShortDiff(t *testing.T) {
    selector:
      matchLabels:
        app: echoserver
+@@ -15,7 +15,7 @@
+     metadata:
+       labels:
+         app: echoserver
+-        enabled: false
++        enabled: true
+         value: "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789... (71 chars omitted)
+     spec:
+       containers:
 `,
 		results[0].RawDiff,
 	)
 	assert.Equal(
 		t,
-		2,
+		3,
 		results[0].NumAdded,
 	)
 	assert.Equal(
 		t,
-		2,
+		3,
 		results[0].NumRemoved,
 	)
 	assert.Equal(
