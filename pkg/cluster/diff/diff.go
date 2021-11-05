@@ -250,7 +250,8 @@ func getFileLines(path string, shortDiff bool) ([]string, string, error) {
 				keep = false
 			} else if insideAnnotation {
 				log.Debug("leading spaces: ", strconv.Itoa(countLeadingSpaces(line)))
-				if countLeadingSpaces(line) == 2 || countLeadingSpaces(line) == 6 {
+				//if countLeadingSpaces(line) == 2 || countLeadingSpaces(line) == 6 {
+				if strings.HasPrefix(trimedLine, "labels:") {
 					log.Debug("outside annotations: ", line)
 					insideAnnotation = false
 				} else {
