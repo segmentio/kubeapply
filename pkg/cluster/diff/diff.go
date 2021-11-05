@@ -241,11 +241,11 @@ func getFileLines(path string, shortDiff bool) ([]string, string, error) {
 		}
 
 		if shortDiff && keep {
-			trimedLine := strings.TrimLeft(line, " ")
+			trimmedLine := strings.TrimLeft(line, " ")
 
 			// Skip over k2 annotations chunk in metadata since it's constantly
 			// changing and causing users to miss important changes.
-			if strings.HasPrefix(trimedLine, "annotations:") {
+			if strings.HasPrefix(trimmedLine, "annotations:") {
 				insideAnnotation = true
 				keep = false
 			} else if insideAnnotation {
@@ -253,7 +253,7 @@ func getFileLines(path string, shortDiff bool) ([]string, string, error) {
 				// harcode labels here instead of checking the spaces
 				// since annotation is too long and it will then show
 				// some of the diff in annotation
-				if strings.HasPrefix(trimedLine, "labels:") {
+				if strings.HasPrefix(trimmedLine, "labels:") {
 					log.Debug("outside annotations: ", line)
 					insideAnnotation = false
 				} else {
@@ -265,7 +265,7 @@ func getFileLines(path string, shortDiff bool) ([]string, string, error) {
 
 			// Skip over k2 labels chunk in metadata since it's constantly
 			// changing and causing users to miss important changes.
-			if strings.HasPrefix(trimedLine, "labels") {
+			if strings.HasPrefix(trimmedLine, "labels") {
 				insideLabels = true
 				keep = true
 			} else if insideLabels {
@@ -274,7 +274,7 @@ func getFileLines(path string, shortDiff bool) ([]string, string, error) {
 					log.Debug("outside labels: ", line)
 					insideLabels = false
 				} else {
-					if strings.HasPrefix(trimedLine, "k2.segment.com") || strings.HasPrefix(trimedLine, "app.kubernetes.io/instance:") || strings.HasPrefix(trimedLine, "version: ") {
+					if strings.HasPrefix(trimmedLine, "k2.segment.com") || strings.HasPrefix(trimmedLine, "app.kubernetes.io/instance:") || strings.HasPrefix(trimmedLine, "version: ") {
 						keep = false
 					}
 				}
@@ -282,7 +282,7 @@ func getFileLines(path string, shortDiff bool) ([]string, string, error) {
 
 			// Skip over generation in metadata since it's constantly
 			// changing and causing users to miss important changes.
-			if strings.HasPrefix(trimedLine, "generation") {
+			if strings.HasPrefix(trimmedLine, "generation") {
 				keep = false
 			}
 		}
