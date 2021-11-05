@@ -220,7 +220,7 @@ func getFileLines(path string, shortDiff bool) ([]string, string, error) {
 	scanner.Buffer(buf, 1024*1024)
 
 	insideManagedFields := false
-	insideAnnotation := false
+	insideAnnotations := false
 	insideLabels := false
 	for scanner.Scan() {
 		keep := true
@@ -246,20 +246,18 @@ func getFileLines(path string, shortDiff bool) ([]string, string, error) {
 			// Skip over k2 annotations chunk in metadata since it's constantly
 			// changing and causing users to miss important changes.
 			if strings.HasPrefix(trimmedLine, "annotations:") {
-				insideAnnotation = true
+				insideAnnotations = true
 				keep = false
-			} else if insideAnnotation {
+			} else if insideAnnotations {
 				log.Debug("leading spaces: ", strconv.Itoa(countLeadingSpaces(line)))
-				// harcode labels here instead of checking the spaces
+				// hardcode labels here instead of checking the spaces
 				// since annotation is too long and it will then show
 				// some of the diff in annotation
 				if strings.HasPrefix(trimmedLine, "labels:") {
 					log.Debug("outside annotations: ", line)
-					insideAnnotation = false
+					insideAnnotations = false
 				} else {
-
 					keep = false
-
 				}
 			}
 
@@ -274,7 +272,10 @@ func getFileLines(path string, shortDiff bool) ([]string, string, error) {
 					log.Debug("outside labels: ", line)
 					insideLabels = false
 				} else {
-					if strings.HasPrefix(trimmedLine, "k2.segment.com") || strings.HasPrefix(trimmedLine, "app.kubernetes.io/instance:") || strings.HasPrefix(trimmedLine, "version: ") {
+					// k2.segment.com is a prefix,
+					if strings.HasPrefix(trimmedLine, "k2.segment.com") ||
+						strings.HasPrefix(trimmedLine, "app.kubernetes.io/instance:") ||
+						strings.HasPrefix(trimmedLine, "version:") {
 						keep = false
 					}
 				}
