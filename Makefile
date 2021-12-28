@@ -72,7 +72,7 @@ $(TEST_KUBECONFIG):
 .PHONY: go-bindata
 go-bindata:
 ifeq (, $(shell which go-bindata))
-	GO111MODULE=off go get -u github.com/go-bindata/go-bindata/...
+	GO111MODULE=off go get -u github.com/kevinburke/go-bindata/...
 endif
 
 .PHONY: clean

@@ -30,7 +30,7 @@ import (
 func bindataRead(data []byte, name string) ([]byte, error) {
 	gz, err := gzip.NewReader(bytes.NewBuffer(data))
 	if err != nil {
-		return nil, fmt.Errorf("read %q: %v", name, err)
+		return nil, fmt.Errorf("read %q: %w", name, err)
 	}
 
 	var buf bytes.Buffer
@@ -38,7 +38,7 @@ func bindataRead(data []byte, name string) ([]byte, error) {
 	clErr := gz.Close()
 
 	if err != nil {
-		return nil, fmt.Errorf("read %q: %v", name, err)
+		return nil, fmt.Errorf("read %q: %w", name, err)
 	}
 	if clErr != nil {
 		return nil, err
@@ -94,7 +94,7 @@ func pkgPullreqTemplatesApply_commentGotpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "pkg/pullreq/templates/apply_comment.gotpl", size: 1052, mode: os.FileMode(0644), modTime: time.Unix(1612551594, 0)}
+	info := bindataFileInfo{name: "pkg/pullreq/templates/apply_comment.gotpl", size: 1052, mode: os.FileMode(0644), modTime: time.Unix(1640732267, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x39, 0x98, 0xb8, 0x81, 0x9e, 0xbb, 0x97, 0xdd, 0x58, 0x91, 0x82, 0x55, 0x99, 0xef, 0x6c, 0xc3, 0x49, 0xe7, 0xe0, 0x9d, 0x4, 0x30, 0x35, 0x16, 0xb9, 0xa3, 0x44, 0x34, 0x84, 0x2e, 0x0, 0x1b}}
 	return a, nil
 }
@@ -114,7 +114,7 @@ func pkgPullreqTemplatesDiff_commentGotpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "pkg/pullreq/templates/diff_comment.gotpl", size: 1228, mode: os.FileMode(0644), modTime: time.Unix(1611616180, 0)}
+	info := bindataFileInfo{name: "pkg/pullreq/templates/diff_comment.gotpl", size: 1228, mode: os.FileMode(0644), modTime: time.Unix(1640732267, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xee, 0x25, 0x58, 0x45, 0x7c, 0xdc, 0xb1, 0x76, 0x21, 0x29, 0x8e, 0x84, 0x5d, 0xb3, 0x29, 0xcf, 0x2e, 0x6e, 0xac, 0x9c, 0xd7, 0x94, 0xb5, 0xab, 0x64, 0xe6, 0x5b, 0xc3, 0x31, 0x9e, 0x7b, 0xcc}}
 	return a, nil
 }
@@ -134,7 +134,7 @@ func pkgPullreqTemplatesError_commentGotpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "pkg/pullreq/templates/error_comment.gotpl", size: 172, mode: os.FileMode(0644), modTime: time.Unix(1611616180, 0)}
+	info := bindataFileInfo{name: "pkg/pullreq/templates/error_comment.gotpl", size: 172, mode: os.FileMode(0644), modTime: time.Unix(1640732267, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x66, 0x91, 0x41, 0xaa, 0x31, 0xec, 0xcc, 0xde, 0x38, 0xc3, 0x60, 0xd2, 0xa0, 0x3c, 0x7f, 0xb1, 0xbe, 0x9e, 0x85, 0x37, 0x3, 0x9e, 0xd0, 0xc9, 0x9c, 0xab, 0x18, 0x16, 0xdf, 0x86, 0xf0, 0x79}}
 	return a, nil
 }
@@ -154,7 +154,7 @@ func pkgPullreqTemplatesHelp_commentGotpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "pkg/pullreq/templates/help_comment.gotpl", size: 1025, mode: os.FileMode(0644), modTime: time.Unix(1611616180, 0)}
+	info := bindataFileInfo{name: "pkg/pullreq/templates/help_comment.gotpl", size: 1025, mode: os.FileMode(0644), modTime: time.Unix(1640732267, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x2d, 0xd5, 0xd5, 0x14, 0xf7, 0xf3, 0x98, 0xc4, 0x7e, 0x8e, 0x37, 0x4c, 0x3a, 0x9a, 0x21, 0x20, 0xe2, 0xe, 0x6a, 0x1b, 0x92, 0x5e, 0x3a, 0x45, 0x4e, 0x7, 0x60, 0xe8, 0x65, 0x94, 0x37, 0xab}}
 	return a, nil
 }
@@ -174,7 +174,7 @@ func pkgPullreqTemplatesStatus_commentGotpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "pkg/pullreq/templates/status_comment.gotpl", size: 355, mode: os.FileMode(0644), modTime: time.Unix(1591836439, 0)}
+	info := bindataFileInfo{name: "pkg/pullreq/templates/status_comment.gotpl", size: 355, mode: os.FileMode(0644), modTime: time.Unix(1640732267, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x2c, 0xf0, 0xcb, 0x4, 0x35, 0xaa, 0xf4, 0xf7, 0x74, 0x5d, 0xee, 0xae, 0x74, 0xe2, 0xec, 0xd7, 0x59, 0x9, 0x86, 0xca, 0x60, 0x36, 0x29, 0x25, 0xfb, 0x74, 0x50, 0x8d, 0xbd, 0xe8, 0x9c, 0x70}}
 	return a, nil
 }
@@ -194,7 +194,7 @@ func scriptsClusterSummary__init__Py() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "scripts/cluster-summary/__init__.py", size: 0, mode: os.FileMode(0644), modTime: time.Unix(1620428515, 0)}
+	info := bindataFileInfo{name: "scripts/cluster-summary/__init__.py", size: 0, mode: os.FileMode(0644), modTime: time.Unix(1640732267, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14, 0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f, 0xb9, 0x24, 0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c, 0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55}}
 	return a, nil
 }
@@ -214,7 +214,7 @@ func scriptsClusterSummaryCluster_summaryPy() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "scripts/cluster-summary/cluster_summary.py", size: 4488, mode: os.FileMode(0755), modTime: time.Unix(1620428515, 0)}
+	info := bindataFileInfo{name: "scripts/cluster-summary/cluster_summary.py", size: 4488, mode: os.FileMode(0755), modTime: time.Unix(1640732267, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xb2, 0xfd, 0xc1, 0xd0, 0x9d, 0x3e, 0x14, 0x51, 0x1a, 0x84, 0x85, 0x49, 0x4a, 0x63, 0x5c, 0x4d, 0x3a, 0x6c, 0x28, 0x48, 0x9, 0xd0, 0x64, 0x2f, 0x7b, 0x5b, 0xa8, 0xe8, 0x1, 0xa, 0xa9, 0x99}}
 	return a, nil
 }
@@ -234,7 +234,7 @@ func scriptsClusterSummaryTabulatePy() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "scripts/cluster-summary/tabulate.py", size: 57091, mode: os.FileMode(0644), modTime: time.Unix(1620428515, 0)}
+	info := bindataFileInfo{name: "scripts/cluster-summary/tabulate.py", size: 57091, mode: os.FileMode(0644), modTime: time.Unix(1640732267, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xe9, 0x68, 0x8, 0x2c, 0x92, 0x99, 0x98, 0x23, 0x29, 0xba, 0x60, 0xc3, 0xa4, 0x16, 0x4, 0xe3, 0x2, 0xdd, 0x43, 0xdd, 0x2d, 0x2d, 0x51, 0x1e, 0xa9, 0x2, 0xe9, 0x71, 0x54, 0xef, 0x3c, 0x1c}}
 	return a, nil
 }
@@ -254,7 +254,7 @@ func scriptsCreateLambdaBundleSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "scripts/create-lambda-bundle.sh", size: 791, mode: os.FileMode(0755), modTime: time.Unix(1618002872, 0)}
+	info := bindataFileInfo{name: "scripts/create-lambda-bundle.sh", size: 791, mode: os.FileMode(0755), modTime: time.Unix(1640732267, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xc6, 0x84, 0xb9, 0x6d, 0xfb, 0x33, 0xdc, 0xa7, 0xa8, 0x67, 0x8f, 0x17, 0xde, 0x9, 0x83, 0x14, 0x89, 0x73, 0xea, 0x81, 0x18, 0xa4, 0x2b, 0x9d, 0x33, 0xe3, 0xfe, 0xc3, 0xd9, 0x64, 0x43, 0x3c}}
 	return a, nil
 }
@@ -274,7 +274,7 @@ func scriptsKindctlSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "scripts/kindctl.sh", size: 1760, mode: os.FileMode(0755), modTime: time.Unix(1611963885, 0)}
+	info := bindataFileInfo{name: "scripts/kindctl.sh", size: 1760, mode: os.FileMode(0755), modTime: time.Unix(1640732267, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xfc, 0x3e, 0x4a, 0xe1, 0xf9, 0x6d, 0x9, 0xf1, 0x17, 0xd1, 0xfe, 0xa0, 0x7e, 0xa7, 0x7a, 0xbb, 0x4c, 0xe, 0x1, 0x63, 0x7f, 0x15, 0x0, 0x16, 0x56, 0x48, 0x95, 0xc5, 0xb0, 0xf0, 0x20, 0xca}}
 	return a, nil
 }
@@ -294,7 +294,7 @@ func scriptsPullDepsSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "scripts/pull-deps.sh", size: 1797, mode: os.FileMode(0755), modTime: time.Unix(1618002872, 0)}
+	info := bindataFileInfo{name: "scripts/pull-deps.sh", size: 1797, mode: os.FileMode(0755), modTime: time.Unix(1640732267, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xc, 0x3a, 0x72, 0x9, 0x16, 0xea, 0x9e, 0xdc, 0xd4, 0x72, 0x53, 0xa8, 0x31, 0x29, 0x9b, 0xcc, 0x8a, 0xeb, 0x65, 0x26, 0x1b, 0x28, 0xbd, 0x4e, 0x3d, 0x14, 0x43, 0x3d, 0x5a, 0xc1, 0x48, 0x72}}
 	return a, nil
 }
@@ -390,28 +390,21 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"pkg/pullreq/templates/apply_comment.gotpl": pkgPullreqTemplatesApply_commentGotpl,
-
-	"pkg/pullreq/templates/diff_comment.gotpl": pkgPullreqTemplatesDiff_commentGotpl,
-
-	"pkg/pullreq/templates/error_comment.gotpl": pkgPullreqTemplatesError_commentGotpl,
-
-	"pkg/pullreq/templates/help_comment.gotpl": pkgPullreqTemplatesHelp_commentGotpl,
-
+	"pkg/pullreq/templates/apply_comment.gotpl":  pkgPullreqTemplatesApply_commentGotpl,
+	"pkg/pullreq/templates/diff_comment.gotpl":   pkgPullreqTemplatesDiff_commentGotpl,
+	"pkg/pullreq/templates/error_comment.gotpl":  pkgPullreqTemplatesError_commentGotpl,
+	"pkg/pullreq/templates/help_comment.gotpl":   pkgPullreqTemplatesHelp_commentGotpl,
 	"pkg/pullreq/templates/status_comment.gotpl": pkgPullreqTemplatesStatus_commentGotpl,
-
-	"scripts/cluster-summary/__init__.py": scriptsClusterSummary__init__Py,
-
+	"scripts/cluster-summary/__init__.py":        scriptsClusterSummary__init__Py,
 	"scripts/cluster-summary/cluster_summary.py": scriptsClusterSummaryCluster_summaryPy,
-
-	"scripts/cluster-summary/tabulate.py": scriptsClusterSummaryTabulatePy,
-
-	"scripts/create-lambda-bundle.sh": scriptsCreateLambdaBundleSh,
-
-	"scripts/kindctl.sh": scriptsKindctlSh,
-
-	"scripts/pull-deps.sh": scriptsPullDepsSh,
+	"scripts/cluster-summary/tabulate.py":        scriptsClusterSummaryTabulatePy,
+	"scripts/create-lambda-bundle.sh":            scriptsCreateLambdaBundleSh,
+	"scripts/kindctl.sh":                         scriptsKindctlSh,
+	"scripts/pull-deps.sh":                       scriptsPullDepsSh,
 }
+
+// AssetDebug is true if the assets were built with the debug flag enabled.
+const AssetDebug = false
 
 // AssetDir returns the file names below a certain
 // directory embedded in the file by go-bindata.
@@ -454,26 +447,26 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"pkg": &bintree{nil, map[string]*bintree{
-		"pullreq": &bintree{nil, map[string]*bintree{
-			"templates": &bintree{nil, map[string]*bintree{
-				"apply_comment.gotpl":  &bintree{pkgPullreqTemplatesApply_commentGotpl, map[string]*bintree{}},
-				"diff_comment.gotpl":   &bintree{pkgPullreqTemplatesDiff_commentGotpl, map[string]*bintree{}},
-				"error_comment.gotpl":  &bintree{pkgPullreqTemplatesError_commentGotpl, map[string]*bintree{}},
-				"help_comment.gotpl":   &bintree{pkgPullreqTemplatesHelp_commentGotpl, map[string]*bintree{}},
-				"status_comment.gotpl": &bintree{pkgPullreqTemplatesStatus_commentGotpl, map[string]*bintree{}},
+	"pkg": {nil, map[string]*bintree{
+		"pullreq": {nil, map[string]*bintree{
+			"templates": {nil, map[string]*bintree{
+				"apply_comment.gotpl": {pkgPullreqTemplatesApply_commentGotpl, map[string]*bintree{}},
+				"diff_comment.gotpl": {pkgPullreqTemplatesDiff_commentGotpl, map[string]*bintree{}},
+				"error_comment.gotpl": {pkgPullreqTemplatesError_commentGotpl, map[string]*bintree{}},
+				"help_comment.gotpl": {pkgPullreqTemplatesHelp_commentGotpl, map[string]*bintree{}},
+				"status_comment.gotpl": {pkgPullreqTemplatesStatus_commentGotpl, map[string]*bintree{}},
 			}},
 		}},
 	}},
-	"scripts": &bintree{nil, map[string]*bintree{
-		"cluster-summary": &bintree{nil, map[string]*bintree{
-			"__init__.py":        &bintree{scriptsClusterSummary__init__Py, map[string]*bintree{}},
-			"cluster_summary.py": &bintree{scriptsClusterSummaryCluster_summaryPy, map[string]*bintree{}},
-			"tabulate.py":        &bintree{scriptsClusterSummaryTabulatePy, map[string]*bintree{}},
+	"scripts": {nil, map[string]*bintree{
+		"cluster-summary": {nil, map[string]*bintree{
+			"__init__.py": {scriptsClusterSummary__init__Py, map[string]*bintree{}},
+			"cluster_summary.py": {scriptsClusterSummaryCluster_summaryPy, map[string]*bintree{}},
+			"tabulate.py": {scriptsClusterSummaryTabulatePy, map[string]*bintree{}},
 		}},
-		"create-lambda-bundle.sh": &bintree{scriptsCreateLambdaBundleSh, map[string]*bintree{}},
-		"kindctl.sh":              &bintree{scriptsKindctlSh, map[string]*bintree{}},
-		"pull-deps.sh":            &bintree{scriptsPullDepsSh, map[string]*bintree{}},
+		"create-lambda-bundle.sh": {scriptsCreateLambdaBundleSh, map[string]*bintree{}},
+		"kindctl.sh": {scriptsKindctlSh, map[string]*bintree{}},
+		"pull-deps.sh": {scriptsPullDepsSh, map[string]*bintree{}},
 	}},
 }}
 
