@@ -22,7 +22,7 @@ RUN make kubeapply VERSION_REF=${VERSION_REF} && \
     cp build/kubeapply /usr/local/bin
 
 # Copy into final image
-FROM ubuntu:20.04
+FROM 528451384384.dkr.ecr.us-west-2.amazonaws.com/segment-alpine:3.15
 
 RUN apt-get update && apt-get install --yes \
     curl \
