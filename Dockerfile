@@ -1,5 +1,5 @@
 # Fetch or build all required binaries
-FROM golang:1.16 as builder
+FROM 528451384384.dkr.ecr.us-west-2.amazonaws.com/segment-golang:1.17.3 as builder
 
 ARG VERSION_REF
 RUN test -n "${VERSION_REF}"
