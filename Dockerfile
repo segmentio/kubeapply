@@ -1,5 +1,5 @@
 # Fetch or build all required binaries
-FROM golang:1.16 as builder
+FROM golang:1.18 as builder
 
 ARG VERSION_REF
 RUN test -n "${VERSION_REF}"
