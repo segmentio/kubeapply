@@ -8,11 +8,11 @@ require (
 	github.com/aws/aws-lambda-go v1.15.0
 	github.com/aws/aws-sdk-go v1.29.16
 	github.com/briandowns/spinner v1.11.1
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.7.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gobwas/glob v0.2.3
-	github.com/gogo/protobuf v1.3.1
+	github.com/gogo/protobuf v1.3.2
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/go-github/v30 v30.0.0
 	github.com/gorilla/mux v1.7.4
 	github.com/olekukonko/tablewriter v0.0.4
