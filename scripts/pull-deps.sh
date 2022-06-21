@@ -3,8 +3,13 @@
 set -e
 
 # Required versions
-HELM_VERSION="3.5.0"
-HELM_SHA256_SUM="3fff0354d5fba4c73ebd5db59a59db72f8a5bbe1117a0b355b0c2983e98db95b"
+
+# From Achille, "If we use a different version than v3.5.4 the content of
+# eks-configuration ends up being reformatted, which will trigger a recreation
+# of the Zookeeper cluster for Centrifuge's Kafka in production."
+HELM_VERSION="3.5.4"
+# Checksums are e.g. here: https://github.com/helm/helm/releases/tag/v3.5.4
+HELM_SHA256_SUM="a8ddb4e30435b5fd45308ecce5eaad676d64a5de9c89660b56face3fe990b318"
 
 IAM_AUTHENTICATOR_VERSION="0.5.2"
 IAM_AUTHENTICATOR_SHA256_SUM="5bbe44ad7f6dd87a02e0b463a2aed9611836eb2f40d7fbe8c517460a4385621b"
