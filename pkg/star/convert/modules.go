@@ -19,7 +19,6 @@ var modules = map[string]string{
 	"corev1":            "k8s.io/api/core/v1",
 	"eventsv1beta1":     "k8s.io/api/events/v1beta1",
 	"extensionsv1beta1": "k8s.io/api/extensions/v1beta1",
-	"extensionsv1":      "k8s.io/api/extensions/v1",
 	"metav1":            "k8s.io/apimachinery/pkg/apis/meta/v1",
 	"networkingv1":      "k8s.io/api/networking/v1",
 	"policyv1beta1":     "k8s.io/api/policy/v1beta1",
