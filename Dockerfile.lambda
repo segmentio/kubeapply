@@ -28,7 +28,7 @@ FROM public.ecr.aws/lambda/go:1
 
 RUN yum install -y git
 
-RUN curl -O https://bootstrap.pypa.io/get-pip.py && python3 get-pip.py
+RUN curl -O https://bootstrap.pypa.io/pip/3.6/get-pip.py && python3 get-pip.py
 RUN pip3 install awscli
 
 COPY --from=builder \
