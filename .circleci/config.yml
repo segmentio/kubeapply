@@ -1,7 +1,7 @@
 version: 2
 jobs:
   test:
-    working_directory: $HOME/go/src/github.com/segmentio/kubeapply
+    working_directory: ~/go/src/github.com/segmentio/kubeapply
     docker:
       - image: cimg/go:1.18
         environment:
@@ -37,7 +37,7 @@ jobs:
             - "/go/pkg/mod"
 
   publish:
-    working_directory: $HOME/go/src/github.com/segmentio/kubeapply
+    working_directory: ~/go/src/github.com/segmentio/kubeapply
     docker:
       - image: cimg/go:1.18
 
