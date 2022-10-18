@@ -21,11 +21,11 @@ jobs:
             mkdir -p deps
             cd deps
             ../scripts/pull-deps.sh
-      - run:
-          name: Run tests
-          command: |
-            export PATH="$PATH:/go/src/github.com/segmentio/kubeapply/deps"
-            make test-ci
+#      - run:
+#          name: Run tests
+#          command: |
+#            export PATH="$PATH:/go/src/github.com/segmentio/kubeapply/deps"
+#            make test-ci
       - run:
           name: Run Snyk
           environment:
