@@ -1,6 +1,8 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
+
+# Note this is used by both the publish script and the test script.
 
 # Required versions
 
@@ -23,11 +25,15 @@ KIND_SHA_256_SUM="781c3db479b805d161b7c2c7a31896d1a504b583ebfcce8fcd49538c684d96
 GOOS=linux
 GOARCH=amd64
 
+mkdir -p "${HOME}/local/bin"
+
 echo "Downloading helm at version ${HELM_VERSION}"
 wget -q https://get.helm.sh/helm-v${HELM_VERSION}-${GOOS}-${GOARCH}.tar.gz
 echo "${HELM_SHA256_SUM} helm-v${HELM_VERSION}-${GOOS}-${GOARCH}.tar.gz" | sha256sum -c
 tar -xzf helm-v${HELM_VERSION}-${GOOS}-${GOARCH}.tar.gz
-cp ${GOOS}-${GOARCH}/helm .
+${GOOS}-${GOARCH}/helm version
+# try /usr/local/bin (for Dockerfile) and fall back
+cp ${GOOS}-${GOARCH}/helm "/usr/local/bin" || cp ${GOOS}-${GOARCH}/helm "${HOME}/local/bin"
 
 echo "Downloading aws-iam-authenticator at version ${IAM_AUTHENTICATOR_VERSION}"
 wget -q -O aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v${IAM_AUTHENTICATOR_VERSION}/aws-iam-authenticator_${IAM_AUTHENTICATOR_VERSION}_${GOOS}_${GOARCH}
@@ -44,3 +50,9 @@ echo "Downloading kind at version ${KIND_VERSION}"
 wget -q -O kind https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-${GOOS}-${GOARCH}
 echo "${KIND_SHA_256_SUM} kind" | sha256sum -c
 chmod +x kind
+
+# https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip -q awscliv2.zip
+mkdir -p "${HOME}/local/aws"
+./aws/install --install-dir "${HOME}/local/aws" --bin-dir "${HOME}/local/bin"

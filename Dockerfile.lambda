@@ -1,5 +1,5 @@
 # Fetch or build all required binaries
-FROM golang:1.18 as builder
+FROM golang:1.19 as builder
 
 ARG VERSION_REF
 RUN test -n "${VERSION_REF}"
@@ -8,6 +8,7 @@ ENV SRC github.com/segmentio/kubeapply
 
 RUN apt-get update && apt-get install --yes \
     curl \
+    unzip \
     wget
 
 COPY . /go/src/${SRC}
@@ -26,7 +27,8 @@ RUN make kubeapply-lambda VERSION_REF=${VERSION_REF} && \
 # Copy into final image
 FROM public.ecr.aws/lambda/go:1
 
-RUN yum install -y git
+RUN yum install -y git && \
+  python3 --version
 
 RUN curl -O https://bootstrap.pypa.io/pip/3.6/get-pip.py && python3 get-pip.py
 RUN pip3 install awscli

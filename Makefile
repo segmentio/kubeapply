@@ -78,3 +78,6 @@ endif
 .PHONY: clean
 clean:
 	rm -Rf *.zip .kube build vendor
+
+publish:
+	./scripts/publish.sh
