@@ -1,5 +1,5 @@
 # Fetch or build all required binaries
-FROM golang:1.18 as builder
+FROM golang:1.19 as builder
 
 ARG VERSION_REF
 RUN test -n "${VERSION_REF}"
@@ -8,6 +8,7 @@ ENV SRC github.com/segmentio/kubeapply
 
 RUN apt-get update && apt-get install --yes \
     curl \
+    unzip \
     wget
 
 COPY . /go/src/${SRC}
