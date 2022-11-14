@@ -33,7 +33,7 @@ users:
 - name: {{ .Name }}
   user:
     exec:
-      apiVersion: client.authentication.k8s.io/v1alpha1
+      apiVersion: client.authentication.k8s.io/v1beta1
       args:
       - token
       - --region
