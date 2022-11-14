@@ -206,8 +206,7 @@ Kubernetes structs (from [Protocol Buffers](https://developers.google.com/protoc
 so it can provide more structure and less repetition than YAML-based sources. See
 [this file](/examples/kubeapply-test-cluster/profile/apps/redis/deployment.star) for an example.
 
-The skycfg support in `kubeapply` should be considered experimental. We're using it for
-a few test services in Segment, but it has not been widely exercised internally.
+The skycfg support in `kubeapply` is experimental and unsupported.
 
 ### Expanded configs
 
