@@ -186,15 +186,31 @@ func TestExpandHelmTemplates(t *testing.T) {
 				contentsStr := string(contents)
 
 				for _, value := range values {
-					assert.True(
-						t,
-						strings.Contains(contentsStr, value),
-						"file %s for test case %s does not contain %s: %s",
-						existsSubPath,
-						testCase.description,
-						value,
-						contentsStr,
-					)
+					if strings.Contains(value, "RELEASE-NAME") || strings.Contains(value, "release-name") {
+						// In Helm 3.8.0, the default value for .Release.Name changed from
+						// uppercase to lowercase
+						contentsStrUp := strings.ToUpper(contentsStr)
+						valueUp := strings.ToUpper(value)
+						assert.True(
+							t,
+							strings.Contains(contentsStrUp, valueUp),
+							"file %s for test case %s does not contain (case-insensitive) %s: %s",
+							existsSubPath,
+							testCase.description,
+							value,
+							contentsStr,
+						)
+					} else {
+						assert.True(
+							t,
+							strings.Contains(contentsStr, value),
+							"file %s for test case %s does not contain %s: %s",
+							existsSubPath,
+							testCase.description,
+							value,
+							contentsStr,
+						)
+					}
 				}
 			}
 		}
