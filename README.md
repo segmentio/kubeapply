@@ -75,7 +75,7 @@ Make sure that they're installed locally and available in your path.
 
 Install the `kubeapply` binary by running:
 
-```GO111MODULE="on" go get github.com/segmentio/kubeapply/cmd/kubeapply```
+```go install github.com/segmentio/kubeapply/cmd/kubeapply@latest```
 
 You can also build and install the binary by running `make install` in the root of this
 repo.
