@@ -6,7 +6,7 @@ kind: Deployment
 metadata:
   labels:
     app: alb-ingress-controller
-  name: alb-ingress-controller-RELEASE-NAME
+  name: alb-ingress-controller-release-name
   namespace: kube-system
 spec:
   replicas: 1
