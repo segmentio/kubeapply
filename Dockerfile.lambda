@@ -25,13 +25,15 @@ RUN make kubeapply-lambda VERSION_REF=${VERSION_REF} && \
     cp build/kubeapply-lambda /usr/local/bin
 
 # Copy into final image
-FROM public.ecr.aws/lambda/go:1
+FROM public.ecr.aws/lambda/provided:al2
 
-RUN yum install -y git && \
-  python3 --version
+RUN yum install -y git unzip
 
-RUN curl -O https://bootstrap.pypa.io/pip/3.6/get-pip.py && python3 get-pip.py
-RUN pip3 install awscli
+# Not sure if awscli is needed for running lambda, but keeping it here for now
+RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip \
+ && unzip awscliv2.zip \
+ && ./aws/install \
+ && rm -rf aws awscliv2.zip
 
 COPY --from=builder \
     /usr/local/bin/aws-iam-authenticator \
