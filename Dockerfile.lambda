@@ -42,6 +42,6 @@ COPY --from=builder \
     /usr/local/bin/kubeapply \
     /usr/local/bin/
 
-COPY --from=builder /usr/local/bin/kubeapply-lambda /var/task/kubeapply-lambda
+COPY --from=builder /usr/local/bin/kubeapply-lambda ./kubeapply-lambda
 
-CMD [ "kubeapply-lambda" ]
+ENTRYPOINT [ "./kubeapply-lambda" ]
