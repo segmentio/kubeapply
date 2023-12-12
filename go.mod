@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/Masterminds/sprig/v3 v3.2.1
-	github.com/aws/aws-lambda-go v1.15.0
+	github.com/aws/aws-lambda-go v1.41.0
 	github.com/aws/aws-sdk-go v1.29.16
 	github.com/briandowns/spinner v1.11.1
 	github.com/fatih/color v1.7.0
@@ -24,7 +24,7 @@ require (
 	github.com/segmentio/stats/v4 v4.5.3
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/cobra v1.1.1
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.2
 	github.com/stripe/skycfg v0.0.0-20200303020846-4f599970a3e6
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/yannh/kubeconform v0.4.6
@@ -101,7 +101,7 @@ require (
 	gopkg.in/src-d/go-billy.v4 v4.3.2 // indirect
 	gopkg.in/validator.v2 v2.0.0-20180514200540-135c24b11c19 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20200601152816-913338de1bd2 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
