@@ -21,7 +21,7 @@ install: data
 # Lambda and server-related targets
 .PHONY: kubeapply-lambda
 kubeapply-lambda: data
-	GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o build/kubeapply-lambda $(LDFLAGS) ./cmd/kubeapply-lambda
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -tags lambda.norpc -o build/kubeapply-lambda $(LDFLAGS) ./cmd/kubeapply-lambda
 
 .PHONY: kubeapply-lambda-kubeapply
 kubeapply-lambda-kubeapply: data

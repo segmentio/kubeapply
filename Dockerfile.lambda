@@ -1,5 +1,5 @@
 # Fetch or build all required binaries
-FROM golang:1.20 as builder
+FROM --platform=linux/amd64 golang:1.20 as builder
 
 ARG VERSION_REF
 RUN test -n "${VERSION_REF}"
@@ -44,4 +44,4 @@ COPY --from=builder \
 
 COPY --from=builder /usr/local/bin/kubeapply-lambda /kubeapply-lambda
 
-ENTRYPOINT [ "/kubeapply-lambda" ]
+ENTRYPOINT ["/kubeapply-lambda"]
