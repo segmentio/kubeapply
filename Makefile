@@ -2,7 +2,8 @@ ifndef VERSION_REF
 	VERSION_REF ?= $(shell git describe --tags --always --dirty="-dev")
 endif
 
-LDFLAGS := -ldflags='-X "main.VersionRef=$(VERSION_REF)"'
+LDFLAGS := -ldflags='-s -w -X "main.VersionRef=$(VERSION_REF)"'
+export GOFLAGS := -trimpath
 
 GOFILES = $(shell find . -iname '*.go' | grep -v -e vendor -e _modules -e _cache -e /data/)
 TEST_KUBECONFIG = .kube/kind-kubeapply-test.yaml
@@ -12,7 +13,7 @@ LAMBDAZIP := kubeapply-lambda-$(VERSION_REF).zip
 # Main targets
 .PHONY: kubeapply
 kubeapply: data
-	go build -o build/kubeapply $(LDFLAGS) ./cmd/kubeapply
+	go build $(LDFLAGS) -o build/kubeapply ./cmd/kubeapply
 
 .PHONY: install
 install: data
@@ -21,11 +22,11 @@ install: data
 # Lambda and server-related targets
 .PHONY: kubeapply-lambda
 kubeapply-lambda: data
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -tags lambda.norpc -o build/kubeapply-lambda $(LDFLAGS) ./cmd/kubeapply-lambda
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -tags lambda.norpc -o build/kubeapply-lambda ./cmd/kubeapply-lambda
 
 .PHONY: kubeapply-lambda-kubeapply
 kubeapply-lambda-kubeapply: data
-	GOOS=linux GOARCH=amd64 go build -o build/kubeapply $(LDFLAGS) ./cmd/kubeapply
+	GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o build/kubeapply ./cmd/kubeapply
 
 .PHONY: lambda-zip
 lambda-zip: clean kubeapply-lambda kubeapply-lambda-kubeapply
@@ -33,7 +34,7 @@ lambda-zip: clean kubeapply-lambda kubeapply-lambda-kubeapply
 
 .PHONY: kubeapply-server
 kubeapply-server: data
-	go build -o build/kubeapply-server $(LDFLAGS) ./cmd/kubeapply-server
+	go build $(LDFLAGS) -o build/kubeapply-server ./cmd/kubeapply-server
 
 # Test and formatting targets
 .PHONY: test
