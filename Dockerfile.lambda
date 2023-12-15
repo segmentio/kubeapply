@@ -1,5 +1,5 @@
 # Fetch or build all required binaries
-FROM --platform=linux/amd64 golang:1.20 as builder
+FROM golang:1.21 as builder
 
 ARG VERSION_REF
 RUN test -n "${VERSION_REF}"
