@@ -1,18 +1,32 @@
 # Fetch or build all required binaries
-FROM golang:1.21-bookworm as builder
+
+FROM public.ecr.aws/lambda/provided:al2 as builder
+
+ADD https://go.dev/dl/go1.21.5.linux-amd64.tar.gz /tmp/go1.21.5.linux-amd64.tar.gz
 
 ARG VERSION_REF
 RUN test -n "${VERSION_REF}"
 
 ENV SRC github.com/segmentio/kubeapply
+ENV PATH=/usr/local/go/bin:/root/go/bin:/var/lang/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin
 
-RUN apt-get update && apt-get install --no-install-recommends --yes \
+RUN yum install -y \
     curl \
+    git \
+    gzip \
+    make \
+    tar \
     unzip \
+    which \
     wget
 
 COPY . /go/src/${SRC}
-RUN cd /usr/local/bin && /go/src/${SRC}/scripts/pull-deps.sh
+
+RUN cd /usr/local \
+    && tar xf /tmp/go1.21.5.linux-amd64.tar.gz \
+    && cd /usr/local/bin \
+    && go env \
+    && /go/src/${SRC}/scripts/pull-deps.sh
 
 WORKDIR /go/src/${SRC}
 
@@ -24,7 +38,7 @@ RUN make kubeapply-lambda VERSION_REF=${VERSION_REF} && \
 # Copy into final image from builder
 FROM public.ecr.aws/lambda/provided:al2
 
-RUN yum install -y git unzip
+RUN yum install -y git unzip && yum clean all
 
 # Not sure if awscli is needed for running lambda, but keeping it here for now
 RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip \
