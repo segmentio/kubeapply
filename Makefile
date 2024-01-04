@@ -2,7 +2,7 @@ ifndef VERSION_REF
 	VERSION_REF ?= $(shell git describe --tags --always --dirty="-dev")
 endif
 
-LDFLAGS := -ldflags='-s -w -X "main.VersionRef=$(VERSION_REF)"'
+LDFLAGS := -ldflags='-linkmode "external" -extldflags "-static" -s -w -X "main.VersionRef=$(VERSION_REF)"'
 export GOFLAGS := -trimpath
 
 GOFILES = $(shell find . -iname '*.go' | grep -v -e vendor -e _modules -e _cache -e /data/)
