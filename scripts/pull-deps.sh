@@ -9,6 +9,10 @@ set -euo pipefail
 # From Achille, "If we use a different version than v3.5.4 the content of
 # eks-configuration ends up being reformatted, which will trigger a recreation
 # of the Zookeeper cluster for Centrifuge's Kafka in production."
+#
+# If you are reading this because you're on Apple M1 Silicon and can't install
+# this version of Helm, see the notes in the eks-configuration README about how
+# to work around this problem: https://github.com/segmentio/eks-configuration
 HELM_VERSION="3.5.4"
 # Checksums are e.g. here: https://github.com/helm/helm/releases/tag/v3.5.4
 HELM_SHA256_SUM="a8ddb4e30435b5fd45308ecce5eaad676d64a5de9c89660b56face3fe990b318"
