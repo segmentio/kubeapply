@@ -109,7 +109,7 @@ func expandCluster(
 
 	if clusterConfig.Charts != "" {
 		log.Debugf(
-			"Checking that helm statisfies version constraint %s",
+			"Checking that helm satisfies version constraint %s",
 			helmVersionConstraint,
 		)
 		if err := helm.CheckHelmVersion(ctx, helmVersionConstraint); err != nil {
