@@ -90,7 +90,7 @@ func TestKubeconformChecker(t *testing.T) {
 				CheckType: CheckTypeKubeconform,
 				CheckName: "kubeconform",
 				Status:    StatusInvalid,
-				Message:   "For field spec: Additional property invalidField is not allowed",
+				Message:   "problem validating schema. Check JSON formatting: jsonschema: '/spec' does not validate with https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master-standalone-strict/deployment-apps-v1.json#/properties/spec/additionalProperties: additionalProperties 'invalidField' not allowed",
 			},
 		},
 		{
