@@ -7,4 +7,4 @@ spec:
   type: tool
   lifecycle: production
   owner: group:sup-org-1302
-  system: otk-deployment-orchestration
+  system: segment-deployment-orchestration
