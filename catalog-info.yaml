@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: kubeapply
+  description: Git-based Kubernetes configuration management tool with support for YAML, Helm charts, and automated PR workflows
+spec:
+  type: tool
+  lifecycle: production
+  owner: group:sup-org-1302
+  system: segment-deployment-orchestration
